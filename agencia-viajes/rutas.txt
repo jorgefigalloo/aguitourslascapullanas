@@ -1,0 +1,31 @@
+/agencia-viajes
+│
+├── /css
+│ └── styles.css
+│
+├── /js
+│ └── scripts.js
+│
+├── /images
+│ ├── paris.jpg
+│ ├── new-york.jpg
+│ ├── tokyo.jpg
+l── ico
+│ └── capullanas.ico (archivo favicon)
+l------- capullanas1.jpg (agregue esa imagen para q salga al costado de Agencia de Viajes)
+l----carrusel (carpeta)
+l      l---- desierto-ica.jpg
+l      l---- Machupichu.jpg
+l      l---- plaza-arequipa.jpg
+l      l---- mancora.jpg
+l      l---- Piura.jpg
+│
+├── /includes
+│ ├── header.php
+│ ├── footer.php
+│ └── db.php
+│
+├── index.php
+├── destinos.php
+├── contacto.php
+└── about.php
