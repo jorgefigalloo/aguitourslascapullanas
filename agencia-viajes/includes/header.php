@@ -6,6 +6,7 @@
     <title>Aguitours Las Capullanas - Tu Agencia de Viajes Confiable</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/stylesCarrusel.css">
+    <link rel="stylesheet" href="css/styleNosotros.css">
     <link rel="icon" type="image/x-icon" href="images/ico/capullanas.ico">
     <meta name="description" content="Descubre los mejores destinos con nuestra agencia de viajes. Ofrecemos paquetes personalizados para tus vacaciones.">
     <meta name="keywords" content="agencia de viajes, destinos turísticos, viajes internacionales">
@@ -29,7 +30,7 @@
         <ul class="menu">
             <li><a href="index.php">Inicio</a></li>
             <li><a href="destinos.php">Destinos</a></li>
-            <li><a href="about.php">Nosotros</a></li>
+            <li><a href="nosotros.php">Nosotros</a></li>
             <li><a href="contacto.php">Contacto</a></li>
         </ul>
     </nav>

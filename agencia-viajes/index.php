@@ -22,12 +22,12 @@
                             <div class="caption">Desierto de Ica</div>
                         </div>
                         <div class="carousel-item">
-                            <img src="images/carrusel/Machupichu.jpg" alt="Machu Picchu">
+                            <img src="images/carrusel/cuzco.jpg" alt="Machu Picchu">
                             <div class="caption">Machu Picchu</div>
                         </div>
                         <div class="carousel-item">
-                            <img src="images/carrusel/plaza-arequipa.jpg" alt="Plaza de Armas de Arequipa">
-                            <div class="caption">Plaza de Armas de Arequipa</div>
+                            <img src="images/carrusel/plaza-arequipa.jpg" alt="Arequipa">
+                            <div class="caption">Arequipa</div>
                         </div>
                         <div class="carousel-item">
                             <img src="images/carrusel/mancora.jpg" alt="Máncora">
@@ -45,6 +45,13 @@
 
 
 
+                        <div class="carousel-indicators">
+                <span class="indicator active" data-index="0"></span>
+                <span class="indicator" data-index="1"></span>
+                <span class="indicator" data-index="2"></span>
+                <span class="indicator" data-index="3"></span>
+                <span class="indicator" data-index="4"></span>
+            </div>
 
 
 
