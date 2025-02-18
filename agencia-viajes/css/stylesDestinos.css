@@ -1,0 +1,160 @@
+/* Sección Hero */
+.destinos-hero {
+    background: url('../images/ciudades/fondo-destinos.png') no-repeat center center/cover;
+    color: #fff;
+    text-align: center;
+    padding: 5rem 1rem;
+    position: relative;
+}
+
+.destinos-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: inline-block;
+}
+
+.destinos-hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.destinos-hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Estilos comunes para "Destinos Nacionales" e "Internacionales" */
+.destinos-nacionales,
+.destinos-internacionales {
+    text-align: center;
+    padding: 2rem 0;
+    color: #fff;
+    position: relative;
+}
+
+.destinos-nacionales::before,
+.destinos-internacionales::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* Fondo oscuro semitransparente */
+    z-index: 1;
+}
+
+.destinos-nacionales h2,
+.destinos-internacionales h2 {
+    position: relative;
+    z-index: 2;
+    font-size: 2.5rem; /* Aumentamos el tamaño del título */
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Sombra para destacar el texto */
+}
+
+/* Fondo específico para cada sección */
+.destinos-nacionales {
+    background: url('../images/ciudades/fondo-nacional.png') no-repeat center center/cover;
+}
+
+.destinos-internacionales {
+    background: url('../images/ciudades/fondo-internacional.png') no-repeat center center/cover;
+}
+
+/* Cuadrícula de destinos */
+.destinos-grid {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.destino-item {
+    background: rgba(255, 255, 255, 0.9); /* Fondo blanco semitransparente */
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    text-align: center;
+}
+
+.destino-item:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.destino-item img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.destino-item h3 {
+    font-size: 1.2rem;
+    margin-top: 0.5rem;
+    color: #333;
+}
+
+.destino-item p {
+    font-size: 1rem;
+    color: #666;
+}
+
+/* Flyers de Paquetes */
+.flyers-paquetes {
+    text-align: center;
+    padding: 2rem 0;
+    background: #f9f9f9;
+}
+
+.flyers-paquetes h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.flyers-paquetes p {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: #666;
+}
+
+.cta-button {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    background: #ff6f61;
+    color: #fff;
+    font-size: 1rem;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s ease-in-out;
+}
+
+.cta-button:hover {
+    background: #ff4d3b;
+}
+
+

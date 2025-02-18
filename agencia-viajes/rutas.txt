@@ -2,23 +2,69 @@
 │
 ├── /css
 │ └── styles.css
+│ └── stylesCarrusel.css
+│ └── styleNosotros.css
+│ └── stylesDestinos.css
+│ └── stylesDestinosPromos.css
 │
 ├── /js
 │ └── scripts.js
 │
 ├── /images
-│ ├── paris.jpg
-│ ├── new-york.jpg
-│ ├── tokyo.jpg
+l---flayers(carpeta nueva)
+│ └── arma-tu-paquete.png
+│ └── paquetes(carpeta nueva)
+│      └── paquete1.jpg
+│      └── paquete2.jpg
+│ └── publicidad(carpeta nueva)
+│      └── viajemos.jpg
+
+
+├── capullanas1.jpg (agregue esa imagen para q salga al costado de Agencia de Viajes)
+├── fondo-turismo.png
+├── nosotros-hero.png
+├── nosotros-hero1.png
+├── 
 l── ico
 │ └── capullanas.ico (archivo favicon)
-l------- capullanas1.jpg (agregue esa imagen para q salga al costado de Agencia de Viajes)
+l
 l----carrusel (carpeta)
 l      l---- desierto-ica.jpg
 l      l---- Machupichu.jpg
 l      l---- plaza-arequipa.jpg
 l      l---- mancora.jpg
 l      l---- Piura.jpg
+l---ciudades (carpeta nueva)
+├──├── fondo-destinos.png
+├──├── fondo-destinos1.png
+├──├── fondo-nacional.png (para fondo nacionales)
+├──├── fondo-internacional.png (para fondo internacionales)
+
+l   l---nacionales (carpeta nueva)
+l       l----arequipa.png
+l	l---cuzco.png
+l  	l--- huacachina.png
+l	l--- lima-capital.png
+l	l--- siete-colores.png
+l	l--- tarapoto.png
+l   l---internacionales (carpeta nueva)
+l        │ ├── paris.jpg
+│ 	   ├── new-york.jpg
+│          ├── tokyo.jpg
+l        │ ├── bagan.png
+│ 	   ├── bahia-halong.png
+│          ├── colise-roma.png
+l        │ ├── colombia.png
+│ 	   ├── cuba.png
+│          ├── gran-muralla-china.png
+l        │ ├── Museo-del-Louvre.png
+│ 	   ├── paris.png
+│          ├── playas-tailandia.png
+l        │ ├── Sagrada-Familia.png
+
+
+
+
 │
 ├── /includes
 │ ├── header.php
@@ -28,4 +74,5 @@ l      l---- Piura.jpg
 ├── index.php
 ├── destinos.php
 ├── contacto.php
+├── destinos.php
 └── about.php

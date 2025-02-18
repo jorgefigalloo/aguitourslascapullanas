@@ -126,3 +126,41 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+
+
+
+
+
+/* DESTINOS PAQUETES WHATSAPP O VER IMAGENES */ 
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Abrir modal al hacer clic en la imagen
+    const imagePreviews = document.querySelectorAll('.image-preview');
+    const modals = document.querySelectorAll('.modal');
+    const closeButtons = document.querySelectorAll('.close');
+
+    imagePreviews.forEach((preview, index) => {
+        preview.addEventListener('click', (e) => {
+            e.preventDefault();
+            modals[index].style.display = 'block';
+        });
+    });
+
+    // Cerrar modal al hacer clic en la "X"
+    closeButtons.forEach((button, index) => {
+        button.addEventListener('click', () => {
+            modals[index].style.display = 'none';
+        });
+    });
+
+    // Cerrar modal al hacer clic fuera de la imagen
+    window.addEventListener('click', (e) => {
+        modals.forEach((modal) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+});

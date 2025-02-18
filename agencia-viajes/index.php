@@ -79,6 +79,9 @@
                 <p>La fusión perfecta entre tradición y modernidad.</p>
             </div>
         </div>
+
+        <br>
+        <a href="destinos.php" class="btn">Ver Destinos</a> 
     </section>
 </main>
 

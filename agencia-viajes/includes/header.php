@@ -7,7 +7,10 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/stylesCarrusel.css">
     <link rel="stylesheet" href="css/styleNosotros.css">
+    <link rel="stylesheet" href="css/stylesDestinos.css">
+    <link rel="stylesheet" href="css/stylesDestinosPromos.css">
     <link rel="icon" type="image/x-icon" href="images/ico/capullanas.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <meta name="description" content="Descubre los mejores destinos con nuestra agencia de viajes. Ofrecemos paquetes personalizados para tus vacaciones.">
     <meta name="keywords" content="agencia de viajes, destinos turísticos, viajes internacionales">
     <meta name="author" content="Aguitours Las Capullanas">
