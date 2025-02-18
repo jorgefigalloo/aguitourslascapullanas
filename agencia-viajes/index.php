@@ -61,21 +61,21 @@
 
 
     <section class="featured-destinations">
-        <h2>Destinos Destacados</h2>
+        <h2>Destinos Destacados Nacionales</h2>
         <div class="destinations-grid">
             <div class="destination-card">
-                <img src="images/paris.jpg" alt="París">
-                <h3>París</h3>
+                <img src="images/ciudades/nacionales/arequipa.png" alt="Arequipa">
+                <h3>Arequipa</h3>
                 <p>La ciudad del amor y la cultura.</p>
             </div>
             <div class="destination-card">
-                <img src="images/new-york.jpg" alt="Nueva York">
-                <h3>Nueva York</h3>
+                <img src="images/ciudades/nacionales/cuzco.png" alt="Cuzco">
+                <h3>Cuzco</h3>
                 <p>La ciudad que nunca duerme.</p>
             </div>
             <div class="destination-card">
-                <img src="images/tokyo.jpg" alt="Tokio">
-                <h3>Tokio</h3>
+                <img src="images/ciudades/nacionales/tarapoto.png" alt="Tarapoto">
+                <h3>Tarapoto</h3>
                 <p>La fusión perfecta entre tradición y modernidad.</p>
             </div>
         </div>

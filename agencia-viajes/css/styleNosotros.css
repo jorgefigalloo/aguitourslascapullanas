@@ -4,18 +4,44 @@
     color: #fff;
     text-align: center;
     padding: 5rem 1rem;
+    position: relative; /* Necesario para posicionar elementos internos */
+}
+
+.nosotros-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Fondo oscuro semitransparente */
+    z-index: 1; /* Asegura que esté detrás del contenido */
+}
+
+.nosotros-content {
+    position: relative;
+    z-index: 2; /* Coloca el contenido encima del fondo semitransparente */
+    background: rgba(0, 0, 0, 0.7); /* Fondo oscuro adicional para el texto */
+    padding: 2rem;
+    border-radius: 10px; /* Bordes redondeados */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para destacar */
+    display: inline-block; /* Ajusta el ancho al contenido */
+    max-width: 600px; /* Ancho máximo para centrar mejor */
+    margin: 0 auto; /* Centra horizontalmente */
 }
 
 .nosotros-hero h1 {
     font-size: 2.5rem;
     margin-bottom: 1rem;
+    color: #fff; /* Texto blanco para mejor contraste */
 }
 
 .nosotros-hero p {
     font-size: 1.2rem;
-    max-width: 600px;
-    margin: 0 auto;
+    color: #ddd; /* Texto gris claro para mejor legibilidad */
+    line-height: 1.6; /* Espaciado entre líneas */
 }
+
 
 /* Contenedor con fondo */
 .fondo-turismo {
