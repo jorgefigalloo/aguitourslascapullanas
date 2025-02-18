@@ -100,3 +100,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cambio automático cada 5 segundos
     setInterval(showNext, 5000);
 });
+
+
+
+/* PREGUNTAS EN NOSOTROS  */ 
+
+
+// Funcionalidad para abrir/cerrar respuestas en la sección FAQ
+document.addEventListener('DOMContentLoaded', () => {
+    const faqQuestions = document.querySelectorAll('.faq-question');
+
+    faqQuestions.forEach(question => {
+        question.addEventListener('click', () => {
+            const answer = question.nextElementSibling;
+
+            // Alternar la clase 'active' en la respuesta
+            answer.classList.toggle('active');
+
+            // Alternar el símbolo "+" o "-" en el botón
+            if (answer.classList.contains('active')) {
+                question.textContent = question.textContent.replace('+', '-');
+            } else {
+                question.textContent = question.textContent.replace('-', '+');
+            }
+        });
+    });
+});

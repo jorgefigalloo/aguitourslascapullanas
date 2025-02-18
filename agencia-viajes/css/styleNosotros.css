@@ -17,27 +17,54 @@
     margin: 0 auto;
 }
 
-/* Misión y Visión */
-.mision-vision {
+/* Contenedor con fondo */
+.fondo-turismo {
+    background: url('../images/fondo-turismo.png') no-repeat center center/cover;
+    color: #fff; /* Texto blanco para mejor contraste */
     padding: 2rem 0;
-    background: #f9f9f9;
 }
 
+/* Ajustes para mejorar la legibilidad */
+.mision-vision,
+.valores,
+.equipo,
+.preguntas {
+    background: rgba(0, 0, 0, 0.6); /* Fondo oscuro semitransparente */
+    border-radius: 10px;
+    padding: 2rem;
+    margin: 1rem auto;
+    max-width: 1200px;
+}
+
+.mision-vision h2,
+.valores h2,
+.equipo h2,
+.preguntas h2 {
+    color: #fff; /* Títulos en blanco */
+}
+
+.mision p,
+.vision p,
+.valores-list li,
+.faq-question,
+.faq-answer {
+    color: #ddd; /* Texto en gris claro */
+}
+
+/* Misión y Visión */
 .mision-vision .container {
     display: flex;
     justify-content: space-between;
     gap: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
     padding: 0 1rem;
 }
 
 .mision, .vision {
     flex: 1;
-    background: #fff;
+    background: rgba(255, 255, 255, 0.1); /* Fondo ligeramente más claro */
     padding: 1.5rem;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .mision h2, .vision h2 {
@@ -53,7 +80,6 @@
 /* Valores */
 .valores {
     text-align: center;
-    padding: 2rem 0;
 }
 
 .valores h2 {
@@ -64,20 +90,26 @@
 .valores-list {
     list-style: none;
     padding: 0;
-    max-width: 800px;
-    margin: 0 auto;
 }
 
 .valores-list li {
     font-size: 1rem;
     line-height: 1.6;
     margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.1); /* Fondo ligeramente más claro */
+    padding: 1rem;
+    border-radius: 5px;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.valores-list li:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 /* Equipo */
 .equipo {
     text-align: center;
-    padding: 2rem 0;
 }
 
 .equipo h2 {
@@ -89,16 +121,28 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1rem;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
+}
+
+.equipo-member {
+    background: rgba(255, 255, 255, 0.1); /* Fondo ligeramente más claro */
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    text-align: center;
+}
+
+.equipo-member:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
 .equipo-member img {
     width: 100%;
     height: 200px;
     object-fit: cover;
-    border-radius: 5px;
+    border-radius: 10px;
+    margin-bottom: 1rem;
 }
 
 .equipo-member h3 {
@@ -108,5 +152,66 @@
 
 .equipo-member p {
     font-size: 1rem;
-    color: #666;
+    color: #ddd;
+}
+
+/* SECCION PREGUNTAS */
+
+/* Sección Preguntas Frecuentes */
+.preguntas {
+    text-align: center;
+}
+
+.preguntas h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.faq-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.faq-item {
+    background: rgba(255, 255, 255, 0.1); /* Fondo ligeramente más claro */
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.faq-item:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.faq-question {
+    width: 100%;
+    text-align: left;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.2); /* Fondo ligeramente más claro */
+    border: none;
+    padding: 1rem;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.3s ease-in-out;
+}
+
+.faq-question:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.faq-answer {
+    padding: 1rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #ddd;
+    display: none; /* Oculto por defecto */
+}
+
+.faq-answer.active {
+    display: block; /* Mostrar cuando esté activo */
 }
