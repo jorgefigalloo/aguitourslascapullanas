@@ -26,5 +26,6 @@
     </div>
 </footer>
 <script src="js/scripts.js"></script>
+<script src="js/scriptsNosotros.js"></script>
 </body>
 </html>

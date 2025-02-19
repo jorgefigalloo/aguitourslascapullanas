@@ -33,6 +33,60 @@
             </ul>
         </section>
 
+
+
+
+          <!-- Nueva Sección: Galería -->
+          <section class="galeria-container">
+            <div class="galeria">
+                <h2>Nuestro Trabajo</h2>
+                <p>Descubre algunas de las experiencias que hemos creado para nuestros clientes:</p>
+                <div class="galeria-grid">
+                    <div class="galeria-item" data-src="images/galeria/1.jpg">
+                        <img src="images/galeria/1.jpg" alt="Experiencia 1">
+                    </div>
+                    <div class="galeria-item" data-src="images/galeria/2.jpg">
+                        <img src="images/galeria/2.jpg" alt="Experiencia 2">
+                    </div>
+                    <div class="galeria-item" data-src="images/galeria/3.jpg">
+                        <img src="images/galeria/3.jpg" alt="Experiencia 3">
+                    </div>
+                    <div class="galeria-item" data-src="images/galeria/4.jpg">
+                        <img src="images/galeria/4.jpg" alt="Experiencia 4">
+                    </div>
+                    <div class="galeria-item" data-src="images/galeria/5.jpg">
+                        <img src="images/galeria/5.jpg" alt="Experiencia 5">
+                    </div>
+                    <div class="galeria-item" data-src="images/galeria/6.jpg">
+                        <img src="images/galeria/6.jpg" alt="Experiencia 6">
+                    </div>
+                    <div class="galeria-item" data-src="images/galeria/7.jpg">
+                        <img src="images/galeria/7.jpg" alt="Experiencia 7">
+                    </div>
+                    <div class="galeria-item" data-src="images/galeria/8.jpg">
+                        <img src="images/galeria/8.jpg" alt="Experiencia 8">
+                    </div>
+                    <div class="galeria-item" data-src="images/galeria/9.jpg">
+                        <img src="images/galeria/9.jpg" alt="Experiencia 9">
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Modal para Vista Previa de Imágenes -->
+        <div id="image-modal" class="modal">
+            <span class="close">&times;</span>
+            <img class="modal-content" id="modal-image">
+            <div id="caption"></div>
+        </div>
+
+
+
+
+
+
+
+
+
         <section class="equipo">
             <h2>Nuestro Equipo</h2>
             <div class="equipo-grid">
