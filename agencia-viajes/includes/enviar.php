@@ -29,6 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $mail->setFrom('aguitourslascapullanas1@gmail.com', 'Agencia de Viajes'); // Usar el mismo correo autenticado
         $mail->addAddress('aguitourslascapullanas@hotmail.com'); // Dirección de la empresa
         $mail->addAddress('jovitamestaz69@gmail.com'); // Dirección de la gerente
+        $mail->addAddress('figallojorge@gmail.com'); // Dirección de la gerente
 
         // Agregar el correo del usuario como "Reply-To"
         $mail->addReplyTo($email, $nombre);

@@ -7,6 +7,7 @@
 │ └── stylesDestinos.css
 │ └── stylesDestinosPromos.css
 │ └── stylesContacto.css
+│ └── stylesFooter.css
 │
 ├── /js
 │ └── scripts.js
@@ -66,17 +67,24 @@ l        │ ├── Museo-del-Louvre.png
 │          ├── playas-tailandia.png
 l        │ ├── Sagrada-Familia.png
 
-
-
-
 │
 ├── /includes
 │ ├── header.php
 │ ├── footer.php
 │ ├── enviar.php
+│ ├── PHPMailer-master (carpeta)
+│    ├── src (carpeta)
+│        ├── Exception.php
+│        ├── PHPMailer.php
+│        ├── SMTP.php
 │ └── db.php
 │
 ├── index.php
 ├── destinos.php
 ├── contacto.php
 ├── nosotros.php
+
+
+
+
+https://www.facebook.com/people/Aguitours-las-capullanas/100054386595848/

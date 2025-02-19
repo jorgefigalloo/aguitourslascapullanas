@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="css/stylesDestinos.css">
     <link rel="stylesheet" href="css/stylesDestinosPromos.css">
     <link rel="stylesheet" href="css/stylesContacto.css">
+    <link rel="stylesheet" href="css/stylesFooter.css">
     <link rel="icon" type="image/x-icon" href="images/ico/capullanas.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <meta name="description" content="Descubre los mejores destinos con nuestra agencia de viajes. Ofrecemos paquetes personalizados para tus vacaciones.">
@@ -21,7 +22,9 @@
     <nav>
         <div class="logo">
             <!-- Agregamos la imagen al costado del texto -->
-            <img src="images/capullanas1.jpg" alt="" class="logo-image">
+            <a href="index.php" class="logo-link">
+                <img src="images/capullanas1.jpg" alt="Logo Agencia de Viajes" class="logo-image">
+                </a>
             <a href="index.php">Agencia de Viajes "Aguitours Las Capullanas"</a>
              <!-- Agregamos el favicon -->
          

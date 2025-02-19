@@ -1,0 +1,76 @@
+/* Estilo General del Footer */
+footer {
+    background-color: #333;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.footer-container {
+    display: flex;
+    align-items: center; /* Alinea verticalmente todos los elementos */
+    justify-content: space-between; /* Distribuye el espacio entre los elementos */
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Derechos Reservados */
+.copyright {
+    font-size: 0.9rem;
+    margin: 0;
+    white-space: nowrap; /* Evita que el texto se rompa en varias líneas */
+}
+
+/* Contenedor de Redes Sociales y Botón de Contacto */
+.right-section {
+    display: flex;
+    align-items: center; /* Alinea verticalmente los íconos y el botón */
+    gap: 20px; /* Espacio entre los íconos y el botón */
+}
+
+/* Redes Sociales */
+.social-icons {
+    display: flex;
+    gap: 15px; /* Espacio entre los íconos */
+}
+
+.social-icons a {
+    color: #fff;
+    font-size: 1.5rem;
+    transition: transform 0.3s ease-in-out;
+}
+
+.social-icons a:hover {
+    color: #ff6f61;
+    transform: scale(1.2);
+}
+
+/* Botón de Contacto */
+.cta-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #ff6f61;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.cta-button:hover {
+    background-color: #ff4d3b;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .footer-container {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px; /* Espacio entre los elementos en móviles */
+    }
+
+    .right-section {
+        flex-direction: row; /* Mantiene los íconos y el botón en una fila */
+        justify-content: center; /* Centra los elementos */
+    }
+}
