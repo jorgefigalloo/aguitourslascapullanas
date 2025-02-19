@@ -62,23 +62,23 @@
 
     <section class="featured-destinations">
         <h2>Destinos Destacados Nacionales</h2>
-        <div class="destinations-grid">
-            <div class="destination-card">
-                <img src="images/ciudades/nacionales/arequipa.png" alt="Arequipa">
-                <h3>Arequipa</h3>
-                <p>La ciudad del amor y la cultura.</p>
+                    <div class="destinations-grid">
+                <div class="destination-card">
+                    <img src="images/ciudades/nacionales/arequipa.png" alt="Arequipa">
+                    <h3>Arequipa</h3>
+                    <p>Conocida como la "Ciudad Blanca", Arequipa es famosa por su arquitectura colonial hecha de sillar volcánico y su impresionante paisaje rodeado de volcanes.</p>
+                </div>
+                <div class="destination-card">
+                    <img src="images/ciudades/nacionales/cuzco.png" alt="Cuzco">
+                    <h3>Cuzco</h3>
+                    <p>El corazón del Imperio Inca, Cuzco combina ruinas históricas como Machu Picchu con una vibrante cultura andina moderna.</p>
+                </div>
+                <div class="destination-card">
+                    <img src="images/ciudades/nacionales/tarapoto.png" alt="Tarapoto">
+                    <h3>Tarapoto</h3>
+                    <p>Un destino ideal para los amantes de la naturaleza, Tarapoto ofrece cascadas, selvas tropicales y una rica biodiversidad en la Amazonía peruana.</p>
+                </div>
             </div>
-            <div class="destination-card">
-                <img src="images/ciudades/nacionales/cuzco.png" alt="Cuzco">
-                <h3>Cuzco</h3>
-                <p>La ciudad que nunca duerme.</p>
-            </div>
-            <div class="destination-card">
-                <img src="images/ciudades/nacionales/tarapoto.png" alt="Tarapoto">
-                <h3>Tarapoto</h3>
-                <p>La fusión perfecta entre tradición y modernidad.</p>
-            </div>
-        </div>
 
         <br>
         <a href="destinos.php" class="btn">Ver Destinos</a> 

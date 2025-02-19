@@ -6,20 +6,24 @@
 │ └── styleNosotros.css
 │ └── stylesDestinos.css
 │ └── stylesDestinosPromos.css
+│ └── stylesContacto.css
 │
 ├── /js
 │ └── scripts.js
 │
 ├── /images
+l---contacto(carpeta nueva)
+│ └── fondo-contacto.png
+
+
 l---flayers(carpeta nueva)
 │ └── arma-tu-paquete.png
+│ └── fondo-paquete.png
 │ └── paquetes(carpeta nueva)
 │      └── paquete1.jpg
 │      └── paquete2.jpg
 │ └── publicidad(carpeta nueva)
 │      └── viajemos.jpg
-
-
 ├── capullanas1.jpg (agregue esa imagen para q salga al costado de Agencia de Viajes)
 ├── fondo-turismo.png
 ├── nosotros-hero.png
@@ -69,10 +73,10 @@ l        │ ├── Sagrada-Familia.png
 ├── /includes
 │ ├── header.php
 │ ├── footer.php
+│ ├── enviar.php
 │ └── db.php
 │
 ├── index.php
 ├── destinos.php
 ├── contacto.php
-├── destinos.php
-└── about.php
+├── nosotros.php

@@ -121,7 +121,7 @@
             <div class="paquete-info">
                 <h3>Paquetes Internacionales</h3>
                 <p>Explora ciudades icónicas como París, Tokio, Nueva York y más. Disfruta de experiencias únicas en destinos internacionales.</p>
-                <a href="https://wa.me/920025691?text=Quisiera%20más%20información%20sobre%20paquetes%20internacionales%20o%20viajes" class="cta-button" target="_blank">
+                <a href="https://wa.me/920025691?text=Entre%20a%20su%20pagina%20web%20y%20Quisiera%20más%20información%20sobre%20paquetes%20internacionales%20o%20viajes" class="cta-button" target="_blank">
                     <i class="fab fa-whatsapp"></i> Más Información
                 </a>
             </div>
@@ -135,7 +135,7 @@
             <div class="paquete-info">
                 <h3>Paquetes Binacionales</h3>
                 <p>Recorre Perú y Ecuador con nuestros paquetes exclusivos. Vive aventuras inolvidables en Machu Picchu, Cuzco, Quito y más.</p>
-                <a href="https://wa.me/920025691?text=Quisiera%20más%20información%20sobre%20paquetes%20nacionales%20o%20viajes" class="cta-button" target="_blank">
+                <a href="https://wa.me/920025691?text=Entre%20a%20su%20pagina%20web%20y%20Quisiera%20más%20información%20sobre%20paquetes%20nacionales%20o%20viajes" class="cta-button" target="_blank">
                     <i class="fab fa-whatsapp"></i> Más Información
                 </a>
             </div>
@@ -149,7 +149,7 @@
             <div class="paquete-info">
                 <h3>Arma tu Paquete</h3>
                 <p>Crea tu propio itinerario de viaje con amigos o grupos pequeños. Personaliza tu experiencia según tus preferencias.</p>
-                <a href="https://wa.me/920025691?text=Quisiera%20armar%20mi%20paquete%20de%20viaje" class="cta-button" target="_blank">
+                <a href="https://wa.me/920025691?text=Entre%20a%20su%20pagina%20web%20y%20Quisiera%20armar%20mi%20paquete%20de%20viaje" class="cta-button" target="_blank">
                     <i class="fab fa-whatsapp"></i> Armar mi Paquete
                 </a>
             </div>

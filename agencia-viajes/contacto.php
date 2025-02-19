@@ -1,38 +1,79 @@
-<?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+<?php include 'includes/header.php'; ?>
 
-require 'vendor/autoload.php';
+<!-- Mensaje de Confirmación -->
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $message = $_POST['message'];
+<?php if (isset($_GET['status']) && $_GET['status'] == 'success'): ?>
+    <div id="mensaje-exito" class="mensaje-exito">
+        <p>Tu mensaje ha sido enviado correctamente. ¡Gracias por contactarnos!</p>
+    </div>
+<?php elseif (isset($_GET['status']) && $_GET['status'] == 'error'): ?>
+    <div id="mensaje-error" class="mensaje-error">
+        <p>Hubo un problema al enviar tu mensaje. Por favor, inténtalo de nuevo más tarde.</p>
+    </div>
+<?php endif; ?>
+<!-- Sección de Contacto -->
+<section class="contacto-section">
+    <div class="contacto-info">
+        <h2>Contáctanos</h2>
+        <p>Estamos aquí para ayudarte con cualquier pregunta o solicitud que tengas. ¡No dudes en contactarnos!</p>
+        <div class="info-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>Dirección: Av. Los Viajeros 123, Lima, Perú</span>
+        </div>
+        <div class="info-item">
+            <i class="fas fa-phone"></i>
+            <span>Teléfono: +51 920 025 691</span>
+        </div>
+        <div class="info-item">
+            <i class="fas fa-envelope"></i>
+            <span>Email: aguitourslascapullanas@hotmail.com</span>
+        </div>
+        <div class="info-item">
+            <i class="fas fa-clock"></i>
+            <span>Horario: Lunes a Viernes, 9:00 AM - 6:00 PM</span>
+        </div>
+        <!-- Botón de WhatsApp -->
+        <a href="https://wa.me/920025691" class="cta-button whatsapp-button" target="_blank">
+            <i class="fab fa-whatsapp"></i> Contáctanos por WhatsApp
+        </a>
+    </div>
 
-    $mail = new PHPMailer(true);
-    try {
-        // Configuración del servidor
-        $mail->isSMTP();
-        $mail->Host = 'smtp.example.com';
-        $mail->SMTPAuth = true;
-        $mail->Username = 'tu-correo@example.com';
-        $mail->Password = 'tu-contraseña';
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
+    <div class="contacto-form">
+        <h2>Envíanos un Mensaje</h2>
+        <form action="includes/enviar.php" method="POST">
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="mensaje">Mensaje:</label>
+                <textarea id="mensaje" name="mensaje" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="cta-button">Enviar Mensaje</button>
+        </form>
+    </div>
+</section>
 
-        // Remitente y destinatario
-        $mail->setFrom($email, $name);
-        $mail->addAddress('tu-correo@example.com');
+<script>
+    // Ocultar el mensaje después de 10 segundos
+    document.addEventListener('DOMContentLoaded', function () {
+        const mensajeExito = document.getElementById('mensaje-exito');
+        const mensajeError = document.getElementById('mensaje-error');
 
-        // Contenido del correo
-        $mail->isHTML(true);
-        $mail->Subject = 'Nuevo mensaje desde la página web';
-        $mail->Body    = "Nombre: $name<br>Email: $email<br>Mensaje: $message";
+        const ocultarMensaje = (mensaje) => {
+            if (mensaje) {
+                setTimeout(() => {
+                    mensaje.style.display = 'none';
+                }, 10000); // 10 segundos
+            }
+        };
 
-        $mail->send();
-        echo '¡Mensaje enviado con éxito!';
-    } catch (Exception $e) {
-        echo "Error al enviar el mensaje: {$mail->ErrorInfo}";
-    }
-}
-?>
+        ocultarMensaje(mensajeExito);
+        ocultarMensaje(mensajeError);
+    });
+</script>
+<?php include 'includes/footer.php'; ?>
