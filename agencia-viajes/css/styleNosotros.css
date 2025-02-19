@@ -1,7 +1,6 @@
 /* ================================
    ESTILOS GENERALES
    ================================ */
-
    body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -263,6 +262,11 @@
     gap: 20px;
 }
 
+.galeria-item {
+    position: relative; /* Necesario para posicionar elementos internos */
+    text-align: center;
+}
+
 .galeria-item img {
     width: 100%;
     height: auto;
@@ -276,9 +280,21 @@
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
+.galeria-description {
+    font-size: 0.9rem;
+    color: #ddd; /* Texto gris claro para mejor legibilidad */
+    margin-top: 10px; /* Espacio entre la imagen y el texto */
+    line-height: 1.4; /* Espaciado entre líneas */
+    padding: 0 5px; /* Ajuste de margen horizontal */
+}
+
 @media (max-width: 768px) {
     .galeria-grid {
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    .galeria-description {
+        font-size: 0.8rem; /* Tamaño reducido para pantallas pequeñas */
     }
 }
 

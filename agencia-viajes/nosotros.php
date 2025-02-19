@@ -36,48 +36,62 @@
 
 
 
-          <!-- Nueva Sección: Galería -->
-          <section class="galeria-container">
-            <div class="galeria">
-                <h2>Nuestro Trabajo</h2>
-                <p>Descubre algunas de las experiencias que hemos creado para nuestros clientes:</p>
-                <div class="galeria-grid">
-                    <div class="galeria-item" data-src="images/galeria/1.jpg">
-                        <img src="images/galeria/1.jpg" alt="Experiencia 1">
-                    </div>
-                    <div class="galeria-item" data-src="images/galeria/2.jpg">
-                        <img src="images/galeria/2.jpg" alt="Experiencia 2">
-                    </div>
-                    <div class="galeria-item" data-src="images/galeria/3.jpg">
-                        <img src="images/galeria/3.jpg" alt="Experiencia 3">
-                    </div>
-                    <div class="galeria-item" data-src="images/galeria/4.jpg">
-                        <img src="images/galeria/4.jpg" alt="Experiencia 4">
-                    </div>
-                    <div class="galeria-item" data-src="images/galeria/5.jpg">
-                        <img src="images/galeria/5.jpg" alt="Experiencia 5">
-                    </div>
-                    <div class="galeria-item" data-src="images/galeria/6.jpg">
-                        <img src="images/galeria/6.jpg" alt="Experiencia 6">
-                    </div>
-                    <div class="galeria-item" data-src="images/galeria/7.jpg">
-                        <img src="images/galeria/7.jpg" alt="Experiencia 7">
-                    </div>
-                    <div class="galeria-item" data-src="images/galeria/8.jpg">
-                        <img src="images/galeria/8.jpg" alt="Experiencia 8">
-                    </div>
-                    <div class="galeria-item" data-src="images/galeria/9.jpg">
-                        <img src="images/galeria/9.jpg" alt="Experiencia 9">
+     
+        <!-- Nueva Sección: Galería -->
+            <section class="galeria-container">
+                <div class="galeria">
+                    <h2>Nuestro Trabajo</h2>
+                    <p>Descubre algunas de las experiencias que hemos creado para nuestros clientes:</p>
+                    <br>
+                    <div class="galeria-grid">
+                        <div class="galeria-item" data-src="images/galeria/1-grupo-arequipa.jpg">
+                            <img src="images/galeria/1-grupo-arequipa.jpg" alt="Grupo en Arequipa">
+                            <p class="galeria-description">Un grupo disfrutando de un tour en Arequipa.</p>
+                        </div>
+                        <div class="galeria-item" data-src="images/galeria/2-grupo-colombia.jpg">
+                            <img src="images/galeria/2-grupo-colombia.jpg" alt="Grupo en Colombia">
+                            <p class="galeria-description">Un grupo explorando las maravillas de Colombia.</p>
+                        </div>
+                        <div class="galeria-item" data-src="images/galeria/3-salinas.jpg">
+                            <img src="images/galeria/3-salinas.jpg" alt="Salinas">
+                            <p class="galeria-description">Un día relajante en las salinas de Ecuador.</p>
+                        </div>
+                        <div class="galeria-item" data-src="images/galeria/4-viaje-grupo-cuzco.jpg">
+                            <img src="images/galeria/4-viaje-grupo-cuzco.jpg" alt="Viaje en grupo a Cuzco">
+                            <p class="galeria-description">Un viaje en grupo descubriendo la magia de Cuzco.</p>
+                        </div>
+                        <div class="galeria-item" data-src="images/galeria/5-cuzco.jpg">
+                            <img src="images/galeria/5-cuzco.jpg" alt="Cuzco">
+                            <p class="galeria-description">Una vista impresionante del centro histórico de Cuzco.</p>
+                        </div>
+                        <div class="galeria-item" data-src="images/galeria/6-malecon-salinas.jpg">
+                            <img src="images/galeria/6-malecon-salinas.jpg" alt="Malecón de Salinas">
+                            <p class="galeria-description">Un paseo por el malecón de Salinas bajo el sol.</p>
+                        </div>
+                        <div class="galeria-item" data-src="images/galeria/7-playas-colombianas.jpg">
+                            <img src="images/galeria/7-playas-colombianas.jpg" alt="Playas Colombianas">
+                            <p class="galeria-description">Playas paradisíacas en la costa colombiana.</p>
+                        </div>
+                        <div class="galeria-item" data-src="images/galeria/8-viaje-promocion-ecuador.jpg">
+                            <img src="images/galeria/8-viaje-promocion-ecuador.jpg" alt="Viaje promoción Ecuador">
+                            <p class="galeria-description">Promoción especial de viajes por Ecuador.</p>
+                        </div>
+                        <div class="galeria-item" data-src="images/galeria/9-bus-decorado-con-pasajeros.jpg">
+                            <img src="images/galeria/9-bus-decorado-con-pasajeros.jpg" alt="Bus decorado con pasajeros">
+                            <p class="galeria-description">Un bus decorado llevando a pasajeros felices.</p>
+                        </div>
                     </div>
                 </div>
+            </section>
+            <!-- Modal para Vista Previa de Imágenes -->
+            <div id="image-modal" class="modal">
+                <span class="close">&times;</span>
+                <img class="modal-content" id="modal-image">
+                <div id="caption"></div>
             </div>
-        </section>
-        <!-- Modal para Vista Previa de Imágenes -->
-        <div id="image-modal" class="modal">
-            <span class="close">&times;</span>
-            <img class="modal-content" id="modal-image">
-            <div id="caption"></div>
-        </div>
+
+
+
 
 
 
