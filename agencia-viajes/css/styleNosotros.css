@@ -53,14 +53,51 @@
     line-height: 1.6;
 }
 
+
+
+
 /* ================================
    CONTENEDOR GENERAL (FONDO TURISMO)
    ================================ */
-.fondo-turismo {
+   .fondo-turismo {
+    position: relative; /* Necesario para posicionar elementos internos */
     background: url('../images/fondo-turismo.png') no-repeat center center/cover;
     color: #fff;
-    padding: 2rem 0;
+    padding: 4rem 0; /* Aumentamos el padding para dar más espacio */
+    overflow: hidden; /* Evita desbordamientos */
+    z-index: 1; /* Asegura que el contenido esté encima del fondo */
 }
+
+.fondo-turismo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(75, 73, 73, 0.5); /* Capa oscura semitransparente */
+    z-index: 1; /* Coloca la capa detrás del contenido */
+}
+
+.fondo-turismo > * {
+    position: relative;
+    z-index: 2; /* Coloca el contenido encima de la capa */
+}
+
+/* Efecto Parallax */
+.fondo-turismo {
+    background-attachment: fixed; /* Fija la imagen de fondo mientras se hace scroll */
+    background-size: cover; /* Asegura que la imagen cubra todo el contenedor */
+    background-position: center; /* Centra la imagen */
+    background-repeat: no-repeat; /* Evita que la imagen se repita */
+}
+
+
+
+
+
+
+
 
 /* ================================
    SECCIONES COMUNES (MISIÓN, VISIÓN, VALORES, EQUIPO, PREGUNTAS, GALERÍA)
@@ -148,10 +185,11 @@
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
+
 /* ================================
    EQUIPO
    ================================ */
-.equipo {
+   .equipo {
     text-align: center;
 }
 
@@ -181,6 +219,16 @@
     object-fit: cover;
     border-radius: 10px;
     margin-bottom: 1rem;
+    transition: filter 0.3s ease-in-out, transform 0.3s ease-in-out;
+    /* Ajustes para mejorar la visibilidad */
+    filter: brightness(1.1) contrast(1.2); /* Brillo y contraste mejorados */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Sombra ligera */
+}
+
+.equipo-member img:hover {
+    transform: scale(1.05); /* Efecto de zoom al pasar el cursor */
+    filter: brightness(1.2) contrast(1.3); /* Mejora visual al hacer hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada */
 }
 
 .equipo-member h3 {
@@ -192,6 +240,8 @@
     font-size: 1rem;
     color: #ddd;
 }
+
+
 
 /* ================================
    PREGUNTAS FRECUENTES

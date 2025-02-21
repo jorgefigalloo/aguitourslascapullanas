@@ -7,6 +7,9 @@
 
         <!-- Contenedor para Redes Sociales y Botón de Contacto -->
         <div class="right-section">
+        <p class="copyright">
+           Siguenos en : 
+        </p>
             <!-- Redes Sociales -->
             <div class="social-icons">
                 <a href="https://www.facebook.com/people/Aguitours-las-capullanas/100054386595848/" target="_blank" aria-label="Facebook">

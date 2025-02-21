@@ -105,22 +105,24 @@
             <h2>Nuestro Equipo</h2>
             <div class="equipo-grid">
                 <div class="equipo-member">
-                    <img src="images/team/member.png" alt="Miembro 1">
-                    <h3>Juan Pérez</h3>
-                    <p>Fundador y CEO</p>
+                    <img src="images/team/member1.png" alt="Miembro 1">
+                    <h3>Joba Mesta</h3>
+                    <p>Gerente y CEO</p>
                 </div>
                 <div class="equipo-member">
-                    <img src="images/team/member.png" alt="Miembro 2">
-                    <h3>Maria López</h3>
-                    <p>Gerente de Operaciones</p>
-                </div>
-                <div class="equipo-member">
+                   <img src="images/team/member4.jpg" alt="Miembro 2">
+                    <h3>Maria Figallo M.</h3>
+                    <p>Gerente de Operaciones</p> 
+                </div> 
+            <!--     <div class="equipo-member">
                     <img src="images/team/member.png" alt="Miembro 3">
                     <h3>Carlos Ramírez</h3>
                     <p>Guía Turístico</p>
-                </div>
+                </div>-->
             </div>
         </section>
+
+
 
         <section class="preguntas">
             <h2>Preguntas Frecuentes</h2>
@@ -140,7 +142,7 @@
                 <div class="faq-item">
                     <button class="faq-question">¿Cuáles son los métodos de pago aceptados?</button>
                     <div class="faq-answer">
-                        <p>Aceptamos pagos mediante tarjeta de crédito/débito, transferencias bancarias y plataformas digitales como PayPal.</p>
+                        <p>Aceptamos pagos mediante tarjeta de crédito/débito, transferencias bancarias y plataformas digitales como Yape/Plin.</p>
                     </div>
                 </div>
                 <div class="faq-item">
