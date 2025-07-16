@@ -1,6 +1,5 @@
 AGUITOURSCAPULLANAS/
-├── agencia-viajes/
-│   ├── css/
+├── css/
 │   │   ├── styleNosotros.css
 │   │   ├── styles.css
 │   │   ├── stylesCarrusel.css
@@ -8,7 +7,7 @@ AGUITOURSCAPULLANAS/
 │   │   ├── stylesDestinos.css
 │   │   ├── stylesDestinosPromos.css
 │   │   └── stylesFooter.css
-│   └── js/
+├─ js/
 │       ├── scripts.js
 │       └── scriptsNosotros.js
 ├── images/
