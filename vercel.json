@@ -1,9 +1,19 @@
 {
     "functions": {
-      "*.php": { 
+      
+      "index.php": {
         "runtime": "vercel-php@0.6.0"
       },
-      "includes/enviar.php": { 
+      "destinos.php": {
+        "runtime": "vercel-php@0.6.0"
+      },
+      "contacto.php": {
+        "runtime": "vercel-php@0.6.0"
+      },
+      "nosotros.php": {
+        "runtime": "vercel-php@0.6.0"
+      },
+      "includes/enviar.php": {
         "runtime": "vercel-php@0.6.0"
       }
     },
