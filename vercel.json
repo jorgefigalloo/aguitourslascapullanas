@@ -1,34 +1,39 @@
 {
-    "functions": {
-      
-      "index.php": {
-        "runtime": "vercel-php@0.6.0"
-      },
-      "destinos.php": {
-        "runtime": "vercel-php@0.6.0"
-      },
-      "contacto.php": {
-        "runtime": "vercel-php@0.6.0"
-      },
-      "nosotros.php": {
-        "runtime": "vercel-php@0.6.0"
-      },
-      "includes/enviar.php": {
-        "runtime": "vercel-php@0.6.0"
-      }
+  "functions": {
+    // Las rutas de las funciones deben ser relativas a la raíz del repositorio,
+    // por lo tanto, ahora incluyen "public/" al principio
+    "public/index.php": {
+      "runtime": "vercel-php@0.6.0"
     },
-    "routes": [
-      { "src": "/agencia-viajes/css/(.*)", "dest": "/agencia-viajes/css/$1" },
-      { "src": "/agencia-viajes/js/(.*)", "dest": "/agencia-viajes/js/$1" },
-      { "src": "/images/(.*)", "dest": "/images/$1" },
-  
-      { "src": "/index", "dest": "/index.php" },
-      { "src": "/destinos", "dest": "/destinos.php" },
-      { "src": "/contacto", "dest": "/contacto.php" },
-      { "src": "/nosotros", "dest": "/nosotros.php" },
-  
-      { "src": "/includes/enviar.php", "dest": "/includes/enviar.php" },
-  
-      { "src": "/", "dest": "/index.php" }
-    ]
-  }
+    "public/destinos.php": {
+      "runtime": "vercel-php@0.6.0"
+    },
+    "public/contacto.php": {
+      "runtime": "vercel-php@0.6.0"
+    },
+    "public/nosotros.php": {
+      "runtime": "vercel-php@0.6.0"
+    },
+    "public/includes/enviar.php": {
+      "runtime": "vercel-php@0.6.0"
+    }
+  },
+  "routes": [
+   
+    { "src": "/css/(.*)", "dest": "/public/css/$1" },
+    { "src": "/js/(.*)", "dest": "/public/js/$1" },
+    { "src": "/images/(.*)", "dest": "/public/images/$1" },
+
+   
+    { "src": "/index", "dest": "/public/index.php" },
+    { "src": "/destinos", "dest": "/public/destinos.php" },
+    { "src": "/contacto", "dest": "/public/contacto.php" },
+    { "src": "/nosotros", "dest": "/public/nosotros.php" },
+
+   
+    { "src": "/includes/enviar.php", "dest": "/public/includes/enviar.php" },
+
+   
+    { "src": "/", "dest": "/public/index.php" }
+  ]
+}
