@@ -1,28 +1,30 @@
 {
     "functions": {
-      "/*.php": { 
+      // CORREGIDO: "/*.php" a "*.php"
+      "*.php": { // Esto cubre index.php, destinos.php, contacto.php, nosotros.php en la raíz del proyecto.
         "runtime": "vercel-php@0.6.0"
       },
-      "includes/enviar.php": { 
+      // CORREGIDO: "/includes/enviar.php" a "includes/enviar.php"
+      "includes/enviar.php": { // Asegura que enviar.php se trate como una función.
         "runtime": "vercel-php@0.6.0"
       }
     },
     "routes": [
-     
+      // Rutas para archivos estáticos (estas SÍ deben empezar con slash, están correctas)
       { "src": "/agencia-viajes/css/(.*)", "dest": "/agencia-viajes/css/$1" },
       { "src": "/agencia-viajes/js/(.*)", "dest": "/agencia-viajes/js/$1" },
       { "src": "/images/(.*)", "dest": "/images/$1" },
-     
   
-      
+      // Rutas para los archivos PHP principales (clean URLs) (estas SÍ deben empezar con slash, están correctas)
       { "src": "/index", "dest": "/index.php" },
       { "src": "/destinos", "dest": "/destinos.php" },
       { "src": "/contacto", "dest": "/contacto.php" },
       { "src": "/nosotros", "dest": "/nosotros.php" },
   
-     
+      // Ruta específica para el endpoint del formulario (si se accede directamente) (esta SÍ debe empezar con slash, está correcta)
       { "src": "/includes/enviar.php", "dest": "/includes/enviar.php" },
   
+      // Ruta por defecto para la raíz del sitio (esta SÍ debe empezar con slash, está correcta)
       { "src": "/", "dest": "/index.php" }
     ]
   }
