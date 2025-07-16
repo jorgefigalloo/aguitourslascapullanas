@@ -83,7 +83,7 @@ AGUITOURSCAPULLANAS/
 ├── destinos.php
 ├── index.php
 └── nosotros.php
-├── vercel.json
+├── vercel.json ( ya no esta)
 └── README.md
 
 
