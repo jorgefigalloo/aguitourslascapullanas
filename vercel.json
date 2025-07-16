@@ -1,7 +1,6 @@
 {
   "functions": {
-    // Las rutas de las funciones deben ser relativas a la raíz del repositorio,
-    // por lo tanto, ahora incluyen "public/" al principio
+   
     "public/index.php": {
       "runtime": "vercel-php@0.6.0"
     },
