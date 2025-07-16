@@ -1,0 +1,31 @@
+{
+    "functions": {
+      "/*.php": { // Esto cubre index.php, destinos.php, contacto.php, nosotros.php en la raíz del proyecto.
+        "runtime": "vercel-php@0.6.0"
+      },
+      "includes/enviar.php": { // Asegura que enviar.php se trate como una función.
+        "runtime": "vercel-php@0.6.0"
+      }
+    },
+    "routes": [
+      // Rutas para archivos estáticos
+      // IMPORTANTE: Nota que las rutas incluyen 'agencia-viajes/' o son directas desde la raíz para 'images/'
+      { "src": "/agencia-viajes/css/(.*)", "dest": "/agencia-viajes/css/$1" },
+      { "src": "/agencia-viajes/js/(.*)", "dest": "/agencia-viajes/js/$1" },
+      { "src": "/images/(.*)", "dest": "/images/$1" },
+  
+      // Rutas para los archivos PHP principales (clean URLs)
+      // Permiten acceder a /index, /destinos, etc., y Vercel las mapea a los archivos .php
+      { "src": "/index", "dest": "/index.php" },
+      { "src": "/destinos", "dest": "/destinos.php" },
+      { "src": "/contacto", "dest": "/contacto.php" },
+      { "src": "/nosotros", "dest": "/nosotros.php" },
+  
+      // Ruta específica para el endpoint del formulario (si se accede directamente)
+      // Aunque el formulario apunta a includes/enviar.php, esta ruta asegura que Vercel lo trate bien.
+      { "src": "/includes/enviar.php", "dest": "/includes/enviar.php" },
+  
+      // Ruta por defecto para la raíz del sitio
+      { "src": "/", "dest": "/index.php" }
+    ]
+  }
