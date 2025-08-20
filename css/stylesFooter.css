@@ -71,6 +71,11 @@ footer {
         text-align: center;
         gap: 1.5rem;
     }
+    
+    .copyright {
+        white-space: normal; /* Permite que el texto se ajuste en múltiples líneas */
+        text-align: center; /* Centra el texto en móviles */
+    }
 
     .right-section {
         flex-direction: column;
