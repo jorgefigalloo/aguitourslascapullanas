@@ -3,15 +3,18 @@ footer {
     background-color: #333;
     color: #fff;
     font-family: Arial, sans-serif;
-    padding: 20px;
+    padding: 2rem 1rem; /* Uso de rem para mejor escalabilidad */
 }
 
+/* Contenedor Principal del Footer */
 .footer-container {
     display: flex;
-    align-items: center; /* Alinea verticalmente todos los elementos */
-    justify-content: space-between; /* Distribuye el espacio entre los elementos */
+    flex-wrap: wrap; /* Permite que los elementos se envuelvan en líneas adicionales si es necesario */
+    align-items: center;
+    justify-content: space-between;
     max-width: 1200px;
     margin: 0 auto;
+    gap: 1rem; /* Espacio entre los elementos del footer */
 }
 
 /* Derechos Reservados */
@@ -21,22 +24,22 @@ footer {
     white-space: nowrap; /* Evita que el texto se rompa en varias líneas */
 }
 
-/* Contenedor de Redes Sociales y Botón de Contacto */
+/* Sección Derecha (Redes Sociales y Botón) */
 .right-section {
     display: flex;
-    align-items: center; /* Alinea verticalmente los íconos y el botón */
-    gap: 20px; /* Espacio entre los íconos y el botón */
+    align-items: center;
+    gap: 1rem;
 }
 
 /* Redes Sociales */
 .social-icons {
     display: flex;
-    gap: 15px; /* Espacio entre los íconos */
+    gap: 1rem;
 }
 
 .social-icons a {
     color: #fff;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     transition: transform 0.3s ease-in-out;
 }
 
@@ -48,7 +51,7 @@ footer {
 /* Botón de Contacto */
 .cta-button {
     display: inline-block;
-    padding: 10px 20px;
+    padding: 0.8rem 1.5rem;
     background-color: #ff6f61;
     color: #fff;
     text-decoration: none;
@@ -61,16 +64,20 @@ footer {
     background-color: #ff4d3b;
 }
 
-/* Responsive Design */
+/* Diseño Adaptable para Móviles */
 @media (max-width: 768px) {
     .footer-container {
         flex-direction: column;
         text-align: center;
-        gap: 10px; /* Espacio entre los elementos en móviles */
+        gap: 1.5rem;
     }
 
     .right-section {
-        flex-direction: row; /* Mantiene los íconos y el botón en una fila */
-        justify-content: center; /* Centra los elementos */
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .social-icons {
+        justify-content: center;
     }
 }
