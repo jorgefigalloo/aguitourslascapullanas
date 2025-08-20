@@ -1,166 +1,130 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Página cargada correctamente');
-});
 
+    // ----------------------
+    // Funcionalidad del Menú
+    // ----------------------
+    const menuToggle = document.querySelector('.menu-toggle');
+    const menu = document.querySelector('.menu');
 
+    if (menuToggle && menu) {
+        // Activa/desactiva el menú al hacer clic en el botón
+        menuToggle.addEventListener('click', () => {
+            menu.classList.toggle('active');
+        });
 
-// Activa/desactiva el menú al hacer clic en el botón
-document.querySelector('.menu-toggle').addEventListener('click', () => {
-    document.querySelector('.menu').classList.toggle('active');
-});
-
-// Cierra el menú cuando se hace clic en un enlace
-document.querySelectorAll('.menu li a').forEach(link => {
-    link.addEventListener('click', () => {
-        document.querySelector('.menu').classList.remove('active');
-    });
-});
-
-
-
-/* CARRUSEL  */ 
-
-
-// Carrusel
-document.addEventListener('DOMContentLoaded', () => {
-    const carousel = document.querySelector('.carousel');
-    const items = document.querySelectorAll('.carousel-item');
-    const prevBtn = document.querySelector('.carousel-btn.prev');
-    const nextBtn = document.querySelector('.carousel-btn.next');
-
-    let currentIndex = 0;
-
-    function updateCarousel() {
-        const offset = -currentIndex * 100;
-        carousel.style.transform = `translateX(${offset}%)`;
+        // Cierra el menú cuando se hace clic en un enlace
+        document.querySelectorAll('.menu li a').forEach(link => {
+            link.addEventListener('click', () => {
+                menu.classList.remove('active');
+            });
+        });
     }
 
-    function showNext() {
-        currentIndex = (currentIndex + 1) % items.length;
-        updateCarousel();
-    }
 
-    function showPrev() {
-        currentIndex = (currentIndex - 1 + items.length) % items.length;
-        updateCarousel();
-    }
-
-    // Eventos para los botones
-    nextBtn.addEventListener('click', showNext);
-    prevBtn.addEventListener('click', showPrev);
-
-    // Cambio automático cada 5 segundos
-    setInterval(showNext, 5000);
-});
-
-
-
-// Carrusel
-document.addEventListener('DOMContentLoaded', () => {
+    // ----------------------
+    // Carrusel de la página de inicio
+    // ----------------------
     const carousel = document.querySelector('.carousel');
     const items = document.querySelectorAll('.carousel-item');
     const prevBtn = document.querySelector('.carousel-btn.prev');
     const nextBtn = document.querySelector('.carousel-btn.next');
     const indicators = document.querySelectorAll('.indicator');
 
-    let currentIndex = 0;
+    if (carousel && items.length > 0) {
+        let currentIndex = 0;
 
-    function updateCarousel() {
-        const offset = -currentIndex * 100;
-        carousel.style.transform = `translateX(${offset}%)`;
+        function updateCarousel() {
+            const offset = -currentIndex * 100;
+            carousel.style.transform = `translateX(${offset}%)`;
 
-        // Actualiza los indicadores
-        indicators.forEach((indicator, index) => {
-            indicator.classList.toggle('active', index === currentIndex);
-        });
-    }
+            if (indicators.length > 0) {
+                indicators.forEach((indicator, index) => {
+                    indicator.classList.toggle('active', index === currentIndex);
+                });
+            }
+        }
 
-    function showNext() {
-        currentIndex = (currentIndex + 1) % items.length;
-        updateCarousel();
-    }
-
-    function showPrev() {
-        currentIndex = (currentIndex - 1 + items.length) % items.length;
-        updateCarousel();
-    }
-
-    // Eventos para los botones
-    nextBtn.addEventListener('click', showNext);
-    prevBtn.addEventListener('click', showPrev);
-
-    // Eventos para los indicadores
-    indicators.forEach((indicator, index) => {
-        indicator.addEventListener('click', () => {
-            currentIndex = index;
+        function showNext() {
+            currentIndex = (currentIndex + 1) % items.length;
             updateCarousel();
-        });
-    });
+        }
 
-    // Cambio automático cada 5 segundos
-    setInterval(showNext, 5000);
-});
+        function showPrev() {
+            currentIndex = (currentIndex - 1 + items.length) % items.length;
+            updateCarousel();
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', showNext);
+        }
+        if (prevBtn) {
+            prevBtn.addEventListener('click', showPrev);
+        }
+
+        if (indicators.length > 0) {
+            indicators.forEach((indicator, index) => {
+                indicator.addEventListener('click', () => {
+                    currentIndex = index;
+                    updateCarousel();
+                });
+            });
+        }
+
+        setInterval(showNext, 5000);
+    }
 
 
-
-/* PREGUNTAS EN NOSOTROS  */ 
-
-
-// Funcionalidad para abrir/cerrar respuestas en la sección FAQ
-document.addEventListener('DOMContentLoaded', () => {
+    // ----------------------
+    // Funcionalidad de preguntas frecuentes (FAQ)
+    // ----------------------
     const faqQuestions = document.querySelectorAll('.faq-question');
 
-    faqQuestions.forEach(question => {
-        question.addEventListener('click', () => {
-            const answer = question.nextElementSibling;
+    if (faqQuestions.length > 0) {
+        faqQuestions.forEach(question => {
+            question.addEventListener('click', () => {
+                const answer = question.nextElementSibling;
+                answer.classList.toggle('active');
 
-            // Alternar la clase 'active' en la respuesta
-            answer.classList.toggle('active');
-
-            // Alternar el símbolo "+" o "-" en el botón
-            if (answer.classList.contains('active')) {
-                question.textContent = question.textContent.replace('+', '-');
-            } else {
-                question.textContent = question.textContent.replace('-', '+');
-            }
+                // Alternar el símbolo "+" o "-" en el botón
+                const symbol = question.querySelector('span');
+                if (symbol) {
+                    symbol.textContent = answer.classList.contains('active') ? '-' : '+';
+                }
+            });
         });
-    });
-});
+    }
 
-
-
-
-
-
-/* DESTINOS PAQUETES WHATSAPP O VER IMAGENES */ 
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Abrir modal al hacer clic en la imagen
+    // ----------------------
+    // Funcionalidad de Modales (Destinos)
+    // ----------------------
     const imagePreviews = document.querySelectorAll('.image-preview');
     const modals = document.querySelectorAll('.modal');
     const closeButtons = document.querySelectorAll('.close');
 
-    imagePreviews.forEach((preview, index) => {
-        preview.addEventListener('click', (e) => {
-            e.preventDefault();
-            modals[index].style.display = 'block';
+    if (imagePreviews.length > 0 && modals.length > 0) {
+        // Abrir modal al hacer clic en la imagen
+        imagePreviews.forEach((preview, index) => {
+            preview.addEventListener('click', (e) => {
+                e.preventDefault();
+                modals[index].style.display = 'block';
+            });
         });
-    });
 
-    // Cerrar modal al hacer clic en la "X"
-    closeButtons.forEach((button, index) => {
-        button.addEventListener('click', () => {
-            modals[index].style.display = 'none';
+        // Cerrar modal al hacer clic en la "X"
+        closeButtons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                modals[index].style.display = 'none';
+            });
         });
-    });
 
-    // Cerrar modal al hacer clic fuera de la imagen
-    window.addEventListener('click', (e) => {
-        modals.forEach((modal) => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
+        // Cerrar modal al hacer clic fuera de la imagen
+        window.addEventListener('click', (e) => {
+            modals.forEach((modal) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
         });
-    });
+    }
 });
