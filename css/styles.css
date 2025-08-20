@@ -14,11 +14,9 @@ header {
     background: #333;
     color: #fff;
     padding: 1rem 0;
-    
-    /* Propiedades para el menú pegajoso */
     position: sticky;
     top: 0;
-    z-index: 1000; 
+    z-index: 1000;
 }
 
 header nav {
@@ -62,7 +60,7 @@ header .menu li a {
 .menu-toggle {
     font-size: 2rem;
     color: #fff;
-    display: none;
+    display: none; /* Oculto en pantallas grandes */
     cursor: pointer;
     transition: transform 0.3s ease-in-out;
 }
@@ -163,4 +161,30 @@ header .menu li a {
     color: #666;
 }
 
-/* El estilo del footer se ha movido a stylesFooter.css */
+/* --- Responsive Design para la Navegación --- */
+@media (max-width: 768px) {
+    header .menu {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        background: #333;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        padding: 1rem 0;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    header .menu.active {
+        display: flex;
+    }
+
+    .menu-toggle {
+        display: block;
+    }
+
+    header .menu li {
+        margin: 0.5rem 0;
+    }
+}

@@ -3,25 +3,25 @@ footer {
     background-color: #333;
     color: #fff;
     font-family: Arial, sans-serif;
-    padding: 2rem 1rem; /* Uso de rem para mejor escalabilidad */
+    padding: 2rem 1rem;
 }
 
 /* Contenedor Principal del Footer */
 .footer-container {
     display: flex;
-    flex-wrap: wrap; /* Permite que los elementos se envuelvan en líneas adicionales si es necesario */
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     max-width: 1200px;
     margin: 0 auto;
-    gap: 1rem; /* Espacio entre los elementos del footer */
+    gap: 1rem;
 }
 
 /* Derechos Reservados */
 .copyright {
     font-size: 0.9rem;
     margin: 0;
-    white-space: nowrap; /* Evita que el texto se rompa en varias líneas */
+    white-space: nowrap;
 }
 
 /* Sección Derecha (Redes Sociales y Botón) */
