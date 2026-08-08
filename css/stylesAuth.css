@@ -1,0 +1,301 @@
+/* ==============================================================================
+   AGUITOURS LAS CAPULLANAS - ESTILOS DE AUTENTICACIÓN Y ROLES (AUTH MODAL)
+   ============================================================================== */
+
+/* Dropdown de Usuario en Menú Nav */
+.user-menu-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.user-menu-btn {
+    background: linear-gradient(135deg, #0d5c75, #1995ad);
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.user-menu-btn:hover {
+    box-shadow: 0 4px 12px rgba(25, 149, 173, 0.4);
+    transform: translateY(-1px);
+}
+
+.badge-admin {
+    background-color: #ff9800;
+    color: #000;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 10px;
+    text-transform: uppercase;
+}
+
+.user-dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 110%;
+    background-color: #ffffff;
+    min-width: 180px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 1000;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.user-dropdown-content a {
+    color: #333;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    transition: background 0.2s ease;
+}
+
+.user-dropdown-content a:hover {
+    background-color: #f4f9fa;
+    color: #0d5c75;
+}
+
+.user-menu-dropdown:hover .user-dropdown-content {
+    display: block;
+}
+
+.btn-nav-auth {
+    background: linear-gradient(135deg, #0d5c75, #1995ad);
+    color: #ffffff !important;
+    padding: 8px 18px !important;
+    border-radius: 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-nav-auth:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* Modal Overlay */
+.auth-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(13, 37, 56, 0.7);
+    backdrop-filter: blur(6px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.auth-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.auth-modal-card {
+    background: #ffffff;
+    width: 90%;
+    max-width: 440px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+}
+
+.auth-modal-overlay.active .auth-modal-card {
+    transform: scale(1);
+}
+
+.auth-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.2s;
+    z-index: 10;
+}
+
+.auth-modal-close:hover {
+    color: #333;
+}
+
+.auth-header {
+    background: linear-gradient(135deg, #0d5c75, #1995ad);
+    color: white;
+    padding: 30px 20px 20px 20px;
+    text-align: center;
+}
+
+.auth-header h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.auth-header p {
+    margin: 5px 0 0 0;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.auth-tabs {
+    display: flex;
+    background: #f0f4f8;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.auth-tab-btn {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    background: none;
+    font-weight: 600;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.auth-tab-btn.active {
+    background: #ffffff;
+    color: #0d5c75;
+    border-bottom: 3px solid #1995ad;
+}
+
+.auth-body {
+    padding: 25px 30px;
+}
+
+.auth-form-group {
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.auth-form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 6px;
+}
+
+.auth-input-wrapper {
+    position: relative;
+}
+
+.auth-input-wrapper i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 14px;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 12px 14px 12px 40px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.auth-input:focus {
+    border-color: #1995ad;
+    box-shadow: 0 0 0 3px rgba(25, 149, 173, 0.15);
+    outline: none;
+}
+
+.role-selector {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.role-option {
+    flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    transition: all 0.2s;
+}
+
+.role-option input {
+    display: none;
+}
+
+.role-option.selected {
+    border-color: #1995ad;
+    background-color: #e8f7f9;
+    color: #0d5c75;
+}
+
+.btn-auth-submit {
+    width: 100%;
+    background: linear-gradient(135deg, #0d5c75, #1995ad);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.btn-auth-submit:hover {
+    opacity: 0.95;
+    transform: translateY(-1px);
+}
+
+.auth-alert {
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 15px;
+    display: none;
+}
+
+.auth-alert.error {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+    display: block;
+}
+
+.auth-alert.success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+    display: block;
+}
