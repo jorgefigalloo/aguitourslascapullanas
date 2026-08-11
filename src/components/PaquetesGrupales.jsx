@@ -219,7 +219,7 @@ export function PaquetesGrupales({ user, profile, onOpenAuth }) {
                         onClick={() => setSelectedPaquete(pkg)}
                         className="bg-white/15 backdrop-blur border border-white/30 text-white text-xs font-bold px-4 py-2.5 rounded-full hover:bg-white/30 transition-all flex items-center gap-1"
                       >
-                        <span class="material-symbols-outlined text-[16px]">visibility</span> Ver Detalle
+                        <span className="material-symbols-outlined text-[16px]">visibility</span> Ver Detalle
                       </button>
                       <button 
                         onClick={() => handleUnirmeGrupo(pkg)}
