@@ -8,11 +8,13 @@ export function FlightIntro3D({ onComplete }) {
     // Transición automática del despegue después de 3.5 segundos
     const timer = setTimeout(() => {
       setStage(1);
-      setTimeout(onComplete, 800);
+      setTimeout(() => {
+        if (onComplete) onComplete();
+      }, 800);
     }, 3200);
 
     return () => clearTimeout(timer);
-  }, [onComplete]);
+  }, []);
 
   return (
     <div style={{

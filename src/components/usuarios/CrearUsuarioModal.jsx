@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import { X, UserPlus, Shield, Lock, Mail, Phone, FileText } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
-import { supabase } from '../../lib/supabase';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../lib/supabase';
 
 // Cliente Supabase temporal aislado sin persistencia de sesión para no cerrar la sesión del Admin actual
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://qmwukfmieqoqydgrrbct.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-
-const tempAuthClient = createClient(supabaseUrl, supabaseAnonKey, {
+const tempAuthClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { persistSession: false, autoRefreshToken: false }
 });
 
