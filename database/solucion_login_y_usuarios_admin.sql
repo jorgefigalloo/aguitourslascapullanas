@@ -56,3 +56,25 @@ GRANT EXECUTE ON FUNCTION public.admin_cambiar_password_usuario(uuid, text) TO a
 -- 4. ASEGURAR COLUMNA ACTIVO Y USERNAME EN PERFILES
 ALTER TABLE public.perfiles ADD COLUMN IF NOT EXISTS activo boolean DEFAULT true;
 UPDATE public.perfiles SET activo = true WHERE activo IS NULL;
+
+-- 5. AUTO-CONFIRMAR CORREOS PENDIENTES DE ACTIVACIÓN EN SUPABASE AUTH
+UPDATE auth.users 
+SET email_confirmed_at = now() 
+WHERE email_confirmed_at IS NULL;
+
+-- 6. TRIGGER PARA AUTO-CONFIRMAR NUEVOS USUARIOS REGISTRADOS
+CREATE OR REPLACE FUNCTION public.fn_auto_confirmar_email()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.email_confirmed_at IS NULL THEN
+        NEW.email_confirmed_at := now();
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trg_auto_confirmar_email ON auth.users;
+CREATE TRIGGER trg_auto_confirmar_email
+BEFORE INSERT ON auth.users
+FOR EACH ROW
+EXECUTE FUNCTION public.fn_auto_confirmar_email();

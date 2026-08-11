@@ -11,16 +11,16 @@ export function Navbar({ onOpenAuth, activeView, setActiveView, user, profile, o
 
   const getRoleBadge = (rol) => {
     switch (rol) {
-      case 'super_admin': return <span className="bg-red-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase ml-1">Super Admin</span>;
-      case 'editor_contenido': return <span className="bg-purple-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase ml-1">Editor CMS</span>;
-      case 'agente_ventas': return <span className="bg-blue-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase ml-1">Ventas</span>;
-      case 'admin': return <span className="bg-amber-500 text-black text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase ml-1">Admin</span>;
-      default: return <span className="bg-green-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase ml-1">Viajero</span>;
+      case 'super_admin': return <span className="bg-red-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase ml-1">Admin</span>;
+      case 'editor_contenido': return <span className="bg-purple-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase ml-1">CMS</span>;
+      case 'agente_ventas': return <span className="bg-blue-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase ml-1">Ventas</span>;
+      case 'admin': return <span className="bg-amber-500 text-black text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase ml-1">Admin</span>;
+      default: return null;
     }
   };
 
   const isAdminOrEditor = !profile || ['super_admin', 'admin', 'editor_contenido', 'agente_ventas'].includes(profile.rol);
-  const displayName = profile?.nombre_completo || profile?.username || user?.email?.split('@')[0] || 'Jorge Figallo';
+  const displayName = profile?.nombre_completo || profile?.username || user?.email?.split('@')[0] || 'Usuario';
 
   const handleCotizarButton = () => {
     setMobileMenuOpen(false);
@@ -34,90 +34,80 @@ export function Navbar({ onOpenAuth, activeView, setActiveView, user, profile, o
   };
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-[#071521]/90 backdrop-blur-md border-b border-white/10 px-4 md:px-8 h-20 flex justify-between items-center transition-all">
+    <header className="fixed top-0 w-full z-50 bg-[#071521]/95 backdrop-blur-md border-b border-white/10 px-3 md:px-6 h-16 flex justify-between items-center transition-all">
       {/* Brand & Logo */}
-      <div className="flex items-center gap-3 cursor-pointer" onClick={() => { setActiveView('inicio'); setMobileMenuOpen(false); }}>
+      <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => { setActiveView('inicio'); setMobileMenuOpen(false); }}>
         <img 
           src="/images/capullanas1.jpg" 
           alt="Aguitours Logo" 
-          className="w-11 h-11 rounded-full border-2 border-[#1995ad] object-cover shadow-md"
+          className="w-9 h-9 rounded-full border-2 border-[#1995ad] object-cover shadow-md"
         />
         <div>
-          <h1 className="font-headline text-xl font-bold tracking-tight text-white m-0">Aguitours</h1>
-          <p className="text-[11px] text-[#1995ad] font-semibold m-0 tracking-wider">Las Capullanas • Agencia de Viajes</p>
+          <h1 className="font-headline text-base md:text-lg font-bold tracking-tight text-white m-0 leading-tight">Aguitours</h1>
+          <p className="text-[10px] text-[#1995ad] font-semibold m-0 tracking-wider hidden xl:block">Las Capullanas • Agencia de Viajes</p>
         </div>
       </div>
 
       {/* Nav Links Desktop */}
-      <nav className="hidden lg:flex items-center gap-5">
+      <nav className="hidden lg:flex items-center gap-2 xl:gap-4">
         <button 
           onClick={() => setActiveView('inicio')}
-          className={`font-body text-sm font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${activeView === 'inicio' ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
+          className={`font-body text-xs xl:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap px-2 py-1 ${activeView === 'inicio' ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
         >
-          <span className="material-symbols-outlined text-[20px]">explore</span> Inicio
+          <span className="material-symbols-outlined text-[18px]">explore</span> Inicio
         </button>
 
         <button 
           onClick={() => setActiveView('grupales')}
-          className={`font-body text-sm font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${activeView === 'grupales' ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
+          className={`font-body text-xs xl:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap px-2 py-1 ${activeView === 'grupales' ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
         >
-          <span className="material-symbols-outlined text-[20px]">groups</span> Paquetes Grupales
+          <span className="material-symbols-outlined text-[18px]">groups</span> Paquetes Grupales
         </button>
 
         <button 
           onClick={() => setActiveView('destinos')}
-          className={`font-body text-sm font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${activeView === 'destinos' ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
+          className={`font-body text-xs xl:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap px-2 py-1 ${activeView === 'destinos' ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
         >
-          <span className="material-symbols-outlined text-[20px]">public</span> Destinos
+          <span className="material-symbols-outlined text-[18px]">public</span> Destinos
         </button>
 
         <button 
           onClick={() => setActiveView('nosotros')}
-          className={`font-body text-sm font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${activeView === 'nosotros' ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
+          className={`font-body text-xs xl:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap px-2 py-1 ${activeView === 'nosotros' ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
         >
-          <span className="material-symbols-outlined text-[20px]">info</span> Quiénes Somos
+          <span className="material-symbols-outlined text-[18px]">info</span> Quiénes Somos
         </button>
 
         <button 
           onClick={() => setActiveView('contacto')}
-          className={`font-body text-sm font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${activeView === 'contacto' ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
+          className={`font-body text-xs xl:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap px-2 py-1 ${activeView === 'contacto' ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
         >
-          <span className="material-symbols-outlined text-[20px]">support_agent</span> Contacto
+          <span className="material-symbols-outlined text-[18px]">support_agent</span> Contacto
         </button>
 
         {/* Botón Destacado: Cotizar Paquete Personalizado */}
         <button
           onClick={handleCotizarButton}
-          className="bg-gradient-to-r from-[#ffb703] to-[#fb8500] text-black font-extrabold text-xs px-3.5 py-2 rounded-full flex items-center gap-1.5 shadow-lg shadow-[#ffb703]/20 hover:scale-105 transition-all cursor-pointer"
+          className="bg-gradient-to-r from-[#ffb703] to-[#fb8500] text-black font-extrabold text-xs px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md hover:scale-105 transition-all cursor-pointer whitespace-nowrap"
         >
-          <Sparkles size={15} /> Cotizar Paquete
+          <Sparkles size={14} /> Cotizar
         </button>
-
-        {/* Acceso directo a Panel Admin para SuperAdmin/Staff */}
-        {user && isAdminOrEditor && (
-          <button 
-            onClick={() => setActiveView('admin')}
-            className={`font-body text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all cursor-pointer ${activeView === 'admin' ? 'bg-[#ffb703] text-black' : 'bg-[#ffb703]/20 border border-[#ffb703] text-[#ffb703] hover:bg-[#ffb703] hover:text-black'}`}
-          >
-            <LayoutDashboard size={14} /> Panel Admin
-          </button>
-        )}
 
         {user ? (
           <div className="relative">
             {/* Botón Nombre de Usuario */}
             <button 
               onClick={() => setDropdownOpen(!dropdownOpen)} 
-              className="btn-primary-3d text-xs px-4 py-2 flex items-center gap-2 cursor-pointer"
+              className="btn-primary-3d text-xs px-3 py-1.5 flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
             >
-              <User size={15} /> 
-              <span className="font-bold">{displayName}</span>
+              <User size={14} /> 
+              <span className="font-bold max-w-[90px] xl:max-w-[120px] truncate">{displayName}</span>
               {getRoleBadge(userRole)}
             </button>
 
             {/* Dropdown de Opciones */}
             {dropdownOpen && (
-              <div className="absolute right-0 top-12 bg-[#0d2538] border border-white/15 rounded-2xl w-64 shadow-2xl overflow-hidden z-50">
+              <div className="absolute right-0 top-11 bg-[#0d2538] border border-white/15 rounded-2xl w-64 shadow-2xl overflow-hidden z-50">
                 <div className="p-4 border-b border-white/10 bg-black/20">
                   <p className="text-xs font-bold text-white m-0">{displayName}</p>
                   <p className="text-[11px] text-[#1995ad] m-0">{user.email}</p>
@@ -126,7 +116,7 @@ export function Navbar({ onOpenAuth, activeView, setActiveView, user, profile, o
                 {isAdminOrEditor && (
                   <button 
                     onClick={() => { setActiveView('admin'); setDropdownOpen(false); }}
-                    className="w-full px-4 py-3 text-left text-xs font-bold text-[#ffb703] hover:bg-white/10 flex items-center gap-2 transition-colors border-b border-white/10 cursor-pointer"
+                    className="w-full px-4 py-3 text-left text-xs font-bold text-[#ffb703] hover:bg-white/10 flex items-center gap-2 transition-colors border-b border-white/10 cursor-pointer bg-[#ffb703]/10"
                   >
                     <LayoutDashboard size={16} /> Portal Administrativo / CMS
                   </button>
@@ -156,8 +146,8 @@ export function Navbar({ onOpenAuth, activeView, setActiveView, user, profile, o
             )}
           </div>
         ) : (
-          <button onClick={onOpenAuth} className="btn-primary-3d text-xs px-5 py-2.5 cursor-pointer">
-            <User size={15} /> Ingresar / Registrarse
+          <button onClick={onOpenAuth} className="btn-primary-3d text-xs px-4 py-1.5 cursor-pointer whitespace-nowrap">
+            <User size={14} /> Ingresar
           </button>
         )}
       </nav>

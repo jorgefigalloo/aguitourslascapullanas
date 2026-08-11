@@ -77,6 +77,25 @@ export function AdminDashboard({ user, profile, onBackToSite }) {
     } catch (e) { console.log(e); }
   };
 
+  const tienePermiso = (permisoId) => {
+    if (!profile) return true; // Fallback
+    if (profile.rol === 'super_admin') return true; // Solo Super Admin ignora la matriz
+    const userRoleObj = rolesSistema.find(r => r.id === profile.rol);
+    if (!userRoleObj || !Array.isArray(userRoleObj.permisos)) return false;
+    return userRoleObj.permisos.includes(permisoId) || userRoleObj.permisos.includes('all');
+  };
+
+  const navItems = [
+    { id: 'analytics', label: 'Métricas & Ventas', icon: LayoutDashboard, perm: 'analytics_ver' },
+    { id: 'clientes', label: 'Clientes & Reservas', icon: UserCheck, perm: 'clientes_ver' },
+    { id: 'cotizaciones', label: 'Cotizaciones A Medida', icon: Sparkles, perm: 'cotizaciones_ver' },
+    { id: 'paquetes', label: 'Paquetes Grupales', icon: Package, perm: 'paquetes_ver' },
+    { id: 'destinos', label: 'Destinos Turísticos', icon: Globe, perm: 'destinos_ver' },
+    { id: 'cms', label: 'Gestión CMS', icon: Edit3, perm: 'cms_ver' },
+    { id: 'rbac', label: 'Usuarios & Permisos', icon: ShieldCheck, perm: 'usuarios_ver' },
+    { id: 'auditoria', label: 'Auditoría BD', icon: Database, perm: 'auditoria_ver' }
+  ].filter(tab => tienePermiso(tab.perm));
+
   return (
     <div className="min-h-screen bg-[#071521] text-white font-body flex flex-col md:flex-row">
       {/* Sidebar de Navegación Lateral Fijo (Sticky) */}
@@ -91,16 +110,7 @@ export function AdminDashboard({ user, profile, onBackToSite }) {
           </div>
 
           <nav className="flex flex-col gap-2">
-            {[
-              { id: 'analytics', label: 'Métricas & Ventas', icon: LayoutDashboard },
-              { id: 'clientes', label: 'Clientes & Reservas', icon: UserCheck },
-              { id: 'cotizaciones', label: 'Cotizaciones A Medida', icon: Sparkles },
-              { id: 'paquetes', label: 'Paquetes Grupales', icon: Package },
-              { id: 'destinos', label: 'Destinos Turísticos', icon: Globe },
-              { id: 'cms', label: 'Gestión CMS', icon: Edit3 },
-              { id: 'rbac', label: 'Usuarios & Permisos', icon: ShieldCheck },
-              { id: 'auditoria', label: 'Auditoría BD', icon: Database }
-            ].map(tab => {
+            {navItems.map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
@@ -141,35 +151,35 @@ export function AdminDashboard({ user, profile, onBackToSite }) {
       {/* Área de Contenido Principal */}
       <main className="flex-1 p-6 md:p-10 overflow-y-auto">
         {activeTab === 'analytics' && (
-          <AdminAnalytics paquetes={paquetes} usuarios={usuarios} auditorias={auditorias} />
+          <AdminAnalytics paquetes={paquetes} usuarios={usuarios} auditorias={auditorias} tienePermiso={tienePermiso} />
         )}
 
         {activeTab === 'clientes' && (
-          <AdminClientesModule />
+          <AdminClientesModule tienePermiso={tienePermiso} />
         )}
 
         {activeTab === 'cotizaciones' && (
-          <AdminSolicitudesModule />
+          <AdminSolicitudesModule tienePermiso={tienePermiso} />
         )}
 
         {activeTab === 'paquetes' && (
-          <AdminPaquetesModule paquetes={paquetes} user={user} profile={profile} onActualizar={cargarTodo} />
+          <AdminPaquetesModule paquetes={paquetes} user={user} profile={profile} onActualizar={cargarTodo} tienePermiso={tienePermiso} />
         )}
 
         {activeTab === 'destinos' && (
-          <AdminDestinosModule destinos={destinos} onActualizar={cargarTodo} />
+          <AdminDestinosModule destinos={destinos} onActualizar={cargarTodo} tienePermiso={tienePermiso} />
         )}
 
         {activeTab === 'cms' && (
-          <AdminCMSModule cmsSections={cmsSections} user={user} onActualizar={cargarTodo} />
+          <AdminCMSModule cmsSections={cmsSections} user={user} onActualizar={cargarTodo} tienePermiso={tienePermiso} />
         )}
 
         {activeTab === 'rbac' && (
-          <AdminUsuariosModule usuarios={usuarios} rolesSistema={rolesSistema} onActualizar={cargarTodo} />
+          <AdminUsuariosModule usuarios={usuarios} rolesSistema={rolesSistema} onActualizar={cargarTodo} tienePermiso={tienePermiso} />
         )}
 
         {activeTab === 'auditoria' && (
-          <AdminAuditoriaModule auditorias={auditorias} />
+          <AdminAuditoriaModule auditorias={auditorias} tienePermiso={tienePermiso} />
         )}
       </main>
     </div>

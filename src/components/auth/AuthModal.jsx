@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Lock, AtSign, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 
 export function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   const [isRegisterMode, setIsRegisterMode] = useState(false);
@@ -62,6 +62,9 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       });
 
       if (error) {
+        if (error.message.includes('Email not confirmed')) {
+          throw new Error('El correo de este usuario está pendiente de confirmación. Ejecuta el script SQL database/solucion_completa_supabase.sql en Supabase para auto-confirmar las cuentas automáticamente.');
+        }
         if (error.message.includes('Invalid login credentials')) {
           throw new Error('Credenciales incorrectas. Verifica tu correo/username y contraseña.');
         }

@@ -119,11 +119,11 @@ export function DestinosSection({ user, onOpenAuth }) {
           flexDirection: 'column', 
           justifyContent: 'center', 
           overflow: 'hidden',
-          padding: '40px 0'
+          padding: '16px 0 20px 0'
         }}
       >
         {/* Cabecera de la Sección */}
-        <div style={{ textAlign: 'center', marginBottom: '30px', padding: '0 20px', zIndex: 10 }}>
+        <div style={{ textAlign: 'center', marginBottom: '16px', padding: '0 20px', zIndex: 10 }}>
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -133,9 +133,9 @@ export function DestinosSection({ user, onOpenAuth }) {
               background: 'rgba(255, 183, 3, 0.15)',
               border: '1px solid #ffb703',
               color: '#ffc83b',
-              padding: '5px 16px',
+              padding: '4px 14px',
               borderRadius: '20px',
-              fontSize: '12px',
+              fontSize: '11px',
               fontWeight: 800,
               textTransform: 'uppercase',
               letterSpacing: '1px',
@@ -143,20 +143,20 @@ export function DestinosSection({ user, onOpenAuth }) {
               alignItems: 'center',
               gap: '6px'
             }}>
-              <Sparkles size={14} /> Desliza para explorar los mejores rincones
+              <Sparkles size={13} /> Desliza para explorar los mejores rincones
             </span>
           </motion.div>
 
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#fff', marginTop: '12px', marginBottom: '8px', fontFamily: 'Playfair Display, serif' }}>
-            <Globe size={32} style={{ color: '#1995ad', verticalAlign: 'middle', marginRight: '10px' }} />
+          <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vh, 2.2rem)', fontWeight: 900, color: '#fff', marginTop: '8px', marginBottom: '4px', fontFamily: 'Playfair Display, serif' }}>
+            <Globe size={28} style={{ color: '#1995ad', verticalAlign: 'middle', marginRight: '8px' }} />
             Destinos Turísticos Destacados
           </h2>
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '15px' }}>
+          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>
             Scroll interactivo a través de nuestros mejores circuitos de viaje
           </p>
 
           {/* Botones de Filtro */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '18px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '12px' }}>
             {[
               { id: 'todos', label: 'Todos los Destinos' },
               { id: 'nacional', label: '🇵🇪 Nacionales' },
@@ -166,7 +166,7 @@ export function DestinosSection({ user, onOpenAuth }) {
                 key={f.id}
                 onClick={() => setFiltro(f.id)}
                 className={filtro === f.id ? 'btn-gold-3d' : 'btn-primary-3d'}
-                style={{ padding: '8px 20px', fontSize: '13px', borderRadius: '25px', cursor: 'pointer' }}
+                style={{ padding: '6px 16px', fontSize: '12px', borderRadius: '25px', cursor: 'pointer' }}
               >
                 {f.label}
               </button>
@@ -175,9 +175,9 @@ export function DestinosSection({ user, onOpenAuth }) {
         </div>
 
         {/* Galería Cinemática de Scroll Horizontal */}
-        <div style={{ width: '100%', overflow: 'hidden', padding: '20px 0' }}>
+        <div style={{ width: '100%', overflow: 'hidden', padding: '10px 0' }}>
           <motion.div 
-            style={{ x, display: 'flex', gap: '32px', width: 'max-content', paddingLeft: '5vw', paddingRight: '5vw' }}
+            style={{ x, display: 'flex', gap: '24px', width: 'max-content', paddingLeft: '5vw', paddingRight: '5vw' }}
           >
             <AnimatePresence mode="popLayout">
               {destinosFiltrados.map((d, index) => (
@@ -188,10 +188,10 @@ export function DestinosSection({ user, onOpenAuth }) {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                   transition={{ duration: 0.5, delay: index * 0.08 }}
-                  whileHover={{ y: -12, scale: 1.03 }}
+                  whileHover={{ y: -8, scale: 1.02 }}
                   style={{
-                    width: '360px',
-                    height: '460px',
+                    width: 'clamp(290px, 22vw, 340px)',
+                    height: 'clamp(340px, 48vh, 420px)',
                     borderRadius: '24px',
                     overflow: 'hidden',
                     position: 'relative',
@@ -222,20 +222,20 @@ export function DestinosSection({ user, onOpenAuth }) {
                     <div style={{ 
                       position: 'absolute', 
                       inset: 0, 
-                      background: 'linear-gradient(to top, rgba(4, 13, 22, 0.95) 0%, rgba(4, 13, 22, 0.3) 50%, transparent 100%)' 
+                      background: 'linear-gradient(to top, rgba(4, 13, 22, 0.95) 0%, rgba(4, 13, 22, 0.35) 50%, transparent 100%)' 
                     }} />
                   </div>
 
                   {/* Header de la Tarjeta */}
-                  <div style={{ position: 'relative', zIndex: 2, padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ position: 'relative', zIndex: 2, padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ 
                       background: 'rgba(7, 21, 33, 0.75)', 
                       backdropFilter: 'blur(8px)',
                       border: '1px solid rgba(25, 149, 173, 0.5)', 
                       color: '#a0f0ff', 
-                      fontSize: '11px', 
+                      fontSize: '10px', 
                       fontWeight: 800, 
-                      padding: '5px 12px', 
+                      padding: '4px 10px', 
                       borderRadius: '20px', 
                       textTransform: 'uppercase' 
                     }}>
@@ -249,8 +249,8 @@ export function DestinosSection({ user, onOpenAuth }) {
                         backdropFilter: 'blur(8px)', 
                         border: likedDestinos.includes(d.id) ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.2)', 
                         borderRadius: '50%', 
-                        width: '38px', 
-                        height: '38px', 
+                        width: '34px', 
+                        height: '34px', 
                         display: 'flex', 
                         alignItems: 'center', 
                         justifyContent: 'center', 
@@ -260,21 +260,21 @@ export function DestinosSection({ user, onOpenAuth }) {
                       }}
                       title={likedDestinos.includes(d.id) ? 'Te gusta este destino' : 'Dar me gusta'}
                     >
-                      <Heart size={18} fill={likedDestinos.includes(d.id) ? '#ef4444' : 'none'} />
+                      <Heart size={16} fill={likedDestinos.includes(d.id) ? '#ef4444' : 'none'} />
                     </button>
                   </div>
 
                   {/* Pie de la Tarjeta con Información */}
-                  <div style={{ position: 'relative', zIndex: 2, padding: '24px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#ffb703', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                      <MapPin size={14} /> {d.tipo === 'nacional' ? 'Perú' : 'Internacional'}
+                  <div style={{ position: 'relative', zIndex: 2, padding: '18px 20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#ffb703', fontSize: '11px', fontWeight: 700, marginBottom: '4px' }}>
+                      <MapPin size={13} /> {d.tipo === 'nacional' ? 'Perú' : 'Internacional'}
                     </div>
 
-                    <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff', marginBottom: '8px', lineHeight: 1.2 }}>
+                    <h3 style={{ fontSize: 'clamp(1.2rem, 2.5vh, 1.45rem)', fontWeight: 800, color: '#fff', marginBottom: '6px', lineHeight: 1.2 }}>
                       {d.nombre}
                     </h3>
 
-                    <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.4, marginBottom: '16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.35, marginBottom: '12px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {d.descripcion}
                     </p>
 
@@ -282,15 +282,15 @@ export function DestinosSection({ user, onOpenAuth }) {
                       className="btn-gold-3d" 
                       style={{ 
                         width: '100%', 
-                        padding: '10px', 
-                        fontSize: '13px', 
+                        padding: '8px 12px', 
+                        fontSize: '12px', 
                         display: 'flex', 
                         justifyContent: 'center', 
                         alignItems: 'center', 
-                        gap: '8px' 
+                        gap: '6px' 
                       }}
                     >
-                      Explorar Circuito <ArrowRight size={16} />
+                      Explorar Circuito <ArrowRight size={15} />
                     </button>
                   </div>
                 </motion.div>

@@ -2,73 +2,138 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, Key, CheckSquare, Square, CheckCircle2, Circle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-// Categorías de Permisos Granulares por Módulo
-const CATEGORIAS_PERMISOS = [
+// Categorías de Permisos Granulares por Módulo (Ver, Listar, Crear, Editar, Actualizar, Bloquear, Eliminar)
+export const CATEGORIAS_PERMISOS = [
   {
-    categoria: '👥 Módulo Usuarios & Clientes',
+    categoria: '🛡️ Módulo Usuarios del Sistema & Staff (RBAC)',
     items: [
-      { id: 'usuarios_ver', label: 'Ver directorio de usuarios y clientes' },
-      { id: 'usuarios_crear', label: 'Registrar nuevos usuarios' },
-      { id: 'usuarios_editar', label: 'Editar datos personales y permisos' },
-      { id: 'usuarios_bloquear', label: 'Bloquear / Inactivar cuentas' }
+      { id: 'usuarios_ver', label: 'Ver detalle de administradores y staff' },
+      { id: 'usuarios_listar', label: 'Listar usuarios del sistema' },
+      { id: 'usuarios_crear', label: 'Registrar nuevos usuarios / staff' },
+      { id: 'usuarios_editar', label: 'Editar datos personales y contraseñas' },
+      { id: 'usuarios_actualizar', label: 'Actualizar roles y matriz de permisos' },
+      { id: 'usuarios_bloquear', label: 'Bloquear / Inactivar cuentas de staff' },
+      { id: 'usuarios_eliminar', label: 'Eliminar usuarios del sistema' }
     ]
   },
   {
-    categoria: '✈️ Módulo Paquetes Grupales',
+    categoria: '🧑‍💼 Módulo Clientes & Pasajeros VIP',
     items: [
-      { id: 'paquetes_ver', label: 'Ver catálogo de paquetes' },
-      { id: 'paquetes_crear', label: 'Publicar nuevos paquetes' },
-      { id: 'paquetes_editar', label: 'Editar precios, cupos y datos' },
-      { id: 'paquetes_eliminar', label: 'Eliminar paquetes grupales' }
+      { id: 'clientes_ver', label: 'Ver expediente de pasajero/cliente' },
+      { id: 'clientes_listar', label: 'Listar directorio de clientes registrados' },
+      { id: 'clientes_crear', label: 'Registrar nuevo cliente manualmente' },
+      { id: 'clientes_editar', label: 'Editar perfil y documento de cliente' },
+      { id: 'clientes_actualizar', label: 'Actualizar estado de fidelización VIP' },
+      { id: 'clientes_bloquear', label: 'Bloquear / Suspender cuenta de cliente' },
+      { id: 'clientes_eliminar', label: 'Eliminar registro de cliente' }
     ]
   },
   {
-    categoria: '📝 Módulo CMS Contenidos',
+    categoria: '✈️ Módulo Paquetes Turísticos Grupales',
     items: [
-      { id: 'cms_ver', label: 'Ver secciones de la web' },
-      { id: 'cms_editar', label: 'Modificar banners, títulos e imágenes' }
+      { id: 'paquetes_ver', label: 'Ver ficha y itinerarios de paquetes' },
+      { id: 'paquetes_listar', label: 'Listar catálogo de paquetes grupales' },
+      { id: 'paquetes_crear', label: 'Publicar nuevos paquetes turísticos' },
+      { id: 'paquetes_editar', label: 'Editar precios, cupos e itinerarios' },
+      { id: 'paquetes_actualizar', label: 'Actualizar estado (abierto/completo/cerrado)' },
+      { id: 'paquetes_bloquear', label: 'Desactivar / Ocultar paquete del catálogo' },
+      { id: 'paquetes_eliminar', label: 'Eliminar paquetes turísticos' }
     ]
   },
   {
     categoria: '🌎 Módulo Destinos Turísticos',
     items: [
-      { id: 'destinos_ver', label: 'Ver lista de destinos' },
-      { id: 'destinos_crear', label: 'Registrar nuevos destinos' },
-      { id: 'destinos_editar', label: 'Editar información de destinos' },
+      { id: 'destinos_ver', label: 'Ver detalles de destino' },
+      { id: 'destinos_listar', label: 'Listar catálogo de destinos' },
+      { id: 'destinos_crear', label: 'Registrar nuevos destinos turísticos' },
+      { id: 'destinos_editar', label: 'Editar información e imágenes' },
+      { id: 'destinos_actualizar', label: 'Actualizar categoría y badges' },
+      { id: 'destinos_bloquear', label: 'Desactivar / Inactivar destino' },
       { id: 'destinos_eliminar', label: 'Eliminar destinos turísticos' }
     ]
   },
   {
-    categoria: '📊 Módulo Reportes & Auditoría',
+    categoria: '📝 Módulo CMS & Contenidos Web',
     items: [
-      { id: 'analytics_ver', label: 'Ver Dashboard e Ingresos' },
-      { id: 'auditoria_ver', label: 'Consultar Bitácora de Auditoría' }
+      { id: 'cms_ver', label: 'Ver configuración de secciones web' },
+      { id: 'cms_listar', label: 'Listar secciones y banners del CMS' },
+      { id: 'cms_crear', label: 'Crear nuevas secciones CMS' },
+      { id: 'cms_editar', label: 'Editar textos, títulos y subtítulos' },
+      { id: 'cms_actualizar', label: 'Actualizar imágenes de portada 3D' },
+      { id: 'cms_bloquear', label: 'Ocultar secciones en la web pública' },
+      { id: 'cms_eliminar', label: 'Eliminar entradas del CMS' }
+    ]
+  },
+  {
+    categoria: '💬 Módulo Solicitudes & Cotizaciones a Medida',
+    items: [
+      { id: 'cotizaciones_ver', label: 'Ver detalles de cotizaciones' },
+      { id: 'cotizaciones_listar', label: 'Listar solicitudes de cotización' },
+      { id: 'cotizaciones_crear', label: 'Registrar solicitudes a medida' },
+      { id: 'cotizaciones_editar', label: 'Editar itinerarios y presupuestos' },
+      { id: 'cotizaciones_actualizar', label: 'Convertir cotización a paquete comercial' },
+      { id: 'cotizaciones_bloquear', label: 'Rechazar / Archivar cotizaciones' },
+      { id: 'cotizaciones_eliminar', label: 'Eliminar solicitudes de cotización' }
+    ]
+  },
+  {
+    categoria: '💳 Módulo Pagos e Inscripciones de Pasajeros',
+    items: [
+      { id: 'pagos_ver', label: 'Ver comprobantes e inscripciones' },
+      { id: 'pagos_listar', label: 'Listar pasajeros e inscritos por viaje' },
+      { id: 'pagos_crear', label: 'Registrar nueva inscripción / abono' },
+      { id: 'pagos_editar', label: 'Editar montos y métodos de pago' },
+      { id: 'pagos_actualizar', label: 'Aprobar o rechazar comprobantes de pago' },
+      { id: 'pagos_bloquear', label: 'Cancelar inscripción de cliente' },
+      { id: 'pagos_eliminar', label: 'Eliminar registros de pago' }
+    ]
+  },
+  {
+    categoria: '📊 Módulo Analytics, Reportes & Auditoría BD',
+    items: [
+      { id: 'analytics_ver', label: 'Ver métricas, ocupación e ingresos' },
+      { id: 'analytics_exportar', label: 'Exportar reportes ejecutivos PDF / Excel' },
+      { id: 'auditoria_ver', label: 'Ver logs inmutables de auditoría' },
+      { id: 'auditoria_listar', label: 'Filtrar cambios por tabla y usuario' },
+      { id: 'auditoria_exportar', label: 'Exportar bitácora de auditoría' }
     ]
   }
 ];
 
 const TODOS_LOS_PERMISOS = CATEGORIAS_PERMISOS.flatMap(c => c.items.map(i => i.id));
 
-export function EditarRolModal({ rolData, isOpen, onClose, onRolActualizado }) {
+export function EditarRolModal({ rolData, rol, isOpen, onClose, onRolActualizado }) {
+  const targetRol = rolData || rol;
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [permisos, setPermisos] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (rolData) {
-      setNombre(rolData.nombre || '');
-      setDescripcion(rolData.descripcion || '');
-      
-      if (Array.isArray(rolData.permisos) && rolData.permisos.length > 0) {
-        setPermisos(rolData.permisos);
-      } else {
-        setPermisos(TODOS_LOS_PERMISOS);
+    if (isOpen && targetRol) {
+      setNombre(targetRol.nombre || '');
+      setDescripcion(targetRol.descripcion || '');
+      if (Array.isArray(targetRol.permisos)) {
+        setPermisos(targetRol.permisos);
       }
-    }
-  }, [rolData]);
 
-  if (!isOpen || !rolData) return null;
+      // Consultar la versión más reciente de la BD de Supabase al abrir
+      supabase
+        .from('roles_sistema')
+        .select('*')
+        .eq('id', targetRol.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data && Array.isArray(data.permisos)) {
+            setPermisos(data.permisos);
+            if (data.nombre) setNombre(data.nombre);
+            if (data.descripcion) setDescripcion(data.descripcion);
+          }
+        });
+    }
+  }, [isOpen, targetRol]);
+
+  if (!isOpen || !targetRol) return null;
 
   const togglePermiso = (permisoId) => {
     if (permisos.includes(permisoId)) {
@@ -107,7 +172,7 @@ export function EditarRolModal({ rolData, isOpen, onClose, onRolActualizado }) {
       const { error } = await supabase
         .from('roles_sistema')
         .upsert([{
-          id: rolData.id,
+          id: targetRol.id,
           nombre: nombre,
           descripcion: descripcion,
           permisos: permisos
@@ -131,17 +196,35 @@ export function EditarRolModal({ rolData, isOpen, onClose, onRolActualizado }) {
       <div className="bg-[#0d2538] border border-white/15 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden relative my-auto max-h-[92vh] flex flex-col">
         
         {/* Header Modal */}
-        <div className="bg-gradient-to-r from-[#003366] to-[#1995ad] p-6 text-white text-center relative shrink-0">
-          <button 
-            onClick={onClose} 
-            className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-black/30 rounded-full w-8 h-8 flex items-center justify-center"
-          >
-            <X size={18} />
-          </button>
-          <h3 className="font-headline text-xl font-bold m-0 flex items-center justify-center gap-2">
-            <Key size={20} /> Editar Rol & Matriz de Permisos: {rolData.id}
-          </h3>
-          <p className="text-xs opacity-90 m-0 mt-1">Habilita o deshabilita las acciones de Ver, Crear, Editar o Eliminar por módulo</p>
+        <div className="bg-gradient-to-r from-[#003366] to-[#1995ad] p-5 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-3 relative shrink-0">
+          <div className="flex items-center gap-3">
+            <Key size={22} className="text-[#ffb703]" />
+            <div>
+              <h3 className="font-headline text-lg font-bold m-0 text-white">
+                Editar Rol & Matriz de Permisos: <span className="font-mono text-sm text-[#ffb703]">[{targetRol.id}]</span>
+              </h3>
+              <p className="text-[11px] opacity-90 m-0 mt-0.5">Habilita o deshabilita acciones por módulo ({permisos.length}/{TODOS_LOS_PERMISOS.length})</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 self-end md:self-auto">
+            <button
+              type="button"
+              onClick={handleGuardar}
+              disabled={loading}
+              className="btn-gold-3d text-xs font-bold py-2 px-4 rounded-xl flex items-center gap-1.5 shadow-md cursor-pointer shrink-0"
+            >
+              <Save size={15} /> {loading ? 'Guardando...' : 'Guardar Permisos'}
+            </button>
+
+            <button 
+              type="button"
+              onClick={onClose} 
+              className="text-white/80 hover:text-white transition-colors bg-black/30 hover:bg-black/50 rounded-full w-8 h-8 flex items-center justify-center cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Formulario */}

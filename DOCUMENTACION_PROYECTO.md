@@ -29,7 +29,8 @@ c:\xampp\htdocs\aguitourslascapullanas\
 │   ├── fase_seguridad_y_auditoria.sql  # RLS estricto y triggers de auditoría
 │   ├── modulo_clientes_y_cotizaciones.sql # Script SQL para favoritos, cotizaciones, RLS y triggers
 │   ├── agregar_campo_activo_perfiles.sql  # Script SQL para campo activo en perfiles
-│   └── solucion_login_y_usuarios_admin.sql # [NUEVO] Script SQL para login por username y actualización de clave admin
+│   ├── solucion_login_y_usuarios_admin.sql # [NUEVO] Script SQL para login por username y actualización de clave admin
+│   └── auditoria_y_rls_completa.sql    # [NUEVO] Script SQL completo de auditoría inmutable y RLS para todas las tablas
 ├── php/                                # [BACKEND PHP SEGURO]
 │   ├── config/ (env.php, supabase.php, smtp.php)
 │   ├── middleware/ (cors.php, rate_limit.php, sanitizer.php)
@@ -44,11 +45,12 @@ c:\xampp\htdocs\aguitourslascapullanas\
     │   ├── Hero3D.jsx                  # Portada 3D Parallax con CTA Cotizar Paquete
     │   ├── PaquetesGrupales.jsx        # Catálogo Bento Grid & Inscripciones en vivo
     │   ├── DestinosSection.jsx         # Galería Sticky de Scroll Horizontal & "Me Gusta"
-    │   ├── AuthModal.jsx               # Login / Registro con selector de roles RBAC
     │   ├── ClientPortal.jsx            # Contenedor del Dashboard de Pasajero VIP
     │   ├── AdminDashboard.jsx          # Panel Admin Modularizado
     │   ├── MisDatosModal.jsx           # Modal de actualización de datos y contraseña
     │   ├── ScrollProgressBar.jsx       # Barra Neón de Scroll Superior
+    │   ├── auth/                       # [MÓDULO DE AUTENTICACIÓN]
+    │   │   └── AuthModal.jsx           # Login / Registro con resolución de Username y roles RBAC
     │   ├── cliente/                    # [MÓDULOS DEL DASHBOARD DE CLIENTE]
     │   │   ├── ClientMisViajes.jsx     # Itinerarios inscritos, WhatsApp oficial y PDF
     │   │   ├── ClientFavoritos.jsx     # Paquetes y destinos guardados ("Me gusta")
@@ -57,7 +59,7 @@ c:\xampp\htdocs\aguitourslascapullanas\
     │   ├── admin/                      # [MÓDULOS DEL DASHBOARD ADMIN]
     │   │   ├── AdminAnalytics.jsx      # Métricas de ocupación e ingresos
     │   │   ├── AdminClientesModule.jsx # Gestión de pasajeros inscritos y cupos
-    │   │   ├── AdminSolicitudesModule.jsx # [NUEVO] Gestión y conversión de cotizaciones en paquetes
+    │   │   ├── AdminSolicitudesModule.jsx # Gestión y conversión de cotizaciones en paquetes
     │   │   ├── AdminPaquetesModule.jsx # Gestor de paquetes e itinerarios
     │   │   ├── AdminDestinosModule.jsx # Gestor de destinos turísticos
     │   │   ├── AdminCMSModule.jsx      # Editor de textos y portadas del CMS
@@ -66,10 +68,13 @@ c:\xampp\htdocs\aguitourslascapullanas\
     │   ├── destinos/                   # [MODALES DE DESTINOS]
     │   │   ├── CrearDestinoModal.jsx   # Registrar nuevo destino turístico
     │   │   └── EditarDestinoModal.jsx  # Editar y eliminar/desactivar destino
-    │   └── paquetes/                   # [MODALES & GENERADOR DE PDF]
-    │       ├── CrearPaqueteModal.jsx   # Publicar paquete con grupo de WhatsApp y PDF
-    │       ├── EditarPaqueteModal.jsx  # Editar paquete e itinerarios
-    │       └── ReportePdfModal.jsx     # Generador e impresor de Ficha PDF de Itinerario
+    │   ├── paquetes/                   # [MODALES & GENERADOR DE PDF]
+    │   │   ├── CrearPaqueteModal.jsx   # Publicar paquete con grupo de WhatsApp y PDF
+    │   │   ├── EditarPaqueteModal.jsx  # Editar paquete e itinerarios
+    │   │   └── ReportePdfModal.jsx     # Generador e impresor de Ficha PDF de Itinerario
+    │   └── usuarios/                   # [MODALES DE USUARIOS RBAC]
+    │       ├── CrearUsuarioModal.jsx   # Alta de usuario con cliente Supabase aislado
+    │       └── EditarUsuarioAdminModal.jsx # Edición de rol y reseteo de clave por Admin
     ├── styles/
     │   └── index.css                   # Sistema de diseño global & Glassmorphism
     ├── App.jsx                         # Componente principal de la aplicación

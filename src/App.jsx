@@ -6,7 +6,7 @@ import { PaquetesGrupales } from './components/PaquetesGrupales';
 import { DestinosSection } from './components/DestinosSection';
 import { QuienesSomosSection } from './components/QuienesSomosSection';
 import { ContactoSection } from './components/ContactoSection';
-import { AuthModal } from './components/AuthModal';
+import { AuthModal } from './components/auth/AuthModal';
 import { ClientPortal } from './components/ClientPortal';
 import { AdminDashboard } from './components/AdminDashboard';
 import { ScrollProgressBar } from './components/ScrollProgressBar';
@@ -154,25 +154,25 @@ export default function App() {
         )}
 
         {activeView === 'grupales' && (
-          <div style={{ paddingTop: '80px' }}>
+          <div style={{ paddingTop: '64px' }}>
             <PaquetesGrupales user={user} profile={profile} onOpenAuth={() => setAuthModalOpen(true)} />
           </div>
         )}
 
         {activeView === 'destinos' && (
-          <div style={{ paddingTop: '80px' }}>
+          <div style={{ paddingTop: '64px' }}>
             <DestinosSection user={user} onOpenAuth={() => setAuthModalOpen(true)} />
           </div>
         )}
 
         {activeView === 'nosotros' && (
-          <div style={{ paddingTop: '80px' }}>
+          <div style={{ paddingTop: '64px' }}>
             <QuienesSomosSection />
           </div>
         )}
 
         {activeView === 'contacto' && (
-          <div style={{ paddingTop: '80px' }}>
+          <div style={{ paddingTop: '64px' }}>
             <ContactoSection />
           </div>
         )}
