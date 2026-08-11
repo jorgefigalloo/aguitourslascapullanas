@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  LayoutDashboard, Edit3, Plus, Users, Globe, ArrowLeft, Search, Bell, LogOut, CheckCircle, Clock, Calendar, ChevronRight, ShieldCheck, Database, Package, UserCheck
+  LayoutDashboard, Edit3, Plus, Users, Globe, ArrowLeft, Search, Bell, LogOut, CheckCircle, Clock, Calendar, ChevronRight, ShieldCheck, Database, Package, UserCheck, Sparkles
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { AdminAnalytics } from './admin/AdminAnalytics';
@@ -10,6 +10,7 @@ import { AdminDestinosModule } from './admin/AdminDestinosModule';
 import { AdminUsuariosModule } from './admin/AdminUsuariosModule';
 import { AdminAuditoriaModule } from './admin/AdminAuditoriaModule';
 import { AdminClientesModule } from './admin/AdminClientesModule';
+import { AdminSolicitudesModule } from './admin/AdminSolicitudesModule';
 
 export function AdminDashboard({ user, profile, onBackToSite }) {
   const [activeTab, setActiveTab] = useState('analytics');
@@ -93,6 +94,7 @@ export function AdminDashboard({ user, profile, onBackToSite }) {
             {[
               { id: 'analytics', label: 'Métricas & Ventas', icon: LayoutDashboard },
               { id: 'clientes', label: 'Clientes & Reservas', icon: UserCheck },
+              { id: 'cotizaciones', label: 'Cotizaciones A Medida', icon: Sparkles },
               { id: 'paquetes', label: 'Paquetes Grupales', icon: Package },
               { id: 'destinos', label: 'Destinos Turísticos', icon: Globe },
               { id: 'cms', label: 'Gestión CMS', icon: Edit3 },
@@ -146,6 +148,10 @@ export function AdminDashboard({ user, profile, onBackToSite }) {
           <AdminClientesModule />
         )}
 
+        {activeTab === 'cotizaciones' && (
+          <AdminSolicitudesModule />
+        )}
+
         {activeTab === 'paquetes' && (
           <AdminPaquetesModule paquetes={paquetes} user={user} profile={profile} onActualizar={cargarTodo} />
         )}
@@ -169,3 +175,4 @@ export function AdminDashboard({ user, profile, onBackToSite }) {
     </div>
   );
 }
+

@@ -3,7 +3,7 @@ import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { Sparkles, ArrowRight, Compass, Users, MapPin, ShieldCheck, Star } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-export function Hero3D({ onExplorarGrupales, onExplorarDestinos }) {
+export function Hero3D({ onExplorarGrupales, onExplorarDestinos, onCotizarClick }) {
   const containerRef = useRef(null);
   const [cmsData, setCmsData] = useState({
     titulo: 'Explora el Mundo con Aguitours Las Capullanas',
@@ -288,6 +288,15 @@ export function Hero3D({ onExplorarGrupales, onExplorarDestinos }) {
               style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
             >
               <Users size={18} /> Ver Paquetes Grupales <ArrowRight size={18} />
+            </motion.button>
+
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onCotizarClick} 
+              className="bg-gradient-to-r from-[#ffb703] to-[#fb8500] text-black font-extrabold px-6 py-3.5 rounded-2xl shadow-xl hover:scale-105 transition-all text-sm flex items-center gap-2 cursor-pointer border-none"
+            >
+              <Sparkles size={18} /> Cotizar Paquete Personalizado
             </motion.button>
 
             <motion.button 

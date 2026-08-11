@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 
 export function EditarUsuarioAdminModal({ usuario, isOpen, onClose, onUsuarioActualizado }) {
   const [formData, setFormData] = useState({
-    nombre_completo: '', username: '', telefono: '', documento_identidad: '', rol: 'cliente', nueva_password: ''
+    nombre_completo: '', username: '', telefono: '', documento_identidad: '', rol: 'cliente', activo: true, nueva_password: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -16,6 +16,7 @@ export function EditarUsuarioAdminModal({ usuario, isOpen, onClose, onUsuarioAct
         telefono: usuario.telefono || '',
         documento_identidad: usuario.documento_identidad || '',
         rol: usuario.rol || 'cliente',
+        activo: usuario.activo ?? true,
         nueva_password: ''
       });
     }
@@ -28,40 +29,43 @@ export function EditarUsuarioAdminModal({ usuario, isOpen, onClose, onUsuarioAct
     setLoading(true);
 
     try {
+      const cleanUsername = (formData.username || '').toLowerCase().trim();
+
       // 1. Actualizar datos en la tabla perfiles
       const { error } = await supabase
         .from('perfiles')
         .update({
           nombre_completo: formData.nombre_completo,
-          username: formData.username,
+          username: cleanUsername,
           telefono: formData.telefono,
           documento_identidad: formData.documento_identidad,
           rol: formData.rol,
+          activo: formData.activo,
           updated_at: new Date().toISOString()
         })
         .eq('id', usuario.id);
 
       if (error) throw error;
 
-      // 2. Si se ingresó una nueva contraseña, actualizar credenciales de Auth
+      // 2. Si se ingresó una nueva contraseña, actualizar credenciales de Auth vía RPC administrativa
       if (formData.nueva_password && formData.nueva_password.trim().length >= 6) {
-        try {
-          const { error: passError } = await supabase.auth.updateUser({
-            password: formData.nueva_password
-          });
-          if (passError) {
-            // Intentar por admin si es otro usuario
-            await supabase.auth.admin.updateUserById(usuario.id, {
-              password: formData.nueva_password
-            });
+        const { error: rpcErr } = await supabase.rpc('admin_cambiar_password_usuario', {
+          p_target_user_id: usuario.id,
+          p_new_password: formData.nueva_password
+        });
+
+        if (rpcErr) {
+          console.warn('Info RPC cambiar password:', rpcErr);
+          // Fallback si es su propio usuario logueado
+          const { data: authUser } = await supabase.auth.getUser();
+          if (authUser?.user?.id === usuario.id) {
+            await supabase.auth.updateUser({ password: formData.nueva_password });
           }
-        } catch (passErr) {
-          console.log('Info de contraseña:', passErr);
         }
       }
 
-      alert('¡Datos de usuario, rol y credenciales actualizados correctamente!');
-      onUsuarioActualizado();
+      alert(`¡Datos, rol, estado y contraseña de "${formData.nombre_completo}" actualizados correctamente!`);
+      if (onUsuarioActualizado) onUsuarioActualizado();
       onClose();
     } catch (err) {
       alert('Error al actualizar usuario: ' + err.message);
@@ -151,6 +155,18 @@ export function EditarUsuarioAdminModal({ usuario, isOpen, onClose, onUsuarioAct
                 <option value="cliente">Cliente (Viajero)</option>
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className="text-xs text-gray-300 font-bold block mb-1">Estado de Cuenta</label>
+            <select 
+              value={formData.activo ? 'true' : 'false'} 
+              onChange={e => setFormData({...formData, activo: e.target.value === 'true'})} 
+              className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none font-bold"
+            >
+              <option value="true">🟢 Cuenta Activa</option>
+              <option value="false">🔴 Cuenta Inactiva / Suspendida</option>
+            </select>
           </div>
 
           {/* Campo para Cambiar / Restablecer Contraseña */}

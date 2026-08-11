@@ -33,13 +33,24 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       let targetEmail = loginInput.trim();
 
       if (!targetEmail.includes('@')) {
+        // 1. Intentar resolver el correo mediante la función RPC obtener_email_por_username
         const { data: foundEmail, error: rpcError } = await supabase
           .rpc('obtener_email_por_username', { p_username: targetEmail });
 
-        if (rpcError || !foundEmail) {
-          throw new Error('El nombre de usuario no existe o no está vinculado a un correo.');
+        if (!rpcError && foundEmail) {
+          targetEmail = foundEmail;
+        } else {
+          // 2. Fallback: Buscar username en la tabla perfiles
+          const { data: profile } = await supabase
+            .from('perfiles')
+            .select('id, username')
+            .ilike('username', targetEmail)
+            .maybeSingle();
+
+          if (!profile) {
+            throw new Error(`El nombre de usuario "${targetEmail}" no está registrado.`);
+          }
         }
-        targetEmail = foundEmail;
       }
 
       const { data, error } = await supabase.auth.signInWithPassword({ 

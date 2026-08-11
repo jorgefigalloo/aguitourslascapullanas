@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { X, UserPlus, Shield, Lock, Mail, Phone, FileText } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabase';
+
+// Cliente Supabase temporal aislado sin persistencia de sesión para no cerrar la sesión del Admin actual
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://qmwukfmieqoqydgrrbct.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
+const tempAuthClient = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: { persistSession: false, autoRefreshToken: false }
+});
 
 export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado }) {
   const [formData, setFormData] = useState({
@@ -21,13 +30,16 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado }) {
     setLoading(true);
 
     try {
-      // 1. Crear usuario en Supabase Auth
-      const { data, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
+      const cleanUsername = (formData.username || formData.email.split('@')[0]).toLowerCase().trim();
+
+      // 1. Crear usuario en Supabase Auth con cliente temporal aislado
+      const { data, error: authError } = await tempAuthClient.auth.signUp({
+        email: formData.email.trim(),
         password: formData.password,
         options: {
           data: {
             nombre_completo: formData.nombre_completo,
+            username: cleanUsername,
             telefono: formData.telefono,
             rol: formData.rol
           }
@@ -37,21 +49,22 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado }) {
       if (authError) throw authError;
 
       if (data?.user) {
-        // 2. Asegurar o actualizar perfil en la tabla perfiles
+        // 2. Asegurar o actualizar perfil en la tabla perfiles usando el cliente principal del admin
         const { error: profileError } = await supabase.from('perfiles').upsert([{
           id: data.user.id,
           nombre_completo: formData.nombre_completo,
-          username: formData.username || formData.email.split('@')[0],
+          username: cleanUsername,
           telefono: formData.telefono,
           documento_identidad: formData.documento_identidad,
-          rol: formData.rol
+          rol: formData.rol,
+          activo: true
         }]);
 
         if (profileError) console.log('Info de perfil:', profileError);
       }
 
-      alert('¡Usuario registrado exitosamente en el sistema!');
-      onUsuarioCreado();
+      alert(`¡Usuario "${formData.nombre_completo}" (${cleanUsername}) registrado exitosamente!`);
+      if (onUsuarioCreado) onUsuarioCreado();
       onClose();
       setFormData({
         email: '',

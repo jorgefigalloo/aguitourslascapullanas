@@ -30,10 +30,13 @@ export default function App() {
   const [showIntro, setShowIntro] = useState(true);
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [clientInitialTab, setClientInitialTab] = useState('mis-viajes');
   const [footerTexto, setFooterTexto] = useState('© 2026 Agencia de Viajes "Aguitours Las Capullanas". Todos los derechos reservados.');
 
-  const navigateToView = (view) => {
+  const navigateToView = (view, clientTab = 'mis-viajes') => {
     setActiveView(view);
+    setClientInitialTab(clientTab);
+
     let targetPath = '/';
     if (view === 'admin') targetPath = '/admin';
     else if (view === 'mi-perfil') targetPath = '/cliente';
@@ -45,6 +48,14 @@ export default function App() {
     window.history.pushState(null, '', targetPath);
   };
 
+  const handleCotizarClick = () => {
+    if (user) {
+      navigateToView('mi-perfil', 'cotizar');
+    } else {
+      setAuthModalOpen(true);
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -52,8 +63,8 @@ export default function App() {
     navigateToView('inicio');
   };
 
-  // Hook de inactividad: Cierra sesión tras 15 minutos sin interacción
-  useInactivityTimeout(user, handleLogout, 15);
+  // Hook de inactividad: Cierra sesión tras 60 minutos (1 hora) sin interacción
+  useInactivityTimeout(user, handleLogout, 60);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -124,6 +135,7 @@ export default function App() {
         profile={profile}
         onLogout={handleLogout}
         onProfileUpdated={() => user && cargarPerfil(user)}
+        onCotizarClick={handleCotizarClick}
       />
 
       <main style={{ flex: 1 }}>
@@ -132,6 +144,7 @@ export default function App() {
             <Hero3D 
               onExplorarGrupales={() => navigateToView('grupales')}
               onExplorarDestinos={() => navigateToView('destinos')}
+              onCotizarClick={handleCotizarClick}
             />
             <PaquetesGrupales user={user} profile={profile} onOpenAuth={() => setAuthModalOpen(true)} />
             <DestinosSection user={user} onOpenAuth={() => setAuthModalOpen(true)} />
@@ -165,7 +178,12 @@ export default function App() {
         )}
 
         {activeView === 'mi-perfil' && user && (
-          <ClientPortal user={user} profile={profile} />
+          <ClientPortal 
+            user={user} 
+            profile={profile} 
+            initialTab={clientInitialTab}
+            onExplorarPaquetes={() => navigateToView('grupales')}
+          />
         )}
       </main>
 

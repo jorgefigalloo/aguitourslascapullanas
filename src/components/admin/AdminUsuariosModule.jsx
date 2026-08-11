@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Users, ShieldCheck, Key, UserCheck, Edit3, UserPlus, Search, Filter, ShieldPlus } from 'lucide-react';
+import { Users, ShieldCheck, Key, UserCheck, Edit3, UserPlus, Search, Filter, ShieldPlus, Power } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 import { EditarUsuarioAdminModal } from '../EditarUsuarioAdminModal';
 import { EditarRolModal } from '../EditarRolModal';
 import { CrearUsuarioModal } from '../usuarios/CrearUsuarioModal';
@@ -13,6 +14,28 @@ export function AdminUsuariosModule({ usuarios = [], rolesSistema = [], onActual
   const [crearRolOpen, setCrearRolOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroRol, setFiltroRol] = useState('todos');
+
+  const handleToggleEstadoActivo = async (usuario) => {
+    const nuevoEstado = !(usuario.activo ?? true);
+    const mensaje = nuevoEstado 
+      ? `¿Deseas activar la cuenta de "${usuario.nombre_completo}"?`
+      : `¿Deseas desactivar la cuenta de "${usuario.nombre_completo}"?`;
+
+    if (!window.confirm(mensaje)) return;
+
+    try {
+      const { error } = await supabase
+        .from('perfiles')
+        .update({ activo: nuevoEstado })
+        .eq('id', usuario.id);
+
+      if (error) throw error;
+      alert(`Usuario "${usuario.nombre_completo}" ${nuevoEstado ? 'ACTIVADO 🟢' : 'DESACTIVADO 🔴'} con éxito.`);
+      if (onActualizar) onActualizar();
+    } catch (err) {
+      alert('Error al cambiar estado del usuario: ' + err.message);
+    }
+  };
 
   const usuariosFiltrados = usuarios.filter(u => {
     const nombre = u.nombre_completo || '';
@@ -32,10 +55,10 @@ export function AdminUsuariosModule({ usuarios = [], rolesSistema = [], onActual
     <div className="bg-[#0d2538] border border-white/15 p-8 rounded-3xl shadow-xl">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
-          <h3 className="font-headline text-2xl font-bold text-white flex items-center gap-2">
+          <h3 className="font-headline text-2xl font-bold text-white flex items-center gap-2 m-0">
             <ShieldCheck size={26} className="text-[#10b981]" /> Módulo RBAC - Usuarios y Matriz de Permisos
           </h3>
-          <p className="text-xs text-gray-300 mt-1">Registra nuevos usuarios, crea roles personalizados y gestiona permisos del sistema</p>
+          <p className="text-xs text-gray-300 mt-1 m-0">Registra nuevos usuarios del sistema, administra cuentas activas/inactivas y gestiona la matriz de roles</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -109,7 +132,7 @@ export function AdminUsuariosModule({ usuarios = [], rolesSistema = [], onActual
                   <th className="p-4">Usuario</th>
                   <th className="p-4">DNI / Teléfono</th>
                   <th className="p-4">Rol Asignado</th>
-                  <th className="p-4">Estado</th>
+                  <th className="p-4">Estado Cuenta</th>
                   <th className="p-4">Acciones</th>
                 </tr>
               </thead>
@@ -121,36 +144,59 @@ export function AdminUsuariosModule({ usuarios = [], rolesSistema = [], onActual
                     </td>
                   </tr>
                 ) : (
-                  usuariosFiltrados.map(u => (
-                    <tr key={u.id} className="hover:bg-white/5 transition-colors">
-                      <td className="p-4 font-bold flex items-center gap-2">
-                        <UserCheck size={18} className="text-[#1995ad]" />
-                        <div>
-                          <div>{u.nombre_completo || 'Usuario'}</div>
-                          <div className="text-xs text-gray-400 font-normal">{u.username || 'sin_username'}</div>
-                        </div>
-                      </td>
-                      <td className="p-4 text-gray-300">{u.documento_identidad || 'N/A'} | {u.telefono || 'Sin tel'}</td>
-                      <td className="p-4">
-                        <span className="bg-[#1995ad]/20 border border-[#1995ad]/40 text-[#a0f0ff] text-xs font-bold px-3 py-1 rounded-full uppercase">
-                          {u.rol || 'cliente'}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <span className="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold px-2.5 py-1 rounded-full">
-                          Activo
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <button 
-                          onClick={() => setUsuarioAEditar(u)} 
-                          className="bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 cursor-pointer"
-                        >
-                          <Edit3 size={14} /> Editar Datos / Rol
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                  usuariosFiltrados.map(u => {
+                    const isActivo = u.activo ?? true;
+
+                    return (
+                      <tr key={u.id} className="hover:bg-white/5 transition-colors">
+                        <td className="p-4 font-bold flex items-center gap-2">
+                          <UserCheck size={18} className="text-[#1995ad]" />
+                          <div>
+                            <div>{u.nombre_completo || 'Usuario'}</div>
+                            <div className="text-xs text-gray-400 font-normal">{u.username || 'sin_username'}</div>
+                          </div>
+                        </td>
+                        <td className="p-4 text-gray-300">{u.documento_identidad || 'N/A'} | {u.telefono || 'Sin tel'}</td>
+                        <td className="p-4">
+                          <span className="bg-[#1995ad]/20 border border-[#1995ad]/40 text-[#a0f0ff] text-xs font-bold px-3 py-1 rounded-full uppercase">
+                            {u.rol || 'cliente'}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                            isActivo 
+                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' 
+                              : 'bg-red-500/20 text-red-300 border-red-500/40'
+                          }`}>
+                            {isActivo ? '🟢 ACTIVO' : '🔴 INACTIVO'}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex gap-2">
+                            <button 
+                              onClick={() => setUsuarioAEditar(u)} 
+                              className="bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 cursor-pointer"
+                              title="Editar Datos, Rol y Contraseña"
+                            >
+                              <Edit3 size={14} /> Editar Datos / Rol
+                            </button>
+
+                            <button
+                              onClick={() => handleToggleEstadoActivo(u)}
+                              className={`text-xs font-bold px-2.5 py-1.5 rounded-xl border flex items-center gap-1 transition-all cursor-pointer ${
+                                isActivo 
+                                  ? 'bg-red-500/20 border-red-500/40 text-red-300 hover:bg-red-600 hover:text-white' 
+                                  : 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 hover:bg-emerald-600 hover:text-black'
+                              }`}
+                              title={isActivo ? 'Desactivar Cuenta de Usuario' : 'Activar Cuenta de Usuario'}
+                            >
+                              <Power size={14} /> {isActivo ? 'Desactivar' : 'Activar'}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
