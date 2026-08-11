@@ -9,6 +9,7 @@ import { ContactoSection } from './components/ContactoSection';
 import { AuthModal } from './components/AuthModal';
 import { ClientPortal } from './components/ClientPortal';
 import { AdminDashboard } from './components/AdminDashboard';
+import { ScrollProgressBar } from './components/ScrollProgressBar';
 import { useInactivityTimeout } from './hooks/useInactivityTimeout';
 import { supabase } from './lib/supabase';
 import './styles/index.css';
@@ -111,6 +112,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#071521' }}>
+      <ScrollProgressBar />
       {/* Intro Cinematográfica del Avión Grande con Logo Aguitours */}
       {showIntro && <FlightIntro3D onComplete={() => setShowIntro(false)} />}
 
@@ -132,7 +134,7 @@ export default function App() {
               onExplorarDestinos={() => navigateToView('destinos')}
             />
             <PaquetesGrupales user={user} profile={profile} onOpenAuth={() => setAuthModalOpen(true)} />
-            <DestinosSection />
+            <DestinosSection user={user} onOpenAuth={() => setAuthModalOpen(true)} />
             <QuienesSomosSection />
             <ContactoSection />
           </>
@@ -146,7 +148,7 @@ export default function App() {
 
         {activeView === 'destinos' && (
           <div style={{ paddingTop: '80px' }}>
-            <DestinosSection />
+            <DestinosSection user={user} onOpenAuth={() => setAuthModalOpen(true)} />
           </div>
         )}
 

@@ -7,7 +7,9 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
     titulo: '', destino: '', precio_persona: 1000, cupo_maximo: 15,
     fecha_salida: '', fecha_retorno: '', 
     imagen_portada: 'https://images.unsplash.com/photo-1526392060635-9d6019884377?q=80&w=1200&auto=format&fit=crop', 
-    descripcion: ''
+    descripcion: '',
+    whatsapp_url: '',
+    pdf_formulario_url: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -18,11 +20,23 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
     setLoading(true);
 
     try {
+      const itinerarioPayload = {
+        dias: [],
+        whatsapp_url: formData.whatsapp_url || 'https://chat.whatsapp.com/ExclusivoAguitoursCapullanas',
+        pdf_formulario_url: formData.pdf_formulario_url || '/rutas.txt'
+      };
+
       const { error } = await supabase.from('paquetes_grupales').insert([{
-        ...formData,
+        titulo: formData.titulo,
+        destino: formData.destino,
         precio_persona: parseFloat(formData.precio_persona),
         cupo_maximo: parseInt(formData.cupo_maximo),
         cupo_disponible: parseInt(formData.cupo_maximo),
+        fecha_salida: formData.fecha_salida,
+        fecha_retorno: formData.fecha_retorno,
+        imagen_portada: formData.imagen_portada,
+        descripcion: formData.descripcion,
+        itinerario: itinerarioPayload,
         estado: 'abierto',
         creado_por: userId
       }]);
@@ -35,7 +49,9 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
         titulo: '', destino: '', precio_persona: 1000, cupo_maximo: 15,
         fecha_salida: '', fecha_retorno: '', 
         imagen_portada: 'https://images.unsplash.com/photo-1526392060635-9d6019884377?q=80&w=1200&auto=format&fit=crop', 
-        descripcion: ''
+        descripcion: '',
+        whatsapp_url: '',
+        pdf_formulario_url: ''
       });
     } catch (err) {
       alert('Error al publicar paquete: ' + err.message);
@@ -173,6 +189,30 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
               placeholder="Descripción de la aventura..."
               className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
             />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white/5 border border-white/10 p-4 rounded-2xl">
+            <div>
+              <label className="text-xs text-[#25D366] font-bold block mb-1">💬 Link del Grupo de WhatsApp</label>
+              <input 
+                type="text" 
+                value={formData.whatsapp_url} 
+                onChange={e => setFormData({...formData, whatsapp_url: e.target.value})} 
+                placeholder="https://chat.whatsapp.com/..."
+                className="w-full bg-[#071521] border border-[#25D366]/40 rounded-xl p-3 text-white text-sm focus:border-[#25D366] focus:outline-none" 
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-[#ffb703] font-bold block mb-1">📄 Link / Ruta de Formulario PDF</label>
+              <input 
+                type="text" 
+                value={formData.pdf_formulario_url} 
+                onChange={e => setFormData({...formData, pdf_formulario_url: e.target.value})} 
+                placeholder="/rutas.txt o https://.../formulario.pdf"
+                className="w-full bg-[#071521] border border-[#ffb703]/40 rounded-xl p-3 text-white text-sm focus:border-[#ffb703] focus:outline-none" 
+              />
+            </div>
           </div>
 
           <button type="submit" disabled={loading} className="btn-primary-3d justify-center py-3.5 mt-2 font-bold text-sm">

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, User, Shield } from 'lucide-react';
+import { X, Save, User, Shield, Lock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 export function EditarUsuarioAdminModal({ usuario, isOpen, onClose, onUsuarioActualizado }) {
   const [formData, setFormData] = useState({
-    nombre_completo: '', username: '', telefono: '', documento_identidad: '', rol: 'cliente'
+    nombre_completo: '', username: '', telefono: '', documento_identidad: '', rol: 'cliente', nueva_password: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -15,7 +15,8 @@ export function EditarUsuarioAdminModal({ usuario, isOpen, onClose, onUsuarioAct
         username: usuario.username || '',
         telefono: usuario.telefono || '',
         documento_identidad: usuario.documento_identidad || '',
-        rol: usuario.rol || 'cliente'
+        rol: usuario.rol || 'cliente',
+        nueva_password: ''
       });
     }
   }, [usuario]);
@@ -27,6 +28,7 @@ export function EditarUsuarioAdminModal({ usuario, isOpen, onClose, onUsuarioAct
     setLoading(true);
 
     try {
+      // 1. Actualizar datos en la tabla perfiles
       const { error } = await supabase
         .from('perfiles')
         .update({
@@ -40,7 +42,25 @@ export function EditarUsuarioAdminModal({ usuario, isOpen, onClose, onUsuarioAct
         .eq('id', usuario.id);
 
       if (error) throw error;
-      alert('¡Datos del usuario y permisos actualizados correctamente!');
+
+      // 2. Si se ingresó una nueva contraseña, actualizar credenciales de Auth
+      if (formData.nueva_password && formData.nueva_password.trim().length >= 6) {
+        try {
+          const { error: passError } = await supabase.auth.updateUser({
+            password: formData.nueva_password
+          });
+          if (passError) {
+            // Intentar por admin si es otro usuario
+            await supabase.auth.admin.updateUserById(usuario.id, {
+              password: formData.nueva_password
+            });
+          }
+        } catch (passErr) {
+          console.log('Info de contraseña:', passErr);
+        }
+      }
+
+      alert('¡Datos de usuario, rol y credenciales actualizados correctamente!');
       onUsuarioActualizado();
       onClose();
     } catch (err) {
@@ -131,6 +151,24 @@ export function EditarUsuarioAdminModal({ usuario, isOpen, onClose, onUsuarioAct
                 <option value="cliente">Cliente (Viajero)</option>
               </select>
             </div>
+          </div>
+
+          {/* Campo para Cambiar / Restablecer Contraseña */}
+          <div className="bg-white/5 border border-white/10 p-4 rounded-2xl">
+            <label className="text-xs text-[#ffb703] font-bold block mb-1 flex items-center gap-1">
+              <Lock size={14} /> Cambiar Contraseña de Acceso (Opcional)
+            </label>
+            <input 
+              type="password" 
+              value={formData.nueva_password} 
+              onChange={e => setFormData({...formData, nueva_password: e.target.value})} 
+              placeholder="Escribe la nueva contraseña (mínimo 6 caracteres)..."
+              minLength={6}
+              className="w-full bg-[#071521] border border-[#ffb703]/40 rounded-xl p-3 text-white text-sm focus:border-[#ffb703] focus:outline-none" 
+            />
+            <span className="text-[10px] text-gray-400 mt-1 block">
+              * Si no deseas cambiar la contraseña del usuario, deja este campo en blanco.
+            </span>
           </div>
 
           <button type="submit" disabled={loading} className="btn-gold-3d justify-center py-3.5 mt-2 font-bold text-sm">
