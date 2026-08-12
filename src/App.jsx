@@ -76,6 +76,10 @@ export default function App() {
       setUser(session?.user ?? null);
       if (session?.user) {
         cargarPerfil(session.user);
+        if (_event === 'PASSWORD_RECOVERY') {
+          navigateToView('mi-perfil', 'mi-perfil');
+          alert('🔑 ¡Bienvenido a Aguitours Las Capullanas!\n\nHas ingresado mediante tu enlace de correo. Ve a "Configuración de Mi Cuenta" para definir tu contraseña de acceso.');
+        }
       } else {
         setProfile(null);
       }

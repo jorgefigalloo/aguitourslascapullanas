@@ -1,7 +1,7 @@
 # 📋 DOCUMENTACIÓN DEL PROYECTO: AGUITOURS LAS CAPULLANAS
 
-> **Estado del Proyecto:** Reconstrucción a Web App Dinámica 3D/Cinematic + Módulo de Clientes, Cotizador Personalizado, CMS, RBAC, RLS y Auditoría Completada  
-> **Fecha de Actualización:** 11 de Agosto de 2026  
+> **Estado del Proyecto:** Reconstrucción a Web App Dinámica 3D/Cinematic + Módulo de Clientes, Cotizador Personalizado, CMS, RBAC, RLS, Auditoría Inmutable y Modales con React Portal Completados  
+> **Fecha de Actualización:** 12 de Agosto de 2026  
 > **Ubicación Local:** `c:\xampp\htdocs\aguitourslascapullanas`  
 > **Servidor Dev:** `http://localhost:5173/` (Vite + React 18 + Framer Motion)  
 > **Servidor Apache XAMPP:** `http://localhost:8085/aguitourslascapullanas/`  
@@ -29,8 +29,9 @@ c:\xampp\htdocs\aguitourslascapullanas\
 │   ├── fase_seguridad_y_auditoria.sql  # RLS estricto y triggers de auditoría
 │   ├── modulo_clientes_y_cotizaciones.sql # Script SQL para favoritos, cotizaciones, RLS y triggers
 │   ├── agregar_campo_activo_perfiles.sql  # Script SQL para campo activo en perfiles
-│   ├── solucion_login_y_usuarios_admin.sql # [NUEVO] Script SQL para login por username y actualización de clave admin
-│   └── auditoria_y_rls_completa.sql    # [NUEVO] Script SQL completo de auditoría inmutable y RLS para todas las tablas
+│   ├── solucion_login_y_usuarios_admin.sql # Script SQL para login por username y actualización de clave admin
+│   ├── auditoria_y_rls_completa.sql    # Script SQL de auditoría inmutable y RLS para todas las tablas
+│   └── script_auditoria_completa_triggers.sql # [NUEVO] Triggers automáticos de auditoría para las 9 tablas
 ├── php/                                # [BACKEND PHP SEGURO]
 │   ├── config/ (env.php, supabase.php, smtp.php)
 │   ├── middleware/ (cors.php, rate_limit.php, sanitizer.php)
@@ -47,10 +48,10 @@ c:\xampp\htdocs\aguitourslascapullanas\
     │   ├── DestinosSection.jsx         # Galería Sticky de Scroll Horizontal & "Me Gusta"
     │   ├── ClientPortal.jsx            # Contenedor del Dashboard de Pasajero VIP
     │   ├── AdminDashboard.jsx          # Panel Admin Modularizado
-    │   ├── MisDatosModal.jsx           # Modal de actualización de datos y contraseña
+    │   ├── MisDatosModal.jsx           # Modal de datos personales (Portal con React createPortal)
     │   ├── ScrollProgressBar.jsx       # Barra Neón de Scroll Superior
     │   ├── auth/                       # [MÓDULO DE AUTENTICACIÓN]
-    │   │   └── AuthModal.jsx           # Login / Registro con resolución de Username y roles RBAC
+    │   │   └── AuthModal.jsx           # Login / Registro con resolución de Username y roles RBAC (z-99999)
     │   ├── cliente/                    # [MÓDULOS DEL DASHBOARD DE CLIENTE]
     │   │   ├── ClientMisViajes.jsx     # Itinerarios inscritos, WhatsApp oficial y PDF
     │   │   ├── ClientFavoritos.jsx     # Paquetes y destinos guardados ("Me gusta")
@@ -58,7 +59,7 @@ c:\xampp\htdocs\aguitourslascapullanas\
     │   │   └── ClientPerfilEditar.jsx  # Edición de perfil personal y cambio de contraseña
     │   ├── admin/                      # [MÓDULOS DEL DASHBOARD ADMIN]
     │   │   ├── AdminAnalytics.jsx      # Métricas de ocupación e ingresos
-    │   │   ├── AdminClientesModule.jsx # Gestión de pasajeros inscritos y cupos
+    │   │   ├── AdminClientesModule.jsx # Gestión de pasajeros inscritos y cupos (Soporta rol cliente y null)
     │   │   ├── AdminSolicitudesModule.jsx # Gestión y conversión de cotizaciones en paquetes
     │   │   ├── AdminPaquetesModule.jsx # Gestor de paquetes e itinerarios
     │   │   ├── AdminDestinosModule.jsx # Gestor de destinos turísticos
@@ -73,7 +74,7 @@ c:\xampp\htdocs\aguitourslascapullanas\
     │   │   ├── EditarPaqueteModal.jsx  # Editar paquete e itinerarios
     │   │   └── ReportePdfModal.jsx     # Generador e impresor de Ficha PDF de Itinerario
     │   └── usuarios/                   # [MODALES DE USUARIOS RBAC]
-    │       ├── CrearUsuarioModal.jsx   # Alta de usuario con cliente Supabase aislado
+    │       ├── CrearUsuarioModal.jsx   # Alta de usuario con validación de clave y React Portal
     │       └── EditarUsuarioAdminModal.jsx # Edición de rol y reseteo de clave por Admin
     ├── styles/
     │   └── index.css                   # Sistema de diseño global & Glassmorphism
@@ -88,9 +89,15 @@ c:\xampp\htdocs\aguitourslascapullanas\
 1. **Row Level Security (RLS) Estricto en Supabase:**
    - Aplicado en todas las tablas (`perfiles`, `inscripciones_grupo`, `paquetes_grupales`, `destinos_turisticos`, `cms_contenido`, `pagos`, `tabla_auditoria`, `favoritos_usuario`, `solicitudes_cotizacion`).
    - Cada cliente solo puede leer y modificar sus propios datos, favoritos y cotizaciones (`usuario_id = auth.uid()`).
-2. **CORS Restringido:** Middleware `php/middleware/cors.php` valida dominios permitidos.
-3. **Credenciales en Variables de Entorno:** Todas las llaves públicas y privadas se almacenan en `.env`.
-4. **Rate Limiting por IP/Minuto:** Middleware `php/middleware/rate_limit.php` previene ataques por fuerza bruta o spam.
+2. **Políticas de Contraseña Segura:**
+   - En el registro de clientes y usuarios del sistema, la contraseña requiere:
+     - Mínimo 8 caracteres
+     - Al menos 1 letra mayúscula (A-Z)
+     - Al menos 1 letra minúscula (a-z)
+     - Al menos 1 número (0-9)
+     - Al menos 1 símbolo especial (`!@#$%^&*`)
+3. **CORS Restringido:** Middleware `php/middleware/cors.php` valida dominios permitidos.
+4. **Credenciales en Variables de Entorno:** Todas las llaves públicas y privadas se almacenan en `.env`.
 5. **Sanitización de Entradas:** Middleware `php/middleware/sanitizer.php` sanitiza inputs contra inyecciones XSS y SQLi.
 
 ---
@@ -110,4 +117,5 @@ c:\xampp\htdocs\aguitourslascapullanas\
    npm run dev
    ```
 2. La Web App abrirá en **`http://localhost:5173/`**.
-3. **Script SQL para Tablas de Clientes & Cotizaciones:** Ejecutar el archivo `database/modulo_clientes_y_cotizaciones.sql` dentro del Editor SQL del panel de Supabase.
+3. **Script SQL para Triggers de Auditoría:** Ejecutar el archivo `database/script_auditoria_completa_triggers.sql` dentro del Editor SQL del panel de Supabase.
+

@@ -31,11 +31,11 @@ export function AdminClientesModule() {
       const { data, error } = await supabase
         .from('perfiles')
         .select('*')
-        .eq('rol', 'cliente')
         .order('created_at', { ascending: false });
 
       if (data) {
-        setClientes(data);
+        const clientesFiltrados = data.filter(u => !u.rol || u.rol === 'cliente' || u.rol === '');
+        setClientes(clientesFiltrados);
       }
     } catch (e) {
       console.log('Error al cargar clientes:', e);
@@ -268,8 +268,9 @@ export function AdminClientesModule() {
                           </div>
                           <div>
                             <div className="text-white">{c.nombre_completo || 'Cliente Registrado'}</div>
-                            <div className="text-xs text-gray-400 font-normal flex items-center gap-1">
-                              <AtSign size={12} className="text-[#1995ad]" /> {c.username || 'sin_username'}
+                            <div className="text-xs text-gray-400 font-normal flex items-center gap-1.5 flex-wrap">
+                              <span className="flex items-center gap-0.5"><AtSign size={12} className="text-[#1995ad]" /> {c.username || 'sin_username'}</span>
+                              {c.email && <span className="text-[#1995ad] font-semibold text-[11px]">({c.email})</span>}
                             </div>
                           </div>
                         </div>
@@ -446,22 +447,25 @@ export function AdminClientesModule() {
         </div>
       )}
 
-      {/* Modal Crear Usuario/Cliente */}
+      {/* Modal Crear Cliente */}
       {crearClienteOpen && (
         <CrearUsuarioModal
           isOpen={crearClienteOpen}
           onClose={() => setCrearClienteOpen(false)}
           onUsuarioCreado={cargarTodo}
+          fixedRol="cliente"
+          title="Registrar Nuevo Cliente Viajero"
         />
       )}
 
-      {/* Modal Editar Usuario/Cliente */}
+      {/* Modal Editar Cliente */}
       {editarUsuarioModal.open && (
         <EditarUsuarioAdminModal
           isOpen={editarUsuarioModal.open}
           usuario={editarUsuarioModal.usuario}
           onClose={() => setEditarUsuarioModal({ open: false, usuario: null })}
           onUsuarioActualizado={cargarTodo}
+          isClientModule={true}
         />
       )}
     </div>

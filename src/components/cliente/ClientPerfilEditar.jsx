@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { User, Lock, AtSign, Save, Phone, FileText, Calendar, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, Lock, AtSign, Save, Phone, FileText, Calendar, ShieldCheck, CheckCircle2, Mail } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 export function ClientPerfilEditar({ user, profile, onProfileUpdated }) {
   const [nombreCompleto, setNombreCompleto] = useState(profile?.nombre_completo || '');
+  const [email, setEmail] = useState(profile?.email || user?.email || '');
   const [telefono, setTelefono] = useState(profile?.telefono || '');
   const [documento, setDocumento] = useState(profile?.documento_identidad || '');
   const [fechaNacimiento, setFechaNacimiento] = useState(profile?.fecha_nacimiento || '');
@@ -12,6 +13,17 @@ export function ClientPerfilEditar({ user, profile, onProfileUpdated }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
+
+  useEffect(() => {
+    if (profile || user) {
+      setNombreCompleto(profile?.nombre_completo || user?.user_metadata?.nombre_completo || '');
+      setEmail(profile?.email || user?.email || '');
+      setTelefono(profile?.telefono || user?.user_metadata?.telefono || '');
+      setDocumento(profile?.documento_identidad || user?.user_metadata?.documento_identidad || '');
+      setFechaNacimiento(profile?.fecha_nacimiento || '');
+      setUsername(profile?.username || user?.user_metadata?.username || '');
+    }
+  }, [profile, user]);
 
   const validarPasswordSegura = (pwd) => {
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
@@ -35,20 +47,33 @@ export function ClientPerfilEditar({ user, profile, onProfileUpdated }) {
       }
 
       // 1. Actualizar perfil en public.perfiles
-      const { error: perfilError } = await supabase
+      const updateData = {
+        email: email.trim().toLowerCase(),
+        nombre_completo: nombreCompleto,
+        telefono: telefono,
+        documento_identidad: documento,
+        fecha_nacimiento: fechaNacimiento || null,
+        username: username.toLowerCase().trim()
+      };
+
+      let { error: perfilError } = await supabase
         .from('perfiles')
-        .update({
-          nombre_completo: nombreCompleto,
-          telefono: telefono,
-          documento_identidad: documento,
-          fecha_nacimiento: fechaNacimiento || null,
-          username: username.toLowerCase().trim()
-        })
+        .update(updateData)
         .eq('id', user.id);
 
-      if (perfilError) throw perfilError;
+      // Fallback si la columna email no existe aún en perfiles
+      if (perfilError && perfilError.message.includes('email')) {
+        delete updateData.email;
+        const { error: retryError } = await supabase
+          .from('perfiles')
+          .update(updateData)
+          .eq('id', user.id);
+        if (retryError) throw retryError;
+      } else if (perfilError) {
+        throw perfilError;
+      }
 
-      // 2. Actualizar clave si ingresó una
+      // 2. Actualizar clave o correo en auth si fue modificado
       if (newPassword.trim().length > 0) {
         const { error: pwdError } = await supabase.auth.updateUser({ password: newPassword });
         if (pwdError) throw pwdError;
@@ -76,7 +101,7 @@ export function ClientPerfilEditar({ user, profile, onProfileUpdated }) {
             Gestión de Seguridad & Datos
           </span>
           <h3 className="text-2xl font-bold text-white m-0 mt-1">Configuración de Mi Cuenta</h3>
-          <p className="text-xs text-gray-300 m-0">{user?.email}</p>
+          <p className="text-xs text-gray-300 m-0">{email || user?.email}</p>
         </div>
       </div>
 
@@ -88,8 +113,8 @@ export function ClientPerfilEditar({ user, profile, onProfileUpdated }) {
         </div>
       )}
 
-      <form onSubmit={handleGuardarDatos} className="flex flex-col gap-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <form onSubmit={handleGuardarDatos} autoComplete="off" className="flex flex-col gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div>
             <label className="text-xs font-bold text-gray-200 block mb-1.5">Nombre Completo *</label>
             <div className="relative">
@@ -99,6 +124,7 @@ export function ClientPerfilEditar({ user, profile, onProfileUpdated }) {
                 value={nombreCompleto}
                 onChange={e => setNombreCompleto(e.target.value)}
                 required
+                autoComplete="off"
                 className="w-full bg-[#0d2538] border border-white/15 rounded-2xl py-3 pl-11 pr-4 text-white text-xs focus:border-[#1995ad] focus:outline-none"
               />
             </div>
@@ -113,7 +139,23 @@ export function ClientPerfilEditar({ user, profile, onProfileUpdated }) {
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 required
+                autoComplete="off"
                 className="w-full bg-[#0d2538] border border-white/15 rounded-2xl py-3 pl-11 pr-4 text-white text-xs focus:border-[#1995ad] focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-gray-200 block mb-1.5">Correo Electrónico (Login)</label>
+            <div className="relative">
+              <Mail size={18} className="absolute left-3.5 top-3.5 text-[#1995ad]" />
+              <input 
+                type="email" 
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                autoComplete="off"
+                className="w-full bg-[#0d2538] border border-white/15 rounded-2xl py-3 pl-11 pr-4 text-white text-xs focus:border-[#1995ad] focus:outline-none font-bold text-[#1995ad]"
               />
             </div>
           </div>
@@ -129,6 +171,7 @@ export function ClientPerfilEditar({ user, profile, onProfileUpdated }) {
                 value={telefono}
                 onChange={e => setTelefono(e.target.value)}
                 placeholder="+51 987 654 321"
+                autoComplete="off"
                 className="w-full bg-[#0d2538] border border-white/15 rounded-2xl py-3 pl-11 pr-4 text-white text-xs focus:border-[#1995ad] focus:outline-none"
               />
             </div>
@@ -143,6 +186,7 @@ export function ClientPerfilEditar({ user, profile, onProfileUpdated }) {
                 value={documento}
                 onChange={e => setDocumento(e.target.value)}
                 placeholder="75849302"
+                autoComplete="off"
                 className="w-full bg-[#0d2538] border border-white/15 rounded-2xl py-3 pl-11 pr-4 text-white text-xs focus:border-[#1995ad] focus:outline-none"
               />
             </div>
@@ -156,6 +200,7 @@ export function ClientPerfilEditar({ user, profile, onProfileUpdated }) {
                 type="date" 
                 value={fechaNacimiento}
                 onChange={e => setFechaNacimiento(e.target.value)}
+                autoComplete="off"
                 className="w-full bg-[#0d2538] border border-white/15 rounded-2xl py-3 pl-11 pr-4 text-white text-xs focus:border-[#1995ad] focus:outline-none"
               />
             </div>
@@ -164,7 +209,7 @@ export function ClientPerfilEditar({ user, profile, onProfileUpdated }) {
 
         {/* Sección de Cambio de Contraseña */}
         <div className="pt-6 border-t border-white/10">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-2">
             <Lock size={18} className="text-[#ffb703]" />
             <h4 className="text-sm font-bold text-[#ffb703] m-0">Cambiar Contraseña de Acceso</h4>
           </div>
@@ -180,6 +225,7 @@ export function ClientPerfilEditar({ user, profile, onProfileUpdated }) {
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
                 placeholder="••••••••"
+                autoComplete="new-password"
                 className="w-full bg-[#0d2538] border border-white/15 rounded-2xl p-3 text-white text-xs focus:border-[#1995ad] focus:outline-none"
               />
             </div>
@@ -191,10 +237,15 @@ export function ClientPerfilEditar({ user, profile, onProfileUpdated }) {
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
+                autoComplete="new-password"
                 className="w-full bg-[#0d2538] border border-white/15 rounded-2xl p-3 text-white text-xs focus:border-[#1995ad] focus:outline-none"
               />
             </div>
           </div>
+
+          <p className="text-[11px] text-amber-400 mt-3 font-semibold leading-tight flex items-center gap-1">
+            🔒 Requisito: Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo especial (!@#$%^&*)
+          </p>
         </div>
 
         <button 

@@ -1,15 +1,27 @@
-import React, { useState } from 'react';
-import { X, User, Lock, AtSign, Save, FileText } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { X, User, Lock, AtSign, Save, FileText, Mail } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 export function MisDatosModal({ isOpen, onClose, user, profile, onProfileUpdated }) {
   const [nombreCompleto, setNombreCompleto] = useState(profile?.nombre_completo || '');
+  const [email, setEmail] = useState(profile?.email || user?.email || '');
   const [telefono, setTelefono] = useState(profile?.telefono || '');
   const [documento, setDocumento] = useState(profile?.documento_identidad || '');
   const [username, setUsername] = useState(profile?.username || '');
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
+
+  useEffect(() => {
+    if (profile && isOpen) {
+      setNombreCompleto(profile.nombre_completo || user?.user_metadata?.nombre_completo || '');
+      setEmail(profile.email || user?.email || '');
+      setTelefono(profile.telefono || user?.user_metadata?.telefono || '');
+      setDocumento(profile.documento_identidad || user?.user_metadata?.documento_identidad || '');
+      setUsername(profile.username || user?.user_metadata?.username || '');
+    }
+  }, [profile, user, isOpen]);
 
   if (!isOpen || !user) return null;
 
@@ -25,17 +37,29 @@ export function MisDatosModal({ isOpen, onClose, user, profile, onProfileUpdated
 
     try {
       // 1. Actualizar datos en tabla public.perfiles
-      const { error: perfilError } = await supabase
+      const updateData = {
+        email: email.trim().toLowerCase(),
+        nombre_completo: nombreCompleto,
+        telefono: telefono,
+        documento_identidad: documento,
+        username: username.toLowerCase().trim()
+      };
+
+      let { error: perfilError } = await supabase
         .from('perfiles')
-        .update({
-          nombre_completo: nombreCompleto,
-          telefono: telefono,
-          documento_identidad: documento,
-          username: username.toLowerCase().trim()
-        })
+        .update(updateData)
         .eq('id', user.id);
 
-      if (perfilError) throw perfilError;
+      if (perfilError && perfilError.message.includes('email')) {
+        delete updateData.email;
+        const { error: retryErr } = await supabase
+          .from('perfiles')
+          .update(updateData)
+          .eq('id', user.id);
+        if (retryErr) throw retryErr;
+      } else if (perfilError) {
+        throw perfilError;
+      }
 
       // 2. Si ingresó una nueva contraseña, actualizarla en auth
       if (newPassword.trim().length > 0) {
@@ -48,7 +72,7 @@ export function MisDatosModal({ isOpen, onClose, user, profile, onProfileUpdated
       }
 
       setMsg({ type: 'success', text: '¡Tus datos y contraseña se actualizaron con éxito!' });
-      onProfileUpdated();
+      if (onProfileUpdated) onProfileUpdated();
       setTimeout(onClose, 1500);
     } catch (err) {
       setMsg({ type: 'error', text: err.message || 'Error al actualizar datos.' });
@@ -57,8 +81,8 @@ export function MisDatosModal({ isOpen, onClose, user, profile, onProfileUpdated
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#071521]/90 backdrop-blur-md overflow-y-auto">
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-[#071521]/90 backdrop-blur-md overflow-y-auto">
       <div className="bg-[#0d2538] border border-white/15 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden relative my-auto max-h-[85vh] flex flex-col">
         
         {/* Header Modal */}
@@ -76,7 +100,7 @@ export function MisDatosModal({ isOpen, onClose, user, profile, onProfileUpdated
         </div>
 
         {/* Body Modal con Scrollbar */}
-        <form onSubmit={handleGuardarDatos} className="p-6 flex flex-col gap-4 overflow-y-auto">
+        <form onSubmit={handleGuardarDatos} autoComplete="off" className="p-6 flex flex-col gap-4 overflow-y-auto">
           {msg.text && (
             <div className={`p-3 rounded-xl text-xs font-bold ${msg.type === 'success' ? 'bg-emerald-900/40 border border-emerald-500 text-emerald-300' : 'bg-red-900/40 border border-red-500 text-red-300'}`}>
               {msg.text}
@@ -90,21 +114,40 @@ export function MisDatosModal({ isOpen, onClose, user, profile, onProfileUpdated
               value={nombreCompleto} 
               onChange={e => setNombreCompleto(e.target.value)} 
               required 
+              autoComplete="off"
               className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
             />
           </div>
 
-          <div>
-            <label className="text-xs text-gray-300 font-bold block mb-1">Nombre de Usuario (Username)</label>
-            <div className="relative">
-              <AtSign size={16} className="absolute left-3.5 top-3.5 text-gray-400" />
-              <input 
-                type="text" 
-                value={username} 
-                onChange={e => setUsername(e.target.value)} 
-                required 
-                className="w-full bg-[#071521] border border-white/15 rounded-xl py-3 pl-10 pr-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-gray-300 font-bold block mb-1">Nombre de Usuario (Username)</label>
+              <div className="relative">
+                <AtSign size={16} className="absolute left-3.5 top-3.5 text-gray-400" />
+                <input 
+                  type="text" 
+                  value={username} 
+                  onChange={e => setUsername(e.target.value)} 
+                  required 
+                  autoComplete="off"
+                  className="w-full bg-[#071521] border border-white/15 rounded-xl py-3 pl-10 pr-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-300 font-bold block mb-1">Correo Electrónico (Login)</label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-3.5 top-3.5 text-[#1995ad]" />
+                <input 
+                  type="email" 
+                  value={email} 
+                  onChange={e => setEmail(e.target.value)} 
+                  required 
+                  autoComplete="off"
+                  className="w-full bg-[#071521] border border-white/15 rounded-xl py-3 pl-10 pr-3 text-white text-sm focus:border-[#1995ad] focus:outline-none font-bold text-[#1995ad]" 
+                />
+              </div>
             </div>
           </div>
 
@@ -143,9 +186,13 @@ export function MisDatosModal({ isOpen, onClose, user, profile, onProfileUpdated
                 value={newPassword} 
                 onChange={e => setNewPassword(e.target.value)} 
                 placeholder="•••••••• (Nueva contraseña)" 
+                autoComplete="new-password"
                 className="w-full bg-[#071521] border border-white/15 rounded-xl py-3 pl-10 pr-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
               />
             </div>
+            <p className="text-[10px] text-amber-400 mt-1.5 font-semibold leading-tight">
+              🔒 Requisito: Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo especial (!@#$%^&*)
+            </p>
           </div>
 
           <button type="submit" disabled={loading} className="btn-gold-3d justify-center py-3.5 mt-2 font-bold text-sm">
@@ -153,6 +200,7 @@ export function MisDatosModal({ isOpen, onClose, user, profile, onProfileUpdated
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

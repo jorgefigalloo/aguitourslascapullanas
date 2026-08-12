@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  LayoutDashboard, Edit3, Plus, Users, Globe, ArrowLeft, Search, Bell, LogOut, CheckCircle, Clock, Calendar, ChevronRight, ChevronLeft, ShieldCheck, Database, Package, UserCheck, Sparkles, Menu, X, User, Settings
+  LayoutDashboard, Edit3, Plus, Users, Globe, ArrowLeft, Search, Bell, LogOut, CheckCircle, Clock, Calendar, ChevronRight, ChevronLeft, ShieldCheck, Database, Package, UserCheck, Sparkles, Menu, X, User, Settings, ChevronDown
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { MisDatosModal } from './MisDatosModal';
@@ -22,6 +22,7 @@ export function AdminDashboard({ user, profile, onBackToSite }) {
   const [rolesSistema, setRolesSistema] = useState([]);
   const [auditorias, setAuditorias] = useState([]);
   const [misDatosOpen, setMisDatosOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -115,33 +116,75 @@ export function AdminDashboard({ user, profile, onBackToSite }) {
           </div>
         </div>
 
-        {/* Derecha: Badge de Usuario Logueado (Editar Datos) & Volver al Sitio */}
+        {/* Derecha: Desplegable de Usuario Logueado & Acciones Rápida */}
         <div className="flex items-center gap-3">
-          {/* Badge / Pill del Usuario Logueado */}
-          <div className="flex items-center gap-2.5 bg-[#071521] border border-white/15 px-3 py-1.5 rounded-2xl shadow-inner">
-            <div className="w-8 h-8 rounded-full bg-[#ffb703]/20 border border-[#ffb703] text-[#ffb703] flex items-center justify-center font-bold text-xs shrink-0">
-              {profile?.nombre_completo?.[0] || 'A'}
-            </div>
-            <div className="text-left overflow-hidden hidden sm:block">
-              <div className="text-xs font-bold text-white truncate max-w-[140px]">{profile?.nombre_completo || 'Administrador'}</div>
-              <div className="text-[9px] text-[#1995ad] font-mono font-bold uppercase">{profile?.rol || 'Staff'}</div>
-            </div>
-
+          {/* Menú Desplegable de Usuario */}
+          <div className="relative">
             <button
-              onClick={() => setMisDatosOpen(true)}
-              className="bg-[#ffb703] hover:bg-amber-400 text-black text-xs font-bold px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 cursor-pointer shadow-md"
-              title="Editar mis datos personales y contraseña"
+              onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+              className="flex items-center gap-2.5 bg-[#071521] hover:bg-[#0d2538] border border-white/15 px-3 py-1.5 rounded-2xl shadow-inner transition-all cursor-pointer"
             >
-              <User size={13} /> <span className="hidden sm:inline">Mis Datos / Clave</span>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#1995ad] to-[#ffb703] text-[#071521] flex items-center justify-center font-bold text-xs shrink-0 shadow-md">
+                {profile?.nombre_completo?.[0] || 'A'}
+              </div>
+              <div className="text-left hidden sm:block">
+                <div className="text-xs font-bold text-white truncate max-w-[130px]">{profile?.nombre_completo || 'Administrador'}</div>
+                <div className="text-[9px] text-[#ffb703] font-mono font-bold uppercase">{profile?.rol || 'Staff'}</div>
+              </div>
+              <ChevronDown size={14} className={`text-gray-400 transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
-          </div>
 
-          <button
-            onClick={onBackToSite}
-            className="hidden md:flex bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 px-3.5 rounded-xl transition-all items-center gap-1.5 cursor-pointer border border-white/15 whitespace-nowrap"
-          >
-            <ArrowLeft size={14} /> Volver al Sitio
-          </button>
+            {/* Opciones del Menú Desplegable */}
+            {userDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-64 bg-[#0d2538] border border-white/15 rounded-2xl shadow-2xl overflow-hidden z-50 p-2 text-white animate-in fade-in slide-in-from-top-2">
+                <div className="p-3 border-b border-white/10 flex items-center gap-3 bg-[#071521]/60 rounded-xl mb-1">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#1995ad] to-[#ffb703] text-[#071521] flex items-center justify-center font-bold text-xs shrink-0">
+                    {profile?.nombre_completo?.[0] || 'A'}
+                  </div>
+                  <div className="overflow-hidden">
+                    <div className="text-xs font-bold text-white truncate">{profile?.nombre_completo || 'Administrador'}</div>
+                    <div className="text-[10px] text-gray-400 truncate">{user?.email || 'admin@aguitours.com'}</div>
+                    <span className="bg-[#ffb703]/20 border border-[#ffb703]/40 text-[#ffb703] text-[9px] font-mono font-extrabold px-2 py-0.5 rounded-full uppercase mt-1 inline-block">
+                      {profile?.rol || 'staff'}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setUserDropdownOpen(false);
+                    setMisDatosOpen(true);
+                  }}
+                  className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer"
+                >
+                  <User size={15} className="text-[#ffb703]" /> Editar Mi Perfil & Clave
+                </button>
+
+                <button
+                  onClick={() => {
+                    setUserDropdownOpen(false);
+                    onBackToSite();
+                  }}
+                  className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer"
+                >
+                  <Globe size={15} className="text-[#1995ad]" /> Volver al Sitio Principal
+                </button>
+
+                <div className="my-1 border-t border-white/10"></div>
+
+                <button
+                  onClick={async () => {
+                    setUserDropdownOpen(false);
+                    await supabase.auth.signOut();
+                    if (onBackToSite) onBackToSite();
+                  }}
+                  className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-red-500/20 text-red-300 text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer"
+                >
+                  <LogOut size={15} /> Cerrar Sesión Segura
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Botón Móvil Hamburguesa */}
           <button

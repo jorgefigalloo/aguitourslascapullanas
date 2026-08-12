@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, UserPlus, Shield, Lock, Mail, Phone, FileText } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { X, UserPlus, Shield, Lock, Mail, Phone, FileText, CheckCircle2 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../lib/supabase';
 
@@ -8,7 +9,10 @@ const tempAuthClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { persistSession: false, autoRefreshToken: false }
 });
 
-export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado }) {
+export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado, fixedRol, title }) {
+  const targetRol = fixedRol || 'cliente';
+  const modalTitle = title || (fixedRol === 'cliente' ? 'Registrar Nuevo Cliente Viajero' : 'Registrar Nuevo Usuario en el Sistema');
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -16,18 +20,30 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado }) {
     username: '',
     telefono: '',
     documento_identidad: '',
-    rol: 'cliente'
+    rol: targetRol
   });
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
 
+  const validarPasswordSegura = (pwd) => {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+    return regex.test(pwd);
+  };
+
   const handleCrear = async (e) => {
     e.preventDefault();
+
+    if (!validarPasswordSegura(formData.password)) {
+      alert('La contraseña no cumple los requisitos de seguridad:\n- Mínimo 8 caracteres\n- Al menos 1 letra mayúscula (A-Z)\n- Al menos 1 letra minúscula (a-z)\n- Al menos 1 número (0-9)\n- Al menos 1 símbolo especial (!@#$%^&*)');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const cleanUsername = (formData.username || formData.email.split('@')[0]).toLowerCase().trim();
+      const finalRol = fixedRol || formData.rol || 'cliente';
 
       // 1. Crear usuario en Supabase Auth con cliente temporal aislado
       const { data, error: authError } = await tempAuthClient.auth.signUp({
@@ -38,7 +54,7 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado }) {
             nombre_completo: formData.nombre_completo,
             username: cleanUsername,
             telefono: formData.telefono,
-            rol: formData.rol
+            rol: finalRol
           }
         }
       });
@@ -49,18 +65,19 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado }) {
         // 2. Asegurar o actualizar perfil en la tabla perfiles usando el cliente principal del admin
         const { error: profileError } = await supabase.from('perfiles').upsert([{
           id: data.user.id,
+          email: formData.email.trim().toLowerCase(),
           nombre_completo: formData.nombre_completo,
           username: cleanUsername,
           telefono: formData.telefono,
           documento_identidad: formData.documento_identidad,
-          rol: formData.rol,
+          rol: finalRol,
           activo: true
         }]);
 
         if (profileError) console.log('Info de perfil:', profileError);
       }
 
-      alert(`¡Usuario "${formData.nombre_completo}" (${cleanUsername}) registrado exitosamente!`);
+      alert(`¡${fixedRol === 'cliente' ? 'Cliente' : 'Usuario'} "${formData.nombre_completo}" (${cleanUsername}) registrado exitosamente!`);
       if (onUsuarioCreado) onUsuarioCreado();
       onClose();
       setFormData({
@@ -70,17 +87,17 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado }) {
         username: '',
         telefono: '',
         documento_identidad: '',
-        rol: 'cliente'
+        rol: targetRol
       });
     } catch (err) {
-      alert('Error al registrar usuario: ' + err.message);
+      alert('Error al registrar: ' + err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#071521]/90 backdrop-blur-md overflow-y-auto">
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-[#071521]/90 backdrop-blur-md overflow-y-auto">
       <div className="bg-[#0d2538] border border-white/15 rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden relative my-auto max-h-[90vh] flex flex-col">
         
         {/* Header Modal */}
@@ -92,13 +109,15 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado }) {
             <X size={18} />
           </button>
           <h3 className="font-headline text-xl font-bold m-0 flex items-center justify-center gap-2">
-            <UserPlus size={20} /> Registrar Nuevo Usuario en el Sistema
+            <UserPlus size={20} /> {modalTitle}
           </h3>
-          <p className="text-xs opacity-90 m-0 mt-1">Crea credenciales de acceso y asigna un rol inicial</p>
+          <p className="text-xs opacity-90 m-0 mt-1">
+            {fixedRol === 'cliente' ? 'Crea credenciales de acceso para que el cliente ingrese a su sistema' : 'Crea credenciales de acceso y asigna un rol inicial'}
+          </p>
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleCrear} className="p-6 flex flex-col gap-4 overflow-y-auto">
+        <form onSubmit={handleCrear} autoComplete="off" className="p-6 flex flex-col gap-4 overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-gray-300 font-bold block mb-1">Correo Electrónico (Login)</label>
@@ -108,6 +127,7 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado }) {
                 onChange={e => setFormData({...formData, email: e.target.value})} 
                 required 
                 placeholder="usuario@ejemplo.com"
+                autoComplete="off"
                 className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
               />
             </div>
@@ -119,10 +139,14 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado }) {
                 value={formData.password} 
                 onChange={e => setFormData({...formData, password: e.target.value})} 
                 required 
-                minLength={6}
+                minLength={8}
                 placeholder="••••••••"
+                autoComplete="new-password"
                 className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
               />
+              <p className="text-[10px] text-amber-400 mt-1 font-semibold leading-tight">
+                🔒 Requisito: Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo especial (!@#$%^&*)
+              </p>
             </div>
           </div>
 
@@ -134,6 +158,7 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado }) {
               onChange={e => setFormData({...formData, nombre_completo: e.target.value})} 
               required 
               placeholder="Juan Carlos Pérez"
+              autoComplete="off"
               className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
             />
           </div>
@@ -146,6 +171,7 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado }) {
                 value={formData.username} 
                 onChange={e => setFormData({...formData, username: e.target.value})} 
                 placeholder="juanperez"
+                autoComplete="off"
                 className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
               />
             </div>
@@ -157,6 +183,7 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado }) {
                 value={formData.telefono} 
                 onChange={e => setFormData({...formData, telefono: e.target.value})} 
                 placeholder="+51 987 654 321"
+                autoComplete="off"
                 className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
               />
             </div>
@@ -170,31 +197,46 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado }) {
                 value={formData.documento_identidad} 
                 onChange={e => setFormData({...formData, documento_identidad: e.target.value})} 
                 placeholder="76543210"
+                autoComplete="off"
                 className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
               />
             </div>
 
             <div>
-              <label className="text-xs text-[#ffb703] font-bold block mb-1">Rol / Permisos del Sistema</label>
-              <select 
-                value={formData.rol} 
-                onChange={e => setFormData({...formData, rol: e.target.value})} 
-                className="w-full bg-[#071521] border border-[#ffb703]/40 rounded-xl p-3 text-white text-sm focus:border-[#ffb703] focus:outline-none font-bold"
-              >
-                <option value="cliente">Cliente (Viajero)</option>
-                <option value="agente_ventas">Agente de Ventas</option>
-                <option value="editor_contenido">Editor CMS</option>
-                <option value="admin">Administrador General</option>
-                <option value="super_admin">Super Administrador (Full)</option>
-              </select>
+              {fixedRol ? (
+                <div>
+                  <label className="text-xs text-[#1995ad] font-bold block mb-1">Rol de Registro</label>
+                  <div className="w-full bg-[#071521] border border-[#1995ad]/40 rounded-xl p-3 text-[#1995ad] text-sm font-bold flex items-center justify-between">
+                    <span>Cliente (Viajero)</span>
+                    <CheckCircle2 size={16} />
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="text-xs text-[#ffb703] font-bold block mb-1">Rol / Permisos del Sistema</label>
+                  <select 
+                    value={formData.rol} 
+                    onChange={e => setFormData({...formData, rol: e.target.value})} 
+                    className="w-full bg-[#071521] border border-[#ffb703]/40 rounded-xl p-3 text-white text-sm focus:border-[#ffb703] focus:outline-none font-bold"
+                  >
+                    <option value="cliente">Cliente (Viajero)</option>
+                    <option value="agente_ventas">Agente de Ventas</option>
+                    <option value="editor_contenido">Editor CMS</option>
+                    <option value="admin">Administrador General</option>
+                    <option value="super_admin">Super Administrador (Full)</option>
+                  </select>
+                </div>
+              )}
             </div>
           </div>
 
           <button type="submit" disabled={loading} className="btn-gold-3d justify-center py-3.5 mt-2 font-bold text-sm">
-            <UserPlus size={18} /> {loading ? 'Registrando...' : 'Registrar Usuario'}
+            <UserPlus size={18} /> {loading ? 'Registrando...' : (fixedRol === 'cliente' ? 'Registrar Cliente' : 'Registrar Usuario')}
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
+

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Lock, AtSign, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
@@ -24,6 +25,17 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     return regex.test(pwd);
   };
 
+  const resetForm = () => {
+    setLoginInput('');
+    setPassword('');
+    setNombreCompleto('');
+    setUsername('');
+    setEmail('');
+    setTelefono('');
+    setDocumento('');
+    setErrorMsg('');
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -41,17 +53,17 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         if (!rpcError && foundEmail) {
           targetEmail = foundEmail;
         } else {
-          // Si el RPC falla o no devuelve correo, validar si el usuario existe en perfiles
+          // 2. Si el RPC falla, consultar directamente en perfiles por username o email
           const { data: profile } = await supabase
             .from('perfiles')
-            .select('id, username')
-            .ilike('username', cleanInput)
+            .select('id, username, email')
+            .or(`username.ilike.${cleanInput},email.ilike.${cleanInput}`)
             .maybeSingle();
 
-          if (!profile) {
-            throw new Error(`El usuario "${cleanInput}" no existe. Verifica el nombre o regístrate.`);
+          if (profile?.email) {
+            targetEmail = profile.email;
           } else {
-            throw new Error(`No se pudo autenticar con el username "${cleanInput}". Ejecuta el script SQL database/solucion_login_y_usuarios_admin.sql en Supabase o inicia sesión con tu correo electrónico.`);
+            throw new Error(`El usuario "${cleanInput}" no existe o no tiene un correo asignado. Verifica tu nombre de usuario o ingresa con tu correo registrado.`);
           }
         }
       }
@@ -63,7 +75,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
       if (error) {
         if (error.message.includes('Email not confirmed')) {
-          throw new Error('El correo de este usuario está pendiente de confirmación. Ejecuta el script SQL database/solucion_completa_supabase.sql en Supabase para auto-confirmar las cuentas automáticamente.');
+          throw new Error('El correo de este usuario está pendiente de confirmación. Revisa tu bandeja o solicita un correo de activación.');
         }
         if (error.message.includes('Invalid login credentials')) {
           throw new Error('Credenciales incorrectas. Verifica tu correo/username y contraseña.');
@@ -71,10 +83,25 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         throw error;
       }
 
-      onAuthSuccess();
+      // Verificar si la cuenta fue suspendida o inactivada por el Admin
+      if (data?.user) {
+        const { data: userProfile } = await supabase
+          .from('perfiles')
+          .select('activo')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        if (userProfile && userProfile.activo === false) {
+          await supabase.auth.signOut();
+          throw new Error('🔴 Tu cuenta se encuentra SUSPENDIDA o INACTIVA. Ponte en contacto con la agencia Aguitours para reactivar tu acceso.');
+        }
+      }
+
+      resetForm();
+      if (onAuthSuccess) onAuthSuccess(data.user);
       onClose();
     } catch (err) {
-      setErrorMsg(err.message || 'Error al iniciar sesión. Revisa tus credenciales.');
+      setErrorMsg(err.message || 'Credenciales inválidas.');
     } finally {
       setLoading(false);
     }
@@ -86,32 +113,49 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     setErrorMsg('');
 
     if (!validarPasswordSegura(password)) {
-      setErrorMsg('La contraseña debe tener al menos 8 caracteres, 1 letra mayúscula, 1 minúscula, 1 número y 1 símbolo especial (!@#$%^&*).');
+      setErrorMsg('La contraseña no cumple los requisitos: mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo (!@#$%^&*).');
       setLoading(false);
       return;
     }
 
     try {
+      const cleanUsername = (username || email.split('@')[0]).toLowerCase().trim();
+
       const { data, error } = await supabase.auth.signUp({
-        email, 
+        email: email.trim(),
         password,
         options: {
           data: {
             nombre_completo: nombreCompleto,
-            username: username.toLowerCase().trim(),
-            telefono,
+            telefono: telefono,
             documento_identidad: documento,
-            rol: rol
+            username: cleanUsername,
+            rol: rol || 'cliente'
           }
         }
       });
 
       if (error) throw error;
 
-      alert('¡Cuenta creada exitosamente con seguridad alta!');
-      await supabase.auth.signInWithPassword({ email, password });
-      onAuthSuccess();
-      onClose();
+      // Crear fila en tabla perfiles de supabase
+      if (data?.user) {
+        await supabase.from('perfiles').upsert({
+          id: data.user.id,
+          email: email.trim().toLowerCase(),
+          nombre_completo: nombreCompleto,
+          telefono: telefono,
+          documento_identidad: documento,
+          username: cleanUsername,
+          rol: 'cliente',
+          activo: true
+        });
+
+        // Notificar al cliente y redirigir al formulario de inicio de sesión
+        alert(`¡Cuenta de cliente creada con éxito! 📧\n\nHemos enviado un correo de activación a "${email.trim()}".\nPor favor revisa tu bandeja de entrada o spam para confirmar tu cuenta e iniciar sesión.`);
+        resetForm();
+        setIsRegisterMode(false); // Redirigir automáticamente a Iniciar Sesión
+        return;
+      }
     } catch (err) {
       setErrorMsg(err.message || 'No se pudo crear la cuenta.');
     } finally {
@@ -119,8 +163,8 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#071521]/90 backdrop-blur-md">
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-[#071521]/90 backdrop-blur-md">
       {/* Contenedor Principal del Modal */}
       <div className="bg-[#0d2538] border border-white/15 rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden relative flex min-h-[560px]">
         
@@ -249,21 +293,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 />
               </div>
 
-              <div>
-                <label className="text-xs text-gray-300 font-semibold block mb-1">Rol de Usuario</label>
-                <select 
-                  value={rol} 
-                  onChange={e => setRol(e.target.value)} 
-                  className="w-full bg-[#071521] border border-white/15 rounded-xl p-2.5 text-white text-xs focus:border-[#1995ad] focus:outline-none"
-                >
-                  <option value="cliente">Viajero (Cliente)</option>
-                  <option value="editor_contenido">Editor de Contenido CMS</option>
-                  <option value="agente_ventas">Agente de Ventas / Reservas</option>
-                  <option value="super_admin">Super Administrador</option>
-                </select>
-              </div>
-
-              <button type="submit" disabled={loading} className="btn-gold-3d justify-center py-3 mt-1">
+              <button type="submit" disabled={loading} className="btn-gold-3d justify-center py-3.5 mt-2 font-bold text-sm">
                 {loading ? 'Creando cuenta...' : 'Crear Cuenta Segura'}
               </button>
             </form>
@@ -331,6 +361,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
