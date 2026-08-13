@@ -12,6 +12,7 @@ export function EditarDestinoModal({ destino, isOpen, onClose, onDestinoActualiz
     imagen_portada: ''
   });
   const [loading, setLoading] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false });
 
   useEffect(() => {
     if (destino) {
@@ -51,8 +52,6 @@ export function EditarDestinoModal({ destino, isOpen, onClose, onDestinoActualiz
       setLoading(false);
     }
   };
-
-  const [confirmModal, setConfirmModal] = useState({ isOpen: false });
 
   const handleEliminar = () => {
     setConfirmModal({ isOpen: true });
