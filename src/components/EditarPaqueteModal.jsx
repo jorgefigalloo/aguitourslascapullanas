@@ -28,6 +28,9 @@ export function EditarPaqueteModal({ paquete, isOpen, onClose, onPaqueteActualiz
         fecha_salida: paquete.fecha_salida || '',
         fecha_retorno: paquete.fecha_retorno || '',
         fecha_limite_inscripcion: paquete.fecha_limite_inscripcion || '',
+        numero_cuotas: paquete.numero_cuotas || 2,
+        porcentaje_cuota_inicial: paquete.porcentaje_cuota_inicial || 50,
+        dias_limite_cuota_inicial: paquete.dias_limite_cuota_inicial || 5,
         imagen_portada: paquete.imagen_portada || '',
         descripcion: paquete.descripcion || '',
         whatsapp_url: itObj.whatsapp_url || '',
@@ -89,6 +92,9 @@ export function EditarPaqueteModal({ paquete, isOpen, onClose, onPaqueteActualiz
           fecha_salida: formData.fecha_salida,
           fecha_retorno: formData.fecha_retorno,
           fecha_limite_inscripcion: formData.fecha_limite_inscripcion || null,
+          numero_cuotas: formData.numero_cuotas || 2,
+          porcentaje_cuota_inicial: formData.porcentaje_cuota_inicial || 50,
+          dias_limite_cuota_inicial: formData.dias_limite_cuota_inicial || 5,
           imagen_portada: formData.imagen_portada,
           descripcion: formData.descripcion,
           itinerario: itinerarioCompleto,
@@ -234,9 +240,54 @@ export function EditarPaqueteModal({ paquete, isOpen, onClose, onPaqueteActualiz
                 type="date" 
                 value={formData.fecha_limite_inscripcion || ''} 
                 onChange={e => setFormData({...formData, fecha_limite_inscripcion: e.target.value})} 
-                className="w-full bg-[#071521] border border-amber-500/40 rounded-xl p-3 text-white text-sm focus:border-amber-400 focus:outline-none" 
+                className="w-full bg-[#071521] border border-amber-500/40 rounded-xl p-3 text-white text-sm focus:border-amber-400 focus:outline-none cursor-pointer" 
               />
               <p className="text-[10px] text-gray-400 mt-1">Fecha límite hasta la cual los viajeros pueden unirse o confirmar tarifa.</p>
+            </div>
+
+            {/* Configuración de Cuotas y Pagos */}
+            <div className="md:col-span-2 bg-[#071521] p-4 rounded-2xl border border-emerald-500/30 flex flex-col gap-3">
+              <span className="text-xs text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                💳 Configuración del Cronograma de Cuotas para los Clientes
+              </span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-[11px] text-gray-300 font-semibold block mb-1">Cantidad de Cuotas</label>
+                  <select
+                    value={formData.numero_cuotas || 2}
+                    onChange={e => setFormData({...formData, numero_cuotas: parseInt(e.target.value)})}
+                    className="w-full bg-[#0d2538] border border-white/15 rounded-xl p-2.5 text-white text-xs"
+                  >
+                    <option value={1}>1 Cuota (Pago Único 100%)</option>
+                    <option value={2}>2 Cuotas (Reserva + Saldo Final)</option>
+                    <option value={3}>3 Cuotas (Reserva + 2da Cuota + Saldo Final)</option>
+                    <option value={4}>4 Cuotas (Reserva + 3 Cuotas Mensuales)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-gray-300 font-semibold block mb-1">% Cuota Inicial / Reserva</label>
+                  <input
+                    type="number"
+                    min="10"
+                    max="100"
+                    value={formData.porcentaje_cuota_inicial || 50}
+                    onChange={e => setFormData({...formData, porcentaje_cuota_inicial: parseFloat(e.target.value)})}
+                    className="w-full bg-[#0d2538] border border-white/15 rounded-xl p-2.5 text-white text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-gray-300 font-semibold block mb-1">Días Plazo Cuota Inicial</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.dias_limite_cuota_inicial || 5}
+                    onChange={e => setFormData({...formData, dias_limite_cuota_inicial: parseInt(e.target.value)})}
+                    className="w-full bg-[#0d2538] border border-white/15 rounded-xl p-2.5 text-white text-xs"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 

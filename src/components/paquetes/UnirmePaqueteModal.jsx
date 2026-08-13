@@ -72,8 +72,12 @@ export function UnirmePaqueteModal({ paquete, isOpen, onClose, user, profile, on
 
   const precioUnitario = parseFloat(paquete.precio_persona || 0);
   const precioTotalCalculado = precioUnitario * cantidadPersonas;
-  const cuotaInicialCalculada = Math.round((precioTotalCalculado / 2) * 100) / 100;
-  const cuotaFinalCalculada = Math.round((precioTotalCalculado - cuotaInicialCalculada) * 100) / 100;
+  const pctInicial = parseFloat(paquete.porcentaje_cuota_inicial || 50);
+  const numCuotasConfigured = parseInt(paquete.numero_cuotas || 2);
+  const diasPlazoInicial = parseInt(paquete.dias_limite_cuota_inicial || 5);
+
+  const cuotaInicialCalculada = Math.round((precioTotalCalculado * (pctInicial / 100)) * 100) / 100;
+  const saldoRestanteCalculado = Math.round((precioTotalCalculado - cuotaInicialCalculada) * 100) / 100;
 
   const handleConfirmarInscripcion = async (e) => {
     e.preventDefault();
@@ -126,28 +130,49 @@ export function UnirmePaqueteModal({ paquete, isOpen, onClose, user, profile, on
         if (acErr) console.warn('Error al guardar acompañantes:', acErr);
       }
 
-      // 3. Crear Cronograma Inicial de Cuotas en cuotas_inscripcion
+      // 3. Crear Cronograma Dinámico de Cuotas según configuración del paquete
       const fechaHoy = new Date();
-      const fechaVencCuota1 = new Date(fechaHoy.setDate(fechaHoy.getDate() + 5)).toISOString().split('T')[0];
+      const fechaVencCuota1 = new Date(fechaHoy.setDate(fechaHoy.getDate() + diasPlazoInicial)).toISOString().split('T')[0];
       
-      const payloadCuotas = [
-        {
+      const payloadCuotas = [];
+
+      if (numCuotasConfigured === 1) {
+        payloadCuotas.push({
           inscripcion_id: inscripcionId,
           numero_cuota: 1,
-          concepto: 'Cuota Inicial / Reserva (50%)',
+          concepto: 'Cuota Única (100%)',
+          monto: precioTotalCalculado,
+          fecha_vencimiento: fechaVencCuota1,
+          estado: 'pendiente'
+        });
+      } else {
+        // Cuota 1: Reserva / Inicial
+        payloadCuotas.push({
+          inscripcion_id: inscripcionId,
+          numero_cuota: 1,
+          concepto: `Cuota Inicial / Reserva (${pctInicial}%)`,
           monto: cuotaInicialCalculada,
           fecha_vencimiento: fechaVencCuota1,
           estado: 'pendiente'
-        },
-        {
-          inscripcion_id: inscripcionId,
-          numero_cuota: 2,
-          concepto: 'Cuota Final (50%)',
-          monto: cuotaFinalCalculada,
-          fecha_vencimiento: paquete.fecha_salida || null,
-          estado: 'pendiente'
+        });
+
+        // Restantes cuotas
+        const numRestantes = numCuotasConfigured - 1;
+        const montoPorRestante = Math.round((saldoRestanteCalculado / numRestantes) * 100) / 100;
+
+        for (let i = 1; i <= numRestantes; i++) {
+          const esUltima = i === numRestantes;
+          const conceptoCuota = esUltima ? `Cuota Final (${100 - pctInicial}%)` : `Cuota #${i + 1}`;
+          payloadCuotas.push({
+            inscripcion_id: inscripcionId,
+            numero_cuota: i + 1,
+            concepto: conceptoCuota,
+            monto: montoPorRestante,
+            fecha_vencimiento: paquete.fecha_salida || null,
+            estado: 'pendiente'
+          });
         }
-      ];
+      }
 
       const { error: cuotaErr } = await supabase
         .from('cuotas_inscripcion')
@@ -285,14 +310,20 @@ export function UnirmePaqueteModal({ paquete, isOpen, onClose, user, profile, on
           {/* Plan de Cuotas Iniciales */}
           <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl text-xs">
             <strong className="text-amber-300 block mb-1 flex items-center gap-1.5">
-              <DollarSign size={16} /> Cronograma Sugerido de Pago por Cuotas:
+              <DollarSign size={16} /> Cronograma de Pago ({numCuotasConfigured} {numCuotasConfigured === 1 ? 'Cuota' : 'Cuotas'}):
             </strong>
             <ul className="text-gray-300 space-y-1 ml-4 list-disc mt-2">
-              <li><strong>Cuota Inicial / Reserva (50%):</strong> S/ {cuotaInicialCalculada.toFixed(2)} (Plazo de 5 días hábiles para abonar).</li>
-              <li><strong>Cuota Final (50%):</strong> S/ {cuotaFinalCalculada.toFixed(2)} (Vence el {paquete.fecha_salida}).</li>
+              {numCuotasConfigured === 1 ? (
+                <li><strong>Pago Único (100%):</strong> S/ {precioTotalCalculado.toFixed(2)} (Plazo de {diasPlazoInicial} días para abonar).</li>
+              ) : (
+                <>
+                  <li><strong>Cuota Inicial / Reserva ({pctInicial}%):</strong> S/ {cuotaInicialCalculada.toFixed(2)} (Plazo de {diasPlazoInicial} días hábiles para abonar).</li>
+                  <li><strong>Saldo Restante en {numCuotasConfigured - 1} cuota(s):</strong> S/ {saldoRestanteCalculado.toFixed(2)} (Vence el {paquete.fecha_salida || 'fecha de salida'}).</li>
+                </>
+              )}
             </ul>
             <p className="text-[10px] text-amber-200/80 mt-2">
-              * Podrás ver el detalle de tus cuotas y subir comprobantes en tu Panel de Cliente.
+              * Podrás ver el detalle completo de tu cronograma de cuotas en tu Panel de Cliente.
             </p>
           </div>
 
