@@ -14,6 +14,7 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
     fecha_vencimiento: ''
   });
   const [showFormCrear, setShowFormCrear] = useState(false);
+  const [cuotaEditando, setCuotaEditando] = useState(null);
 
   useEffect(() => {
     if (isOpen && inscripcion) {
@@ -59,6 +60,33 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
         nuevoEstado === 'pagado' ? 'Cuota marcada como PAGADA con éxito.' : 'Cuota marcada como PENDIENTE.',
         'Estado de Cuota Actualizado'
       );
+      cargarCuotas();
+      if (onCuotasActualizadas) onCuotasActualizadas();
+    } catch (err) {
+      toast.error('Error al actualizar cuota: ' + err.message);
+    }
+  };
+
+  const handleGuardarEdicionCuota = async (e) => {
+    e.preventDefault();
+    if (parseFloat(cuotaEditando.monto) <= 0) {
+      toast.warning('El monto debe ser mayor a S/ 0.00');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('cuotas_inscripcion')
+        .update({
+          concepto: cuotaEditando.concepto,
+          monto: parseFloat(cuotaEditando.monto),
+          fecha_vencimiento: cuotaEditando.fecha_vencimiento || null
+        })
+        .eq('id', cuotaEditando.id);
+
+      if (error) throw error;
+      toast.success('Cuota del cronograma modificada con éxito.', 'Cuota Actualizada');
+      setCuotaEditando(null);
       cargarCuotas();
       if (onCuotasActualizadas) onCuotasActualizadas();
     } catch (err) {
@@ -228,6 +256,43 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
             <div className="space-y-3">
               {cuotas.map((c) => {
                 const esPagado = c.estado === 'pagado';
+                const estaEditando = cuotaEditando?.id === c.id;
+
+                if (estaEditando) {
+                  return (
+                    <form key={c.id} onSubmit={handleGuardarEdicionCuota} className="bg-[#071521] border border-amber-500/50 p-4 rounded-2xl flex flex-col gap-3">
+                      <div className="text-xs text-amber-400 font-bold">Editar Cuota #{c.numero_cuota}</div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <input
+                          type="text"
+                          value={cuotaEditando.concepto}
+                          onChange={(e) => setCuotaEditando({...cuotaEditando, concepto: e.target.value})}
+                          required
+                          className="bg-[#0d2538] border border-white/15 rounded-xl p-2.5 text-white text-xs"
+                        />
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={cuotaEditando.monto}
+                          onChange={(e) => setCuotaEditando({...cuotaEditando, monto: e.target.value})}
+                          required
+                          className="bg-[#0d2538] border border-white/15 rounded-xl p-2.5 text-white text-xs"
+                        />
+                        <input
+                          type="date"
+                          value={cuotaEditando.fecha_vencimiento}
+                          onChange={(e) => setCuotaEditando({...cuotaEditando, fecha_vencimiento: e.target.value})}
+                          className="bg-[#0d2538] border border-white/15 rounded-xl p-2.5 text-white text-xs"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <button type="button" onClick={() => setCuotaEditando(null)} className="text-xs text-gray-400 px-3 py-1.5">Cancelar</button>
+                        <button type="submit" className="bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold px-4 py-1.5 rounded-xl">Guardar Cambios</button>
+                      </div>
+                    </form>
+                  );
+                }
+
                 return (
                   <div key={c.id} className="bg-[#071521] border border-white/10 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                     <div>
@@ -245,8 +310,17 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 self-end md:self-auto">
-                      <strong className="text-sm text-[#ffb703]">S/ {parseFloat(c.monto).toFixed(2)}</strong>
+                    <div className="flex items-center gap-2.5 self-end md:self-auto">
+                      <strong className="text-sm text-[#ffb703] mr-1">S/ {parseFloat(c.monto).toFixed(2)}</strong>
+
+                      <button
+                        onClick={() => setCuotaEditando({ id: c.id, concepto: c.concepto, monto: c.monto, fecha_vencimiento: c.fecha_vencimiento || '' })}
+                        className="text-gray-400 hover:text-amber-300 p-1.5 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+                        title="Editar concepto, monto o fecha de esta cuota"
+                      >
+                        <Edit size={15} />
+                      </button>
+
                       <button
                         onClick={() => handleMarcarPagado(c.id, c.estado)}
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer border ${
@@ -260,10 +334,10 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
 
                       <button
                         onClick={() => handleEliminarCuota(c.id)}
-                        className="text-gray-400 hover:text-red-400 p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+                        className="text-gray-400 hover:text-red-400 p-1.5 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
                         title="Eliminar cuota"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={15} />
                       </button>
                     </div>
                   </div>
