@@ -198,7 +198,18 @@ export default function App() {
     } catch (e) { console.log(e); }
   };
 
-  // Si el usuario está en el Panel Administrativo
+  // Proteger rutas /admin y /cliente cuando se cierra la sesión o expira por inactividad
+  useEffect(() => {
+    if (appReady && !user) {
+      if (activeView === 'admin' || activeView === 'mi-perfil') {
+        setActiveView('inicio');
+        window.history.pushState(null, '', '/');
+        setAuthModalOpen(true);
+      }
+    }
+  }, [appReady, user, activeView]);
+
+  // Si el usuario está autenticado y en el Panel Administrativo
   if (activeView === 'admin' && user) {
     return (
       <AdminDashboard 
@@ -227,7 +238,7 @@ export default function App() {
       />
 
       <main style={{ flex: 1 }}>
-        {activeView === 'inicio' && (
+        {(activeView === 'inicio' || ((activeView === 'admin' || activeView === 'mi-perfil') && !user)) && (
           <>
             <Hero3D 
               onExplorarGrupales={() => navigateToView('grupales')}
