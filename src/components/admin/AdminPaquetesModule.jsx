@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Package, Plus, RefreshCw, Edit3, FileText, Calendar, MapPin, Users, Search, ArrowUpDown, Filter, Eye, EyeOff, Calculator } from 'lucide-react';
+import { Package, Plus, RefreshCw, Edit3, FileText, Calendar, MapPin, Users, Search, ArrowUpDown, Filter, Eye, EyeOff, Calculator, ShieldCheck } from 'lucide-react';
 import { CrearPaqueteModal } from '../CrearPaqueteModal';
 import { EditarPaqueteModal } from '../EditarPaqueteModal';
 import { ReportePdfModal } from '../paquetes/ReportePdfModal';
@@ -50,10 +50,18 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
     }
   };
 
-  const handleReiniciarCupos = async () => {
-    const confirmacion = window.confirm('¿Deseas reiniciar la disponibilidad de cupos de TODOS los paquetes al 100%?');
-    if (!confirmacion) return;
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, titulo: '', mensaje: '', onConfirmar: () => {} });
 
+  const handleReiniciarCupos = () => {
+    setConfirmModal({
+      isOpen: true,
+      titulo: '¿Reiniciar Disponibilidad de Cupos?',
+      mensaje: '¿Deseas reiniciar la disponibilidad de cupos de TODOS los paquetes al 100%?',
+      onConfirmar: ejecutarReiniciarCupos
+    });
+  };
+
+  const ejecutarReiniciarCupos = async () => {
     setLoading(true);
     try {
       for (const p of paquetes) {
@@ -300,6 +308,40 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
       <ReportePdfModal paquete={paqueteAPdf} isOpen={!!paqueteAPdf} onClose={() => setPaqueteAPdf(null)} />
       <VerInscritosModal paquete={paqueteAInscritos} isOpen={!!paqueteAInscritos} onClose={() => setPaqueteAInscritos(null)} />
       <RecalcularTarifaModal paquete={paqueteARecalcular} isOpen={!!paqueteARecalcular} onClose={() => setPaqueteARecalcular(null)} onTarifaRecalculada={onActualizar} />
+
+      {/* Modal de Confirmación Sistema Personalizado */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-[100070] flex items-center justify-center p-4 bg-[#071521]/90 backdrop-blur-md">
+          <div className="bg-[#0d2538] border border-white/20 rounded-3xl w-full max-w-sm p-6 shadow-2xl flex flex-col gap-4 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center mx-auto">
+              <ShieldCheck size={28} />
+            </div>
+            <div>
+              <h4 className="font-headline font-bold text-base text-white m-0">{confirmModal.titulo}</h4>
+              <p className="text-xs text-gray-300 m-0 mt-2 leading-relaxed">{confirmModal.mensaje}</p>
+            </div>
+            <div className="flex justify-center gap-3 mt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  confirmModal.onConfirmar();
+                  setConfirmModal({ ...confirmModal, isOpen: false });
+                }}
+                className="bg-[#1995ad] hover:bg-[#1995ad]/80 text-white text-xs font-bold px-5 py-2.5 rounded-xl cursor-pointer shadow-lg"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

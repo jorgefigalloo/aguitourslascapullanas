@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, Calendar, MapPin, CheckCircle2, MessageCircle, FileText, Users, ChevronDown, ChevronUp, ExternalLink, Download, Trash2, LogOut, DollarSign, UserPlus, Clock } from 'lucide-react';
+import { Briefcase, Calendar, MapPin, CheckCircle2, MessageCircle, FileText, Users, ChevronDown, ChevronUp, ExternalLink, Download, Trash2, LogOut, DollarSign, UserPlus, Clock, ShieldCheck } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
 
@@ -81,10 +81,18 @@ export function ClientMisViajes({ user }) {
     }
   };
 
-  const handleRetirarmeDelViaje = async (item) => {
-    const confirm = window.confirm(`¿Estás seguro de que deseas retirarte del paquete "${item.paquetes_grupales?.titulo}"?`);
-    if (!confirm) return;
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, titulo: '', mensaje: '', onConfirmar: () => {} });
 
+  const handleRetirarmeDelViaje = (item) => {
+    setConfirmModal({
+      isOpen: true,
+      titulo: '¿Retirarme del Viaje?',
+      mensaje: `¿Estás seguro de que deseas retirarte del paquete "${item.paquetes_grupales?.titulo}"? Tu cupo reservado se liberará.`,
+      onConfirmar: () => ejecutarRetirarmeDelViaje(item)
+    });
+  };
+
+  const ejecutarRetirarmeDelViaje = async (item) => {
     try {
       // 1. Cancelar inscripción
       const { error } = await supabase
@@ -103,16 +111,23 @@ export function ClientMisViajes({ user }) {
       }
 
       toast.info('Te has retirado del viaje. Tu cupo ha sido liberado.', 'Reserva Cancelada');
+      setConfirmModal({ isOpen: false, titulo: '', mensaje: '', onConfirmar: () => {} });
       cargarMisViajes();
     } catch (err) {
       toast.error('Error al retirarte del viaje: ' + err.message);
     }
   };
 
-  const handleEliminarInscripcion = async (item) => {
-    const confirm = window.confirm('¿Deseas quitar este historial de viaje de tu panel personal?');
-    if (!confirm) return;
+  const handleEliminarInscripcion = (item) => {
+    setConfirmModal({
+      isOpen: true,
+      titulo: '¿Quitar del Historial?',
+      mensaje: '¿Deseas quitar este historial de viaje de tu panel personal?',
+      onConfirmar: () => ejecutarEliminarInscripcion(item)
+    });
+  };
 
+  const ejecutarEliminarInscripcion = async (item) => {
     try {
       const { error } = await supabase
         .from('inscripciones_grupo')
@@ -122,9 +137,10 @@ export function ClientMisViajes({ user }) {
       if (error) throw error;
 
       toast.success('Viaje removido de tu panel personal.', 'Historial Limpiado');
+      setConfirmModal({ isOpen: false, titulo: '', mensaje: '', onConfirmar: () => {} });
       cargarMisViajes();
     } catch (err) {
-      toast.error('Error al eliminar registro: ' + err.message);
+      toast.error('Error al eliminar historial: ' + err.message);
     }
   };
 
@@ -345,6 +361,39 @@ export function ClientMisViajes({ user }) {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Modal de Confirmación Sistema Personalizado */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-[100070] flex items-center justify-center p-4 bg-[#071521]/90 backdrop-blur-md">
+          <div className="bg-[#0d2538] border border-white/20 rounded-3xl w-full max-w-sm p-6 shadow-2xl flex flex-col gap-4 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center mx-auto">
+              <ShieldCheck size={28} />
+            </div>
+            <div>
+              <h4 className="font-headline font-bold text-base text-white m-0">{confirmModal.titulo}</h4>
+              <p className="text-xs text-gray-300 m-0 mt-2 leading-relaxed">{confirmModal.mensaje}</p>
+            </div>
+            <div className="flex justify-center gap-3 mt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmModal({ isOpen: false, titulo: '', mensaje: '', onConfirmar: () => {} })}
+                className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  confirmModal.onConfirmar();
+                }}
+                className="bg-[#1995ad] hover:bg-[#1995ad]/80 text-white text-xs font-bold px-5 py-2.5 rounded-xl cursor-pointer shadow-lg"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

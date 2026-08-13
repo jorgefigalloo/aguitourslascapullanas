@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Trash2, Globe, Image as ImageIcon } from 'lucide-react';
+import { X, Save, Trash2, Globe, Image as ImageIcon, ShieldCheck } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
 
@@ -52,10 +52,13 @@ export function EditarDestinoModal({ destino, isOpen, onClose, onDestinoActualiz
     }
   };
 
-  const handleEliminar = async () => {
-    const confirmacion = window.confirm(`¿Estás seguro de eliminar el destino "${destino.nombre}"? Esta acción no se puede deshacer.`);
-    if (!confirmacion) return;
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false });
 
+  const handleEliminar = () => {
+    setConfirmModal({ isOpen: true });
+  };
+
+  const ejecutarEliminar = async () => {
     setLoading(true);
     try {
       const { error } = await supabase
@@ -71,6 +74,7 @@ export function EditarDestinoModal({ destino, isOpen, onClose, onDestinoActualiz
       toast.error('Error al eliminar destino: ' + err.message);
     } finally {
       setLoading(false);
+      setConfirmModal({ isOpen: false });
     }
   };
 
@@ -173,6 +177,39 @@ export function EditarDestinoModal({ destino, isOpen, onClose, onDestinoActualiz
           </div>
         </form>
       </div>
+
+      {/* Modal de Confirmación Sistema Personalizado */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-[100070] flex items-center justify-center p-4 bg-[#071521]/90 backdrop-blur-md">
+          <div className="bg-[#0d2538] border border-[#ffb703]/40 rounded-3xl w-full max-w-sm p-6 shadow-2xl flex flex-col gap-4 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-red-500/20 text-red-400 border border-red-500/40 flex items-center justify-center mx-auto">
+              <ShieldCheck size={28} />
+            </div>
+            <div>
+              <h4 className="font-headline font-bold text-base text-white m-0">¿Eliminar Destino Turístico?</h4>
+              <p className="text-xs text-gray-300 m-0 mt-2 leading-relaxed">
+                ¿Estás seguro de eliminar el destino <strong>"{destino?.nombre}"</strong>? Esta acción no se puede deshacer.
+              </p>
+            </div>
+            <div className="flex justify-center gap-3 mt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmModal({ isOpen: false })}
+                className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={ejecutarEliminar}
+                className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl cursor-pointer shadow-lg"
+              >
+                Sí, Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

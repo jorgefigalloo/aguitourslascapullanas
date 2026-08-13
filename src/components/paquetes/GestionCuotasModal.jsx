@@ -19,6 +19,15 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
   const [showFormCrear, setShowFormCrear] = useState(false);
   const [cuotaEditando, setCuotaEditando] = useState(null);
 
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    titulo: '',
+    mensaje: '',
+    btnTexto: 'Confirmar',
+    btnClass: 'bg-[#1995ad] hover:bg-[#1995ad]/80 text-white',
+    onConfirmar: () => {}
+  });
+
   useEffect(() => {
     if (isOpen && inscripcion) {
       cargarCuotas();
@@ -45,17 +54,25 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
 
   const handleIniciarCobro = (cuota) => {
     if (cuota.estado === 'pagado') {
-      // Si ya está pagado, desmarcar a pendiente
-      handleDesmarcarPagado(cuota);
+      solicitarDesmarcarPagado(cuota);
     } else {
       setCuotaProcesandoCobro(cuota);
       setDatosCobro({ metodo_pago: 'Efectivo', referencia_pago: '' });
     }
   };
 
-  const handleDesmarcarPagado = async (cuota) => {
-    if (!window.confirm(`¿Deseas desmarcar la Cuota #${cuota.numero_cuota} a PENDIENTE?`)) return;
+  const solicitarDesmarcarPagado = (cuota) => {
+    setConfirmModal({
+      isOpen: true,
+      titulo: '¿Desmarcar Cuota?',
+      mensaje: `¿Deseas cambiar la Cuota #${cuota.numero_cuota} ("${cuota.concepto}") a estado PENDIENTE?`,
+      btnTexto: 'Sí, Desmarcar',
+      btnClass: 'bg-amber-500 hover:bg-amber-600 text-black',
+      onConfirmar: () => ejecutarDesmarcarPagado(cuota.id)
+    });
+  };
 
+  const ejecutarDesmarcarPagado = async (cuotaId) => {
     try {
       const { error } = await supabase
         .from('cuotas_inscripcion')
@@ -65,7 +82,7 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
           referencia_pago: null,
           fecha_pago: null
         })
-        .eq('id', cuota.id);
+        .eq('id', cuotaId);
 
       if (error) throw error;
       toast.info('Cuota marcada como PENDIENTE.');
@@ -185,9 +202,18 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
     }
   };
 
-  const handleEliminarCuota = async (cuotaId) => {
-    if (!window.confirm('¿Deseas eliminar esta cuota del cronograma?')) return;
+  const solicitarEliminarCuota = (cuota) => {
+    setConfirmModal({
+      isOpen: true,
+      titulo: '¿Eliminar Cuota?',
+      mensaje: `¿Deseas eliminar la Cuota #${cuota.numero_cuota} ("${cuota.concepto}") por S/ ${parseFloat(cuota.monto).toFixed(2)} del cronograma de este cliente?`,
+      btnTexto: 'Sí, Eliminar Cuota',
+      btnClass: 'bg-red-600 hover:bg-red-700 text-white',
+      onConfirmar: () => ejecutarEliminarCuota(cuota.id)
+    });
+  };
 
+  const ejecutarEliminarCuota = async (cuotaId) => {
     try {
       const { error } = await supabase
         .from('cuotas_inscripcion')
@@ -393,7 +419,7 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
                       </button>
 
                       <button
-                        onClick={() => handleEliminarCuota(c.id)}
+                        onClick={() => solicitarEliminarCuota(c)}
                         className="text-gray-400 hover:text-red-400 p-1.5 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
                         title="Eliminar cuota"
                       >
@@ -474,6 +500,40 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmación Sistema Personalizado */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-[100070] flex items-center justify-center p-4 bg-[#071521]/90 backdrop-blur-md">
+          <div className="bg-[#0d2538] border border-white/20 rounded-3xl w-full max-w-sm p-6 shadow-2xl flex flex-col gap-4 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center mx-auto">
+              <ShieldCheck size={28} />
+            </div>
+            <div>
+              <h4 className="font-headline font-bold text-base text-white m-0">{confirmModal.titulo}</h4>
+              <p className="text-xs text-gray-300 m-0 mt-2 leading-relaxed">{confirmModal.mensaje}</p>
+            </div>
+            <div className="flex justify-center gap-3 mt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  confirmModal.onConfirmar();
+                  setConfirmModal({ ...confirmModal, isOpen: false });
+                }}
+                className={`${confirmModal.btnClass} text-xs font-bold px-5 py-2.5 rounded-xl cursor-pointer shadow-lg`}
+              >
+                {confirmModal.btnTexto}
+              </button>
+            </div>
           </div>
         </div>
       )}
