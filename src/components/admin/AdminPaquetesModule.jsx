@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Package, Plus, RefreshCw, Edit3, FileText, Calendar, MapPin, Users, Search, ArrowUpDown, Filter } from 'lucide-react';
+import { Package, Plus, RefreshCw, Edit3, FileText, Calendar, MapPin, Users, Search, ArrowUpDown, Filter, Eye, EyeOff, Calculator } from 'lucide-react';
 import { CrearPaqueteModal } from '../CrearPaqueteModal';
 import { EditarPaqueteModal } from '../EditarPaqueteModal';
 import { ReportePdfModal } from '../paquetes/ReportePdfModal';
 import { VerInscritosModal } from '../paquetes/VerInscritosModal';
+import { RecalcularTarifaModal } from '../paquetes/RecalcularTarifaModal';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
 
@@ -13,6 +14,7 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
   const [paqueteAEditar, setPaqueteAEditar] = useState(null);
   const [paqueteAPdf, setPaqueteAPdf] = useState(null);
   const [paqueteAInscritos, setPaqueteAInscritos] = useState(null);
+  const [paqueteARecalcular, setPaqueteARecalcular] = useState(null);
   const [loading, setLoading] = useState(false);
 
   // Estados de Filtros y Búsqueda
@@ -41,6 +43,29 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
     }
   };
 
+  const handleToggleVisibilidadOculto = async (pkg) => {
+    const esOculto = pkg.estado === 'oculto';
+    const nuevoEstado = esOculto ? 'abierto' : 'oculto';
+
+    try {
+      const { error } = await supabase
+        .from('paquetes_grupales')
+        .update({ estado: nuevoEstado })
+        .eq('id', pkg.id);
+
+      if (error) throw error;
+
+      if (nuevoEstado === 'oculto') {
+        toast.info(`El paquete "${pkg.titulo}" fue ocultado del sitio web público (Borrador).`, 'Paquete Ocultado');
+      } else {
+        toast.success(`El paquete "${pkg.titulo}" fue publicado en la web pública.`, 'Paquete Publicado');
+      }
+      onActualizar();
+    } catch (err) {
+      toast.error('Error al cambiar estado del paquete: ' + err.message);
+    }
+  };
+
   // Filtrado y Ordenamiento Dinámico
   const paquetesFiltrados = paquetes
     .filter(p => {
@@ -51,10 +76,11 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
       return matchSearch && matchEstado;
     })
     .sort((a, b) => {
-      if (ordenamiento === 'precio_asc') return parseFloat(a.precio_persona) - parseFloat(b.precio_persona);
-      if (ordenamiento === 'precio_desc') return parseFloat(b.precio_persona) - parseFloat(a.precio_persona);
-      if (ordenamiento === 'fecha_salida') return String(a.fecha_salida).localeCompare(String(b.fecha_salida));
+      if (ordenamiento === 'reciente') return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      if (ordenamiento === 'precio-asc') return parseFloat(a.precio_persona) - parseFloat(b.precio_persona);
+      if (ordenamiento === 'precio-desc') return parseFloat(b.precio_persona) - parseFloat(a.precio_persona);
       if (ordenamiento === 'nombre') return a.titulo.localeCompare(b.titulo);
+      if (ordenamiento === 'fecha') return new Date(a.fecha_salida) - new Date(b.fecha_salida);
       return 0;
     });
 
@@ -63,12 +89,12 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <h3 className="font-headline text-2xl font-bold text-white flex items-center gap-2">
-            <Package size={26} className="text-[#ffb703]" /> Gestión de Paquetes Grupales ({paquetesFiltrados.length} / {paquetes.length})
+            <Package size={26} className="text-[#1995ad]" /> Gestión de Paquetes Grupales ({paquetesFiltrados.length} / {paquetes.length})
           </h3>
-          <p className="text-xs text-gray-300 mt-1">Crea, edita, filtra y administra los cupos e itinerarios de viajes</p>
+          <p className="text-xs text-gray-300 mt-1">Crea, edita, filtra, publica o deshabilita los cupos e itinerarios de viajes</p>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button 
             onClick={handleReiniciarCupos} 
             disabled={loading}
@@ -86,11 +112,8 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
         </div>
       </div>
 
-      {/* Barra de Filtros, Búsqueda y Ordenamiento */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3 mb-6 bg-[#071521] p-4 rounded-2xl border border-white/10">
-        
-        {/* Campo de Búsqueda por Nombre / Destino / Fecha */}
-        <div className="md:col-span-5 relative">
+        <div className="md:col-span-6 relative">
           <Search size={18} className="absolute left-3.5 top-3 text-gray-400" />
           <input 
             type="text" 
@@ -101,25 +124,23 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
           />
         </div>
 
-        {/* Filtro por Ordenamiento (Precio Mayor/Menor, Nombre, Fecha) */}
-        <div className="md:col-span-4 relative flex items-center gap-2">
-          <ArrowUpDown size={16} className="text-[#ffb703] shrink-0" />
+        <div className="md:col-span-3 relative flex items-center gap-2">
+          <ArrowUpDown size={16} className="text-[#1995ad] shrink-0" />
           <select
             value={ordenamiento}
             onChange={e => setOrdenamiento(e.target.value)}
             className="w-full bg-[#0d2538] border border-white/15 rounded-xl px-3 py-2.5 text-white text-xs focus:border-[#1995ad] focus:outline-none cursor-pointer"
           >
             <option value="reciente">Orden: Más Recientes Creados</option>
-            <option value="precio_desc">💰 Precio: Mayor a Menor (S/ 📈)</option>
-            <option value="precio_asc">💰 Precio: Menor a Mayor (S/ 📉)</option>
+            <option value="precio-desc">💰 Precio: Mayor a Menor (S/ 📈)</option>
+            <option value="precio-asc">💰 Precio: Menor a Mayor (S/ 📉)</option>
             <option value="nombre">🔤 Nombre: A - Z</option>
-            <option value="fecha_salida">📅 Fecha de Salida</option>
+            <option value="fecha">📅 Fecha de Salida</option>
           </select>
         </div>
 
-        {/* Filtro por Estado (Abierto / Completo / Todos) */}
         <div className="md:col-span-3 relative flex items-center gap-2">
-          <Filter size={16} className="text-[#1995ad] shrink-0" />
+          <Filter size={16} className="text-[#ffb703] shrink-0" />
           <select
             value={filtroEstado}
             onChange={e => setFiltroEstado(e.target.value)}
@@ -129,11 +150,11 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
             <option value="abierto">✅ Solo Abiertos</option>
             <option value="completo">🔴 Solo Completos</option>
             <option value="cerrado">🔒 Solo Cerrados</option>
+            <option value="oculto">👁️ Solo Ocultos (Borradores)</option>
           </select>
         </div>
       </div>
 
-      {/* Tabla de Paquetes */}
       <div className="overflow-x-auto rounded-2xl border border-white/15">
         <table className="w-full text-left text-sm text-white">
           <thead className="bg-[#071521] text-xs uppercase text-gray-300 border-b border-white/15">
@@ -144,21 +165,23 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
               <th className="p-4">Fecha Salida</th>
               <th className="p-4">Precio</th>
               <th className="p-4">Cupos (Inscritos/Max)</th>
+              <th className="p-4">Estado</th>
               <th className="p-4">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/10">
             {paquetesFiltrados.length === 0 ? (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-gray-400 text-xs">
+                <td colSpan={8} className="p-8 text-center text-gray-400 text-xs">
                   No se encontraron paquetes que coincidan con la búsqueda "{searchTerm}".
                 </td>
               </tr>
             ) : (
               paquetesFiltrados.map(pkg => {
                 const inscritos = pkg.cupo_maximo - pkg.cupo_disponible;
+                const esOculto = pkg.estado === 'oculto';
                 return (
-                  <tr key={pkg.id} className="hover:bg-white/5 transition-colors">
+                  <tr key={pkg.id} className={`hover:bg-white/5 transition-colors ${esOculto ? 'opacity-60 bg-black/20' : ''}`}>
                     <td className="p-4">
                       <img 
                         src={pkg.imagen_portada} 
@@ -167,7 +190,10 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
                         onError={(e) => { e.target.src = '/images/ciudades/fondo-destinos1.png'; }}
                       />
                     </td>
-                    <td className="p-4 font-bold">{pkg.titulo}</td>
+                    <td className="p-4 font-bold flex flex-col">
+                      {pkg.titulo}
+                      {esOculto && <span className="text-[10px] text-amber-400 font-normal">Oculto</span>}
+                    </td>
                     <td className="p-4 text-gray-300">
                       <span className="flex items-center gap-1"><MapPin size={14} className="text-[#1995ad]" /> {pkg.destino}</span>
                     </td>
@@ -179,29 +205,24 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
                       <button
                         onClick={() => setPaqueteAInscritos(pkg)}
                         className="bg-black/40 hover:bg-[#1995ad]/30 border border-white/15 hover:border-[#1995ad]/60 text-white px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-md group"
-                        title="Ver lista completa de personas inscritas en este paquete"
                       >
-                        <Users size={13} className="text-[#ffb703] group-hover:scale-110 transition-transform" />
-                        <span>{inscritos} / {pkg.cupo_maximo}</span>
-                        <span className="text-[10px] text-[#1995ad] font-normal underline ml-0.5">Ver Inscritos</span>
+                        <Users size={13} className="text-[#ffb703]" />
+                        {inscritos} / {pkg.cupo_maximo}
+                      </button>
+                    </td>
+                    <td className="p-4">
+                       <button
+                        onClick={() => handleToggleVisibilidadOculto(pkg)}
+                        className={`text-[10px] uppercase font-extrabold px-2 py-1 rounded-full border ${esOculto ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'}`}
+                      >
+                        {esOculto ? <EyeOff size={12} /> : <Eye size={12} />}
                       </button>
                     </td>
                     <td className="p-4">
                       <div className="flex gap-2">
-                        <button 
-                          onClick={() => setPaqueteAPdf(pkg)} 
-                          className="bg-[#1995ad]/20 border border-[#1995ad]/40 text-[#a0f0ff] hover:bg-[#1995ad] hover:text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 cursor-pointer"
-                          title="Ver y descargar reporte PDF del itinerario"
-                        >
-                          <FileText size={14} /> PDF
-                        </button>
-
-                        <button 
-                          onClick={() => setPaqueteAEditar(pkg)} 
-                          className="btn-gold-3d text-xs px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 cursor-pointer"
-                        >
-                          <Edit3 size={14} /> Editar
-                        </button>
+                        <button onClick={() => setPaqueteARecalcular(pkg)} className="bg-amber-500/20 text-amber-300 px-2 py-1.5 rounded-xl"><Calculator size={14} /></button>
+                        <button onClick={() => setPaqueteAPdf(pkg)} className="bg-[#1995ad]/20 text-[#a0f0ff] px-2 py-1.5 rounded-xl"><FileText size={14} /></button>
+                        <button onClick={() => setPaqueteAEditar(pkg)} className="bg-white/10 text-white px-2 py-1.5 rounded-xl"><Edit3 size={14} /></button>
                       </div>
                     </td>
                   </tr>
@@ -212,32 +233,11 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
         </table>
       </div>
 
-      {/* Modales */}
-      <CrearPaqueteModal 
-        isOpen={crearModalOpen} 
-        onClose={() => setCrearModalOpen(false)} 
-        onPaqueteCreado={onActualizar} 
-        userId={user?.id} 
-      />
-
-      <EditarPaqueteModal 
-        paquete={paqueteAEditar} 
-        isOpen={!!paqueteAEditar} 
-        onClose={() => setPaqueteAEditar(null)} 
-        onPaqueteActualizado={onActualizar} 
-      />
-
-      <ReportePdfModal 
-        paquete={paqueteAPdf} 
-        isOpen={!!paqueteAPdf} 
-        onClose={() => setPaqueteAPdf(null)} 
-      />
-
-      <VerInscritosModal 
-        paquete={paqueteAInscritos} 
-        isOpen={!!paqueteAInscritos} 
-        onClose={() => setPaqueteAInscritos(null)} 
-      />
+      <CrearPaqueteModal isOpen={crearModalOpen} onClose={() => setCrearModalOpen(false)} onPaqueteCreado={onActualizar} userId={user?.id} />
+      <EditarPaqueteModal paquete={paqueteAEditar} isOpen={!!paqueteAEditar} onClose={() => setPaqueteAEditar(null)} onPaqueteActualizado={onActualizar} />
+      <ReportePdfModal paquete={paqueteAPdf} isOpen={!!paqueteAPdf} onClose={() => setPaqueteAPdf(null)} />
+      <VerInscritosModal paquete={paqueteAInscritos} isOpen={!!paqueteAInscritos} onClose={() => setPaqueteAInscritos(null)} />
+      <RecalcularTarifaModal paquete={paqueteARecalcular} isOpen={!!paqueteARecalcular} onClose={() => setPaqueteARecalcular(null)} onTarifaRecalculada={onActualizar} />
     </div>
   );
 }

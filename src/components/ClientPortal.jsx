@@ -4,6 +4,7 @@ import { ClientMisViajes } from './cliente/ClientMisViajes';
 import { ClientFavoritos } from './cliente/ClientFavoritos';
 import { ClientSolicitudesCotizacion } from './cliente/ClientSolicitudesCotizacion';
 import { ClientPerfilEditar } from './cliente/ClientPerfilEditar';
+import { AlertaNuevaTarifaModal } from './cliente/AlertaNuevaTarifaModal';
 
 export function ClientPortal({ user, profile, initialTab = 'mis-viajes', onExplorarPaquetes }) {
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -40,6 +41,9 @@ export function ClientPortal({ user, profile, initialTab = 'mis-viajes', onExplo
           <div className="text-lg font-black text-white">Pasajero Activo</div>
         </div>
       </div>
+
+      {/* Alerta Interactiva de Recálculo de Tarifa Pendiente de Confirmación */}
+      <AlertaNuevaTarifaModal user={user} />
 
       {/* Navegación por Pestañas del Dashboard del Cliente */}
       <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-8 border-b border-white/10">

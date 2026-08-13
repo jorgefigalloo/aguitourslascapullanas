@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Filter, CheckCircle2, XCircle, Clock, MapPin, Calendar, FileText, Phone, UserCheck, UserPlus, Edit, Power, ShieldAlert, AtSign } from 'lucide-react';
+import { Users, Search, Filter, CheckCircle2, XCircle, Clock, MapPin, Calendar, FileText, Phone, UserCheck, UserPlus, Edit, Power, ShieldAlert, AtSign, Package, Heart, Eye } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { CrearUsuarioModal } from '../usuarios/CrearUsuarioModal';
 import { EditarUsuarioAdminModal } from '../EditarUsuarioAdminModal';
+import { VerDetalleClienteModal } from '../clientes/VerDetalleClienteModal';
 import { useToast } from '../../context/ToastContext';
 
 export function AdminClientesModule() {
@@ -13,10 +14,12 @@ export function AdminClientesModule() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('todos');
+  const [clientCounts, setClientCounts] = useState({});
 
   // Modales
   const [crearClienteOpen, setCrearClienteOpen] = useState(false);
   const [editarUsuarioModal, setEditarUsuarioModal] = useState({ open: false, usuario: null });
+  const [clienteVerDetalle, setClienteVerDetalle] = useState(null);
 
   useEffect(() => {
     cargarTodo();
@@ -25,6 +28,35 @@ export function AdminClientesModule() {
   const cargarTodo = () => {
     cargarClientes();
     cargarInscripciones();
+    cargarContadoresActividad();
+  };
+
+  const cargarContadoresActividad = async () => {
+    try {
+      const counts = {};
+
+      // 1. Contar reservas por usuario
+      const { data: resData } = await supabase.from('inscripciones_grupo').select('usuario_id');
+      if (resData) {
+        resData.forEach(r => {
+          if (!counts[r.usuario_id]) counts[r.usuario_id] = { reservas: 0, meGusta: 0 };
+          counts[r.usuario_id].reservas += 1;
+        });
+      }
+
+      // 2. Contar me gustas por usuario
+      const { data: favData } = await supabase.from('favoritos_usuario').select('usuario_id');
+      if (favData) {
+        favData.forEach(f => {
+          if (!counts[f.usuario_id]) counts[f.usuario_id] = { reservas: 0, meGusta: 0 };
+          counts[f.usuario_id].meGusta += 1;
+        });
+      }
+
+      setClientCounts(counts);
+    } catch (e) {
+      console.log('Error al cargar contadores de actividad:', e);
+    }
   };
 
   const cargarClientes = async () => {
@@ -238,7 +270,7 @@ export function AdminClientesModule() {
               <tr>
                 <th className="p-4">Cliente / Usuario</th>
                 <th className="p-4">Documento / Teléfono</th>
-                <th className="p-4">Rol del Sistema</th>
+                <th className="p-4">Reservas & Me Gusta</th>
                 <th className="p-4">Fecha Registro</th>
                 <th className="p-4">Estado Cuenta</th>
                 <th className="p-4">Acciones</th>
@@ -260,6 +292,7 @@ export function AdminClientesModule() {
               ) : (
                 clientesFiltrados.map(c => {
                   const isActivo = c.activo ?? true;
+                  const counts = clientCounts[c.id] || { reservas: 0, meGusta: 0 };
 
                   return (
                     <tr key={c.id} className="hover:bg-white/5 transition-colors">
@@ -284,9 +317,23 @@ export function AdminClientesModule() {
                       </td>
 
                       <td className="p-4 text-xs">
-                        <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2.5 py-0.5 rounded-full uppercase font-bold text-[10px]">
-                          {c.rol || 'cliente'}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setClienteVerDetalle(c)}
+                            title="Ver viajes inscritos de este cliente"
+                            className="bg-[#1995ad]/20 hover:bg-[#1995ad]/40 text-[#1995ad] border border-[#1995ad]/40 text-[11px] font-extrabold px-2.5 py-1 rounded-xl flex items-center gap-1 transition-all cursor-pointer"
+                          >
+                            <Package size={13} /> {counts.reservas} Viajes
+                          </button>
+
+                          <button
+                            onClick={() => setClienteVerDetalle(c)}
+                            title="Ver me gusta guardados de este cliente"
+                            className="bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/40 text-[11px] font-extrabold px-2.5 py-1 rounded-xl flex items-center gap-1 transition-all cursor-pointer"
+                          >
+                            <Heart size={13} className="fill-red-400" /> {counts.meGusta} Likes
+                          </button>
+                        </div>
                       </td>
 
                       <td className="p-4 text-xs text-gray-300">
@@ -309,11 +356,19 @@ export function AdminClientesModule() {
                       <td className="p-4">
                         <div className="flex gap-2">
                           <button
+                            onClick={() => setClienteVerDetalle(c)}
+                            className="bg-[#1995ad]/20 hover:bg-[#1995ad] text-white text-xs font-bold px-2.5 py-1.5 rounded-xl border border-[#1995ad]/40 flex items-center gap-1 transition-all cursor-pointer"
+                            title="Ver Expediente Completo de Reservas y Likes"
+                          >
+                            <Eye size={14} /> Expediente
+                          </button>
+
+                          <button
                             onClick={() => setEditarUsuarioModal({ open: true, usuario: c })}
                             className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-2.5 py-1.5 rounded-xl border border-white/15 flex items-center gap-1 transition-all cursor-pointer"
                             title="Editar Datos y Contraseña"
                           >
-                            <Edit size={14} /> Editar / Clave
+                            <Edit size={14} /> Editar
                           </button>
 
                           <button
@@ -470,6 +525,13 @@ export function AdminClientesModule() {
           isClientModule={true}
         />
       )}
+
+      {/* Modal Expediente de Reservas y Likes */}
+      <VerDetalleClienteModal
+        cliente={clienteVerDetalle}
+        isOpen={!!clienteVerDetalle}
+        onClose={() => setClienteVerDetalle(null)}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Lock, Mail, User, Phone, FileText, ArrowRight, ShieldCheck, CheckCircle2, AtSign } from 'lucide-react';
+import { X, Lock, Mail, User, Phone, FileText, ArrowRight, ShieldCheck, CheckCircle2, AtSign, Sparkles } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
 

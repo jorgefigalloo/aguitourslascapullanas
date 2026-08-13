@@ -103,14 +103,30 @@ export function ClientMisViajes({ user }) {
                       <MapPin size={14} /> {pkg.destino}
                     </span>
                     <h4 className="text-xl font-bold text-white m-0">{pkg.titulo}</h4>
-                    <p className="text-xs text-gray-300 mt-1 flex items-center gap-3">
+                    <p className="text-xs text-gray-300 mt-1 flex items-center gap-3 flex-wrap">
                       <span><Calendar size={14} className="inline mr-1" /> Fechas: {pkg.fecha_salida} al {pkg.fecha_retorno}</span>
+                      <span className="text-[#ffb703] font-bold">💰 S/ {parseFloat(pkg.precio_persona || 0).toFixed(2)} por persona</span>
                     </p>
+                    {item.cantidad_personas > 0 && (
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        🎟️ {item.cantidad_personas} persona(s) inscrita(s) • Total: <strong className="text-emerald-400">S/ {parseFloat(item.precio_total || pkg.precio_persona * item.cantidad_personas || 0).toFixed(2)}</strong>
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <span className="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5">
-                      <CheckCircle2 size={16} /> Cupo Confirmado
+                    <span className={`px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 border ${
+                      item.estado === 'confirmado' ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' :
+                      item.estado === 'pendiente_confirmacion_tarifa' ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 animate-pulse' :
+                      item.estado === 'cancelado' ? 'bg-red-500/20 border-red-500/40 text-red-300' :
+                      'bg-white/10 border-white/20 text-gray-300'
+                    }`}>
+                      <CheckCircle2 size={16} /> {
+                        item.estado === 'confirmado' ? 'Cupo Confirmado' :
+                        item.estado === 'pendiente_confirmacion_tarifa' ? '⏳ Tarifa en Revisión' :
+                        item.estado === 'cancelado' ? 'Cancelado' :
+                        item.estado
+                      }
                     </span>
                   </div>
                 </div>

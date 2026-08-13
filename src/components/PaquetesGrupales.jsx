@@ -20,6 +20,7 @@ export function PaquetesGrupales({ user, profile, onOpenAuth }) {
       const { data, error } = await supabase
         .from('paquetes_grupales')
         .select('*')
+        .neq('estado', 'oculto')
         .order('fecha_salida', { ascending: true });
 
       if (data && data.length > 0) {

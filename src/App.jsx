@@ -30,6 +30,7 @@ export default function App() {
   const [showIntro, setShowIntro] = useState(true);
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [appReady, setAppReady] = useState(false);
   const [clientInitialTab, setClientInitialTab] = useState('mis-viajes');
   const [footerTexto, setFooterTexto] = useState('© 2026 Agencia de Viajes "Aguitours Las Capullanas". Todos los derechos reservados.');
 
@@ -57,7 +58,11 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.warn('Error al cerrar sesión:', e);
+    }
     setUser(null);
     setProfile(null);
     navigateToView('inicio');
@@ -67,30 +72,70 @@ export default function App() {
   useInactivityTimeout(user, handleLogout, 60);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        const lastActiveStr = localStorage.getItem('aguitours_last_active');
-        if (lastActiveStr) {
-          const lastActive = parseInt(lastActiveStr, 10);
-          const elapsedMinutes = (Date.now() - lastActive) / (1000 * 60);
-          if (elapsedMinutes >= 60) {
-            console.warn(`⌛ Inactividad al iniciar app: transcurrieron ${elapsedMinutes.toFixed(1)} min. Cerrando sesión.`);
-            localStorage.removeItem('aguitours_last_active');
-            supabase.auth.signOut();
+    let isMounted = true;
+
+    const initSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error) {
+          console.warn('⚠️ Error al obtener sesión de Supabase:', error.message);
+          if (isMounted) {
             setUser(null);
             setProfile(null);
-            alert(`⌛ Tu sesión ha caducado por inactividad (${Math.round(elapsedMinutes)} minutos sin interacción). Por seguridad debes volver a ingresar.`);
-            return;
+            setAppReady(true);
+          }
+          return;
+        }
+
+        if (session?.user) {
+          // Verificar inactividad al abrir la app
+          const lastActiveStr = localStorage.getItem('aguitours_last_active');
+          if (lastActiveStr) {
+            const lastActive = parseInt(lastActiveStr, 10);
+            const elapsedMinutes = (Date.now() - lastActive) / (1000 * 60);
+            if (elapsedMinutes >= 60) {
+              console.warn(`⌛ Inactividad al iniciar app: transcurrieron ${elapsedMinutes.toFixed(1)} min. Cerrando sesión.`);
+              localStorage.removeItem('aguitours_last_active');
+              try { await supabase.auth.signOut(); } catch (_) {}
+              if (isMounted) {
+                setUser(null);
+                setProfile(null);
+                setAppReady(true);
+              }
+              return;
+            }
+          }
+
+          if (isMounted) {
+            setUser(session.user);
+            await cargarPerfil(session.user);
+          }
+        } else {
+          if (isMounted) {
+            setUser(null);
+            setProfile(null);
           }
         }
-        setUser(session.user);
-        cargarPerfil(session.user);
-      } else {
-        setUser(null);
+      } catch (err) {
+        console.error('❌ Error crítico durante la inicialización de sesión:', err);
+        if (isMounted) {
+          setUser(null);
+          setProfile(null);
+        }
+      } finally {
+        // SIEMPRE marcar la app como lista, haya o no sesión, haya o no error
+        if (isMounted) {
+          setAppReady(true);
+        }
       }
-    });
+    };
+
+    initSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isMounted) return;
+
       if (session?.user) {
         const lastActiveStr = localStorage.getItem('aguitours_last_active');
         if (lastActiveStr) {
@@ -98,7 +143,7 @@ export default function App() {
           const elapsedMinutes = (Date.now() - lastActive) / (1000 * 60);
           if (elapsedMinutes >= 60) {
             localStorage.removeItem('aguitours_last_active');
-            supabase.auth.signOut();
+            supabase.auth.signOut().catch(() => {});
             setUser(null);
             setProfile(null);
             return;
@@ -108,7 +153,6 @@ export default function App() {
         cargarPerfil(session.user);
         if (_event === 'PASSWORD_RECOVERY') {
           navigateToView('mi-perfil', 'mi-perfil');
-          alert('🔑 ¡Bienvenido a Aguitours Las Capullanas!\n\nHas ingresado mediante tu enlace de correo. Ve a "Configuración de Mi Cuenta" para definir tu contraseña de acceso.');
         }
       } else {
         setUser(null);
@@ -118,13 +162,20 @@ export default function App() {
 
     cargarFooterCMS();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const cargarPerfil = async (authUser) => {
     try {
-      const { data } = await supabase.from('perfiles').select('*').eq('id', authUser.id).single();
+      const { data, error } = await supabase.from('perfiles').select('*').eq('id', authUser.id).single();
       
+      if (error) {
+        console.warn('⚠️ Error al cargar perfil del usuario:', error.message);
+      }
+
       if (authUser.email === 'jorge94web@gmail.com' || authUser.id === 'ba15e491-47db-4a29-b710-7e5e24f3af97') {
         setProfile(data ? { ...data, rol: 'super_admin' } : {
           id: authUser.id,
@@ -135,7 +186,9 @@ export default function App() {
       } else if (data) {
         setProfile(data);
       }
-    } catch (e) { console.log(e); }
+    } catch (e) {
+      console.warn('⚠️ Error al cargar perfil:', e);
+    }
   };
 
   const cargarFooterCMS = async () => {
@@ -233,9 +286,10 @@ export default function App() {
         onAuthSuccess={() => {
           supabase.auth.getSession().then(({ data: { session } }) => {
             if (session?.user) cargarPerfil(session.user);
-          });
+          }).catch(() => {});
         }}
       />
     </div>
   );
 }
+

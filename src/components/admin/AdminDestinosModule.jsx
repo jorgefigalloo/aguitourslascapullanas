@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, Plus, Edit3, Trash2, MapPin, Heart } from 'lucide-react';
+import { Globe, Plus, Edit3, Trash2, MapPin, Heart, Users } from 'lucide-react';
 import { CrearDestinoModal } from '../destinos/CrearDestinoModal';
 import { EditarDestinoModal } from '../destinos/EditarDestinoModal';
+import { VerLikesDestinoModal } from '../destinos/VerLikesDestinoModal';
 import { supabase } from '../../lib/supabase';
 
 export function AdminDestinosModule({ destinos = [], onActualizar }) {
   const [crearModalOpen, setCrearModalOpen] = useState(false);
   const [destinoAEditar, setDestinoAEditar] = useState(null);
+  const [destinoALikes, setDestinoALikes] = useState(null);
   const [likesCounts, setLikesCounts] = useState({});
 
   useEffect(() => {
@@ -75,9 +77,13 @@ export function AdminDestinosModule({ destinos = [], onActualizar }) {
                   {d.tipo}
                 </span>
 
-                <span className="absolute top-3 right-3 bg-red-950/80 backdrop-blur-md text-red-300 border border-red-500/40 text-[10px] font-extrabold px-2.5 py-1 rounded-full flex items-center gap-1">
-                  <Heart size={12} className="fill-red-400 text-red-400" /> {totalLikes} Me Gusta
-                </span>
+                <button
+                  onClick={() => setDestinoALikes(d)}
+                  title="Ver nómina de usuarios que dieron Me Gusta"
+                  className="absolute top-3 right-3 bg-red-950/90 hover:bg-red-900 backdrop-blur-md text-red-200 border border-red-500/50 text-[10px] font-extrabold px-2.5 py-1 rounded-full flex items-center gap-1.5 transition-all shadow-md cursor-pointer hover:scale-105"
+                >
+                  <Heart size={12} className="fill-red-400 text-red-400" /> {totalLikes} Me Gusta (Ver)
+                </button>
               </div>
 
             <div className="p-5 flex-1 flex flex-col justify-between">
@@ -114,6 +120,12 @@ export function AdminDestinosModule({ destinos = [], onActualizar }) {
         isOpen={!!destinoAEditar} 
         onClose={() => setDestinoAEditar(null)} 
         onDestinoActualizado={onActualizar} 
+      />
+
+      <VerLikesDestinoModal
+        destino={destinoALikes}
+        isOpen={!!destinoALikes}
+        onClose={() => setDestinoALikes(null)}
       />
     </div>
   );

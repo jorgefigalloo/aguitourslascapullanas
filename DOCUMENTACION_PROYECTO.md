@@ -1,7 +1,7 @@
 # 📋 DOCUMENTACIÓN DEL PROYECTO: AGUITOURS LAS CAPULLANAS
 
-> **Estado del Proyecto:** Reconstrucción a Web App Dinámica 3D/Cinematic + Módulo de Clientes, Cotizador Personalizado, CMS, RBAC, RLS, Auditoría Inmutable y Modales con React Portal Completados  
-> **Fecha de Actualización:** 12 de Agosto de 2026  
+> **Estado del Proyecto:** Reconstrucción a Web App Dinámica 3D/Cinematic + Módulo de Clientes, Cotizador Personalizado, CMS, RBAC, RLS, Auditoría Inmutable, Recálculo de Tarifas, Ocultar Paquetes, Nómina de Likes y Toast Notifications  
+> **Fecha de Actualización:** 13 de Agosto de 2026  
 > **Ubicación Local:** `c:\xampp\htdocs\aguitourslascapullanas`  
 > **Servidor Dev:** `http://localhost:5173/` (Vite + React 18 + Framer Motion)  
 > **Servidor Apache XAMPP:** `http://localhost:8085/aguitourslascapullanas/`  
@@ -11,7 +11,7 @@
 ## 1. 📌 Resumen General
 **Aguitours Las Capullanas v3.0** es una Web App Dinámica e Inmersiva para Agencia de Viajes y Turismo construida con **React 18, Vite, Framer Motion (Parallax & Depth 3D), Lucide Icons, Supabase (Auth / PostgreSQL / RLS / CMS / Auditoría BD)** y backend PHP seguro.
 
-Toda la información del sitio es **100% editable desde el Dashboard Administrativo**, incluyendo paquetes, itinerarios, destinos, banners CMS, cotizaciones personalizadas y auditoría inmutable de cambios.
+Toda la información del sitio es **100% editable desde el Dashboard Administrativo**, incluyendo paquetes, itinerarios, destinos, banners CMS, cotizaciones personalizadas, recálculo de tarifas, visibilidad de borradores, nómina de likes y auditoría inmutable de cambios.
 
 ---
 
@@ -31,21 +31,44 @@ c:\xampp\htdocs\aguitourslascapullanas\
 │   ├── agregar_columna_email_perfiles.sql # Script SQL para columna email en perfiles
 │   ├── solucion_definitiva_perfiles_y_trigger.sql # Trigger handle_new_user y sync perfiles
 │   ├── actualizar_email_rpc.sql         # RPC admin_actualizar_email_usuario y desvinculación de duplicados
-│   ├── script_inscripciones_y_favoritos.sql # [NUEVO] Inscripción atómica fn_inscribir_usuario_paquete, toggle favorito y RLS
-│   └── script_auditoria_todas_las_tablas.sql # [NUEVO] Triggers automáticos de auditoría para las 10 tablas del sistema
+│   ├── script_inscripciones_y_favoritos.sql # Inscripción atómica fn_inscribir_usuario_paquete, toggle favorito y RLS
+│   ├── script_auditoria_todas_las_tablas.sql # Triggers automáticos de auditoría para las 10 tablas del sistema
+│   └── script_tarea_13_agosto.sql       # [NUEVO] RPC fn_recalcular_tarifa_cerrar_paquete, fn_responder_nueva_tarifa_cliente, estado 'oculto' y RLS
 ├── php/                                # [BACKEND PHP SEGURO]
 │   ├── config/ (env.php, supabase.php, smtp.php)
 │   ├── middleware/ (cors.php, rate_limit.php, sanitizer.php)
 │   └── api/ (inscribirse_grupo.php)
 └── src/                                # [CÓDIGO FUENTE REACT WEB APP]
+    ├── context/
+    │   └── ToastContext.jsx            # [NUEVO] Sistema Global de Notificaciones Toast (Glassmorphism z-[100000])
     ├── lib/
-    │   └── supabase.js                 # Cliente Supabase reutilizable
+    │   ├── supabase.js                 # Cliente Supabase principal y cliente tempAuthClient aislado
+    │   └── permisos.js                 # [NUEVO] Matriz centralizada de permisos RBAC por categorías
     ├── hooks/
-    │   └── useInactivityTimeout.js     # Hook de timeout por inactividad (60 min / 1 hora)
+    │   └── useInactivityTimeout.js     # Hook de timeout por inactividad (60 min / 1 hora con visibilidad)
     ├── components/
     │   ├── Navbar.jsx                  # Navegación Glassmorphic 3D con menú hamburguesa celular
     │   ├── Hero3D.jsx                  # Portada 3D Parallax con CTA Cotizar Paquete
-    │   ├── PaquetesGrupales.jsx        # Catálogo Bento Grid & Inscripciones en vivo
+    │   ├── PaquetesGrupales.jsx        # Catálogo Bento Grid & Inscripciones en vivo (Filtra borradores ocultos)
+    │   ├── DestinosSection.jsx         # Galería Sticky de Scroll Horizontal & "Me Gusta"
+    │   ├── ClientPortal.jsx            # Contenedor del Dashboard de Pasajero VIP (Con banner de nueva tarifa)
+    │   ├── cliente/
+    │   │   ├── ClientMisViajes.jsx
+    │   │   ├── ClientFavoritos.jsx
+    │   │   ├── ClientSolicitudesCotizacion.jsx
+    │   │   ├── ClientPerfilEditar.jsx
+    │   │   ├── AlertaNuevaTarifaModal.jsx # [NUEVO] Alerta de recálculo de tarifas para el pasajero (Aceptar/Rechazar)
+    │   │   └── VerDetalleClienteModal.jsx # [NUEVO] Expediente de cliente (Reservas & Me Gusta guardados)
+    │   ├── destinos/
+    │   │   ├── CrearDestinoModal.jsx
+    │   │   ├── EditarDestinoModal.jsx
+    │   │   └── VerLikesDestinoModal.jsx   # [NUEVO] Nómina de usuarios que dieron Me Gusta por destino
+    │   ├── paquetes/
+    │   │   ├── DetallePaqueteModal.jsx
+    │   │   ├── ReportePdfModal.jsx
+    │   │   ├── VerInscritosModal.jsx
+    │   │   └── RecalcularTarifaModal.jsx # [NUEVO] Modal Admin para cierre de grupo y recálculo de tarifa por persona
+```jsx        # Catálogo Bento Grid & Inscripciones en vivo
     │   ├── DestinosSection.jsx         # Galería Sticky de Scroll Horizontal & "Me Gusta"
     │   ├── ClientPortal.jsx            # Contenedor del Dashboard de Pasajero VIP
     │   ├── AdminDashboard.jsx          # Panel Admin Modularizado
