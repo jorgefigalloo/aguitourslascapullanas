@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Users, Calendar, Phone, Mail, FileText, CheckCircle2, User, RefreshCw } from 'lucide-react';
+import { X, Users, Calendar, Phone, Mail, FileText, CheckCircle2, User, RefreshCw, DollarSign, UserPlus } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { GestionCuotasModal } from './GestionCuotasModal';
 
 export function VerInscritosModal({ paquete, isOpen, onClose }) {
   const [inscritos, setInscritos] = useState([]);
+  const [acompanantesMap, setAcompanantesMap] = useState({});
+  const [inscripcionSeleccionadaCuotas, setInscripcionSeleccionadaCuotas] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,17 +21,40 @@ export function VerInscritosModal({ paquete, isOpen, onClose }) {
     try {
       const { data, error } = await supabase
         .from('inscripciones_grupo')
-        .select('*, perfiles(*)')
+        .select('*, perfiles(*), paquetes_grupales(*)')
         .eq('paquete_id', paquete.id)
         .order('fecha_inscripcion', { ascending: false });
 
       if (data) {
         setInscritos(data);
+        data.forEach(item => {
+          if (item.cantidad_personas > 1) {
+            cargarAcompanantes(item.id);
+          }
+        });
       }
     } catch (e) {
       console.error('Error al cargar inscritos:', e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const cargarAcompanantes = async (inscripcionId) => {
+    try {
+      const { data } = await supabase
+        .from('acompanantes_inscripcion')
+        .select('*')
+        .eq('inscripcion_id', inscripcionId);
+
+      if (data) {
+        setAcompanantesMap(prev => ({
+          ...prev,
+          [inscripcionId]: data
+        }));
+      }
+    } catch (e) {
+      console.log('Error al cargar acompañantes:', e);
     }
   };
 
@@ -40,7 +66,7 @@ export function VerInscritosModal({ paquete, isOpen, onClose }) {
 
   return createPortal(
     <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-[#071521]/90 backdrop-blur-md overflow-y-auto">
-      <div className="bg-[#0d2538] border border-white/15 rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden relative my-auto max-h-[85vh] flex flex-col">
+      <div className="bg-[#0d2538] border border-white/15 rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden relative my-auto max-h-[88vh] flex flex-col">
         
         {/* Header Modal */}
         <div className="bg-gradient-to-r from-[#003366] to-[#1995ad] p-6 text-white text-center relative shrink-0">
@@ -104,22 +130,23 @@ export function VerInscritosModal({ paquete, isOpen, onClose }) {
               <table className="w-full text-left text-xs text-white">
                 <thead className="bg-[#071521] text-[11px] uppercase text-gray-300 border-b border-white/15">
                   <tr>
-                    <th className="p-3">Pasajero / Usuario</th>
+                    <th className="p-3">Pasajero Titular / Acompañantes</th>
                     <th className="p-3">Contacto</th>
                     <th className="p-3">DNI / Doc</th>
                     <th className="p-3 text-center">Lugares</th>
                     <th className="p-3">Fecha Inscripción</th>
-                    <th className="p-3 text-center">Estado</th>
+                    <th className="p-3 text-center">Estado & Pagos</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/10">
                   {inscritos.map(item => {
                     const perf = item.perfiles || {};
+                    const acompanantes = acompanantesMap[item.id] || [];
 
                     return (
                       <tr key={item.id} className="hover:bg-white/5 transition-colors">
                         <td className="p-3">
-                          <div className="flex items-center gap-2.5">
+                          <div className="flex items-center gap-2.5 mb-1">
                             <div className="w-8 h-8 rounded-full bg-[#1995ad]/20 border border-[#1995ad]/40 text-[#1995ad] flex items-center justify-center font-bold text-xs shrink-0">
                               {perf.nombre_completo?.[0] || 'V'}
                             </div>
@@ -128,6 +155,20 @@ export function VerInscritosModal({ paquete, isOpen, onClose }) {
                               <div className="text-[10px] text-gray-400">@{perf.username || 'sin_username'}</div>
                             </div>
                           </div>
+
+                          {/* Lista Desplegada de Acompañantes */}
+                          {acompanantes.length > 0 && (
+                            <div className="mt-2 bg-[#071521] p-2 rounded-xl border border-white/10 text-[10px]">
+                              <span className="text-amber-400 font-bold block mb-1 flex items-center gap-1">
+                                <UserPlus size={11} /> Acompañantes Registrados ({acompanantes.length}):
+                              </span>
+                              {acompanantes.map((ac, idx) => (
+                                <div key={ac.id || idx} className="text-gray-300 pl-2 border-l border-amber-500/30 mb-0.5">
+                                  • <strong>{ac.nombre_completo}</strong> {ac.documento_identidad ? `(DNI: ${ac.documento_identidad})` : ''}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </td>
 
                         <td className="p-3 text-gray-300">
@@ -153,9 +194,19 @@ export function VerInscritosModal({ paquete, isOpen, onClose }) {
                         </td>
 
                         <td className="p-3 text-center">
-                          <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold text-[10px] uppercase inline-flex items-center gap-1">
-                            <CheckCircle2 size={11} /> {item.estado || 'confirmado'}
-                          </span>
+                          <div className="flex flex-col items-center gap-1.5">
+                            <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold text-[10px] uppercase inline-flex items-center gap-1">
+                              <CheckCircle2 size={11} /> {item.estado || 'confirmado'}
+                            </span>
+
+                            <button
+                              onClick={() => setInscripcionSeleccionadaCuotas(item)}
+                              className="bg-[#1995ad]/20 hover:bg-[#1995ad] border border-[#1995ad]/40 text-[#a0f0ff] hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                              title="Gestionar cronograma de cuotas y pagos"
+                            >
+                              <DollarSign size={12} /> Cuotas / Pagos
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -175,6 +226,17 @@ export function VerInscritosModal({ paquete, isOpen, onClose }) {
             Cerrar Ventana
           </button>
         </div>
+
+        {/* Modal de Gestión de Cuotas de Pago */}
+        {inscripcionSeleccionadaCuotas && (
+          <GestionCuotasModal
+            inscripcion={inscripcionSeleccionadaCuotas}
+            isOpen={!!inscripcionSeleccionadaCuotas}
+            onClose={() => setInscripcionSeleccionadaCuotas(null)}
+            onCuotasActualizadas={cargarPasajerosInscritos}
+          />
+        )}
+
       </div>
     </div>,
     document.body

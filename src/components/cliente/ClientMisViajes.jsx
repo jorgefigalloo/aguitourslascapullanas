@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, Calendar, MapPin, CheckCircle2, MessageCircle, FileText, Users, ChevronDown, ChevronUp, ExternalLink, Download, Trash2, LogOut } from 'lucide-react';
+import { Briefcase, Calendar, MapPin, CheckCircle2, MessageCircle, FileText, Users, ChevronDown, ChevronUp, ExternalLink, Download, Trash2, LogOut, DollarSign, UserPlus, Clock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
 
@@ -7,6 +7,7 @@ export function ClientMisViajes({ user }) {
   const toast = useToast();
   const [inscripciones, setInscripciones] = useState([]);
   const [grupoMiembros, setGrupoMiembros] = useState({});
+  const [cuotasMap, setCuotasMap] = useState({});
   const [openItinerarioId, setOpenItinerarioId] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -30,6 +31,7 @@ export function ClientMisViajes({ user }) {
           if (item.paquetes_grupales?.id) {
             cargarMiembrosGrupo(item.paquetes_grupales.id);
           }
+          cargarCuotasInscripcion(item.id);
         });
       } else {
         setInscripciones([]);
@@ -38,6 +40,25 @@ export function ClientMisViajes({ user }) {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const cargarCuotasInscripcion = async (inscripcionId) => {
+    try {
+      const { data } = await supabase
+        .from('cuotas_inscripcion')
+        .select('*')
+        .eq('inscripcion_id', inscripcionId)
+        .order('numero_cuota', { ascending: true });
+
+      if (data) {
+        setCuotasMap(prev => ({
+          ...prev,
+          [inscripcionId]: data
+        }));
+      }
+    } catch (e) {
+      console.log('Error al cargar cuotas:', e);
     }
   };
 
@@ -199,6 +220,43 @@ export function ClientMisViajes({ user }) {
                     )}
                   </div>
                 </div>
+
+                {/* Cronograma de Cuotas y Estado de Pago del Cliente */}
+                {cuotasMap[item.id] && cuotasMap[item.id].length > 0 && (
+                  <div className="p-5 bg-black/30 border-b border-white/10">
+                    <div className="text-xs font-bold text-emerald-400 mb-3 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5"><DollarSign size={16} /> Cronograma de Cuotas & Estado Financiero:</span>
+                      <span className="text-[11px] text-gray-400 font-normal">
+                        Total Pagado: <strong className="text-emerald-300">S/ {
+                          cuotasMap[item.id].filter(c => c.estado === 'pagado').reduce((s, c) => s + parseFloat(c.monto || 0), 0).toFixed(2)
+                        }</strong>
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      {cuotasMap[item.id].map(cuota => {
+                        const esPagado = cuota.estado === 'pagado';
+                        return (
+                          <div key={cuota.id} className="bg-[#071521] border border-white/15 p-3 rounded-2xl flex flex-col justify-between gap-2">
+                            <div className="flex justify-between items-start">
+                              <span className="text-[11px] font-bold text-white">Cuota #{cuota.numero_cuota}</span>
+                              <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase border ${
+                                esPagado ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                              }`}>
+                                {esPagado ? '🟢 Pagado' : '⏳ Pendiente'}
+                              </span>
+                            </div>
+                            <div className="text-xs font-bold text-[#ffb703]">{cuota.concepto}</div>
+                            <div className="flex justify-between items-center text-[11px] text-gray-400 border-t border-white/10 pt-2">
+                              <span>Monto: <strong className="text-white">S/ {parseFloat(cuota.monto).toFixed(2)}</strong></span>
+                              {cuota.fecha_vencimiento && <span><Calendar size={10} className="inline mr-1" />{cuota.fecha_vencimiento}</span>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Acciones Rápidas: WhatsApp + PDF Formulario */}
                 <div className="p-5 bg-white/[0.02] flex flex-wrap gap-3 border-b border-white/10">

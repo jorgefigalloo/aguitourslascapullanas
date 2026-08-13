@@ -36,6 +36,7 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
         cupo_disponible: parseInt(formData.cupo_maximo),
         fecha_salida: formData.fecha_salida,
         fecha_retorno: formData.fecha_retorno,
+        fecha_limite_inscripcion: formData.fecha_limite_inscripcion || null,
         imagen_portada: formData.imagen_portada,
         descripcion: formData.descripcion,
         itinerario: itinerarioPayload,
@@ -131,27 +132,38 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
             </div>
 
             <div>
-              <label className="text-xs text-gray-300 font-bold block mb-1">Fecha Salida (ej: 15-22 Nov)</label>
+              <label className="text-xs text-gray-300 font-bold block mb-1">Fecha Salida (ej: 2026-11-15)</label>
               <input 
                 type="text" 
                 value={formData.fecha_salida} 
                 onChange={e => setFormData({...formData, fecha_salida: e.target.value})} 
                 required 
-                placeholder="15-22 Nov"
+                placeholder="2026-11-15"
                 className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
               />
             </div>
 
             <div>
-              <label className="text-xs text-gray-300 font-bold block mb-1">Fecha Retorno (ej: 22 Nov)</label>
+              <label className="text-xs text-gray-300 font-bold block mb-1">Fecha Retorno (ej: 2026-11-22)</label>
               <input 
                 type="text" 
                 value={formData.fecha_retorno} 
                 onChange={e => setFormData({...formData, fecha_retorno: e.target.value})} 
                 required 
-                placeholder="22 Nov"
+                placeholder="2026-11-22"
                 className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
               />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="text-xs text-amber-300 font-bold block mb-1">⏳ Fecha Límite de Inscripción / Confirmación (Opcional)</label>
+              <input 
+                type="date" 
+                value={formData.fecha_limite_inscripcion || ''} 
+                onChange={e => setFormData({...formData, fecha_limite_inscripcion: e.target.value})} 
+                className="w-full bg-[#071521] border border-amber-500/40 rounded-xl p-3 text-white text-sm focus:border-amber-400 focus:outline-none" 
+              />
+              <p className="text-[10px] text-gray-400 mt-1">Los clientes verán una alerta avisándoles hasta qué fecha pueden inscribirse o confirmar el grupo.</p>
             </div>
           </div>
 

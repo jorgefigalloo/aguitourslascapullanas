@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { DetallePaqueteModal } from './DetallePaqueteModal';
+import { UnirmePaqueteModal } from './paquetes/UnirmePaqueteModal';
 import { useToast } from '../context/ToastContext';
 
 export function PaquetesGrupales({ user, profile, onOpenAuth }) {
@@ -9,6 +10,7 @@ export function PaquetesGrupales({ user, profile, onOpenAuth }) {
   const [loading, setLoading] = useState(true);
   const [submittingId, setSubmittingId] = useState(null);
   const [selectedPaquete, setSelectedPaquete] = useState(null);
+  const [paqueteAUnirme, setPaqueteAUnirme] = useState(null);
 
   useEffect(() => {
     cargarPaquetes();
@@ -145,7 +147,7 @@ export function PaquetesGrupales({ user, profile, onOpenAuth }) {
     }
   };
 
-  const handleUnirmeGrupo = async (paquete) => {
+  const handleUnirmeGrupo = (paquete) => {
     if (!user) {
       toast.info('Para unirte a un grupo debes iniciar sesión o registrarte primero.', 'Acceso Requerido');
       onOpenAuth();
@@ -157,55 +159,7 @@ export function PaquetesGrupales({ user, profile, onOpenAuth }) {
       return;
     }
 
-    const confirmacion = window.confirm(`¿Confirmas tu lugar en "${paquete.titulo}" por S/ ${parseFloat(paquete.precio_persona).toFixed(2)}?`);
-    if (!confirmacion) return;
-
-    setSubmittingId(paquete.id);
-
-    try {
-      // 1. Intentar inscripción vía función RPC atómica
-      const { data: rpcData, error: rpcError } = await supabase.rpc('fn_inscribir_usuario_paquete', {
-        p_usuario_id: user.id,
-        p_paquete_id: paquete.id,
-        p_cantidad_personas: 1
-      });
-
-      if (!rpcError && rpcData) {
-        toast.success('¡Felicitaciones! Te has unido exitosamente al grupo. Revisa tus viajes en tu panel de cliente.', 'Inscripción Confirmada 🎉');
-        cargarPaquetes();
-        return;
-      }
-
-      // 2. Fallback de inserción directa si la RPC aún no se ejecutó
-      const { error: insErr } = await supabase
-        .from('inscripciones_grupo')
-        .insert({
-          usuario_id: user.id,
-          paquete_id: paquete.id,
-          cantidad_personas: 1,
-          precio_total: paquete.precio_persona,
-          estado: 'confirmado'
-        });
-
-      if (insErr) throw insErr;
-
-      // Descontar cupo en paquetes_grupales
-      const nuevoCupo = Math.max(0, (paquete.cupo_disponible || 1) - 1);
-      await supabase
-        .from('paquetes_grupales')
-        .update({
-          cupo_disponible: nuevoCupo,
-          estado: nuevoCupo === 0 ? 'completo' : paquete.estado
-        })
-        .eq('id', paquete.id);
-
-      toast.success('Reserva completada con éxito. Revisa tu panel de cliente.', 'Inscripción Exitosa 🎉');
-      cargarPaquetes();
-    } catch (err) {
-      toast.error('Ocurrió un error al procesar la solicitud: ' + (err.message || 'Error de conexión'));
-    } finally {
-      setSubmittingId(null);
-    }
+    setPaqueteAUnirme(paquete);
   };
 
   return (
@@ -285,7 +239,13 @@ export function PaquetesGrupales({ user, profile, onOpenAuth }) {
                       <span className="material-symbols-outlined text-[16px]">location_on</span> {pkg.destino}
                     </div>
                     <h3 className="font-headline text-2xl md:text-3xl font-bold text-white mb-2">{pkg.titulo}</h3>
-                    <p className="font-body text-sm text-gray-300 mb-4 max-w-lg line-clamp-2">{pkg.descripcion}</p>
+                    <p className="font-body text-sm text-gray-300 mb-3 max-w-lg line-clamp-2">{pkg.descripcion}</p>
+
+                    {pkg.fecha_limite_inscripcion && (
+                      <div className="inline-flex items-center gap-1.5 bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold px-3 py-1 rounded-full mb-3">
+                        <span>⏳ Inscripciones abiertas hasta el: <strong>{pkg.fecha_limite_inscripcion}</strong></span>
+                      </div>
+                    )}
 
                     {/* Barra de progreso de cupos Glassmorphic */}
                     <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-xl p-4 w-full md:max-w-md">
@@ -339,6 +299,18 @@ export function PaquetesGrupales({ user, profile, onOpenAuth }) {
         onClose={() => setSelectedPaquete(null)}
         onUnirme={(pkg) => handleUnirmeGrupo(pkg)}
       />
+
+      {/* Modal de Inscripción con Acompañantes y Cronograma de Cuotas */}
+      {paqueteAUnirme && (
+        <UnirmePaqueteModal
+          paquete={paqueteAUnirme}
+          isOpen={!!paqueteAUnirme}
+          onClose={() => setPaqueteAUnirme(null)}
+          user={user}
+          profile={profile}
+          onInscripcionExitosa={cargarPaquetes}
+        />
+      )}
     </section>
   );
 }

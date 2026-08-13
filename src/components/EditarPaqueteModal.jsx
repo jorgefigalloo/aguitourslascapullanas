@@ -27,6 +27,7 @@ export function EditarPaqueteModal({ paquete, isOpen, onClose, onPaqueteActualiz
         cupo_maximo: paquete.cupo_maximo || 10,
         fecha_salida: paquete.fecha_salida || '',
         fecha_retorno: paquete.fecha_retorno || '',
+        fecha_limite_inscripcion: paquete.fecha_limite_inscripcion || '',
         imagen_portada: paquete.imagen_portada || '',
         descripcion: paquete.descripcion || '',
         whatsapp_url: itObj.whatsapp_url || '',
@@ -87,6 +88,7 @@ export function EditarPaqueteModal({ paquete, isOpen, onClose, onPaqueteActualiz
           cupo_disponible: nuevoCupoDisponible,
           fecha_salida: formData.fecha_salida,
           fecha_retorno: formData.fecha_retorno,
+          fecha_limite_inscripcion: formData.fecha_limite_inscripcion || null,
           imagen_portada: formData.imagen_portada,
           descripcion: formData.descripcion,
           itinerario: itinerarioCompleto,
@@ -178,7 +180,7 @@ export function EditarPaqueteModal({ paquete, isOpen, onClose, onPaqueteActualiz
                 value={formData.fecha_salida} 
                 onChange={e => setFormData({...formData, fecha_salida: e.target.value})} 
                 required 
-                placeholder="15-22 Nov"
+                placeholder="2026-11-15"
                 className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
               />
             </div>
@@ -190,9 +192,20 @@ export function EditarPaqueteModal({ paquete, isOpen, onClose, onPaqueteActualiz
                 value={formData.fecha_retorno} 
                 onChange={e => setFormData({...formData, fecha_retorno: e.target.value})} 
                 required 
-                placeholder="22 Nov"
+                placeholder="2026-11-22"
                 className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
               />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="text-xs text-amber-300 font-bold block mb-1">⏳ Fecha Límite de Inscripción / Confirmación (Opcional)</label>
+              <input 
+                type="date" 
+                value={formData.fecha_limite_inscripcion || ''} 
+                onChange={e => setFormData({...formData, fecha_limite_inscripcion: e.target.value})} 
+                className="w-full bg-[#071521] border border-amber-500/40 rounded-xl p-3 text-white text-sm focus:border-amber-400 focus:outline-none" 
+              />
+              <p className="text-[10px] text-gray-400 mt-1">Fecha límite hasta la cual los viajeros pueden unirse o confirmar tarifa.</p>
             </div>
           </div>
 

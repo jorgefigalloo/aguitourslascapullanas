@@ -33,7 +33,8 @@ c:\xampp\htdocs\aguitourslascapullanas\
 │   ├── actualizar_email_rpc.sql         # RPC admin_actualizar_email_usuario y desvinculación de duplicados
 │   ├── script_inscripciones_y_favoritos.sql # Inscripción atómica fn_inscribir_usuario_paquete, toggle favorito y RLS
 │   ├── script_auditoria_todas_las_tablas.sql # Triggers automáticos de auditoría para las 10 tablas del sistema
-│   └── script_tarea_13_agosto.sql       # [NUEVO] RPC fn_recalcular_tarifa_cerrar_paquete, fn_responder_nueva_tarifa_cliente, estado 'oculto' y RLS
+│   ├── script_tarea_13_agosto.sql       # RPC fn_recalcular_tarifa_cerrar_paquete, fn_responder_nueva_tarifa_cliente, estado 'oculto' y RLS
+│   └── script_tarea_13_agosto_parte2.sql # [NUEVO] Columna fecha_limite_inscripcion, acompanantes_inscripcion, cuotas_inscripcion, triggers auditoría y RLS
 ├── php/                                # [BACKEND PHP SEGURO]
 │   ├── config/ (env.php, supabase.php, smtp.php)
 │   ├── middleware/ (cors.php, rate_limit.php, sanitizer.php)
