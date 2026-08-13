@@ -23,6 +23,7 @@ const IMAGENES_PREDETERMINADAS_CMS = {
 };
 
 export function AdminCMSModule({ cmsSections = [], user, onActualizar }) {
+  const toast = useToast();
   const [cmsEditando, setCmsEditando] = useState({
     clave_seccion: 'hero_inicio',
     titulo: '', subtitulo: '', cuerpo_texto: '', imagen_url: '/images/ciudades/fondo-destinos1.png'
