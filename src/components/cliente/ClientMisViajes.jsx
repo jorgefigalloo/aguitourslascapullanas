@@ -8,6 +8,7 @@ export function ClientMisViajes({ user }) {
   const [inscripciones, setInscripciones] = useState([]);
   const [grupoMiembros, setGrupoMiembros] = useState({});
   const [cuotasMap, setCuotasMap] = useState({});
+  const [acompanantesMap, setAcompanantesMap] = useState({});
   const [openItinerarioId, setOpenItinerarioId] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,6 +33,9 @@ export function ClientMisViajes({ user }) {
             cargarMiembrosGrupo(item.paquetes_grupales.id);
           }
           cargarCuotasInscripcion(item.id);
+          if (item.cantidad_personas > 1) {
+            cargarAcompanantes(item.id);
+          }
         });
       } else {
         setInscripciones([]);
@@ -40,6 +44,24 @@ export function ClientMisViajes({ user }) {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const cargarAcompanantes = async (inscripcionId) => {
+    try {
+      const { data } = await supabase
+        .from('acompanantes_inscripcion')
+        .select('*')
+        .eq('inscripcion_id', inscripcionId);
+
+      if (data) {
+        setAcompanantesMap(prev => ({
+          ...prev,
+          [inscripcionId]: data
+        }));
+      }
+    } catch (e) {
+      console.log('Error al cargar acompañantes:', e);
     }
   };
 
@@ -199,6 +221,22 @@ export function ClientMisViajes({ user }) {
                       <p className="text-[11px] text-gray-400 mt-1">
                         🎟️ {item.cantidad_personas} persona(s) inscrita(s) • Total: <strong className="text-emerald-400">S/ {parseFloat(item.precio_total || pkg.precio_persona * item.cantidad_personas || 0).toFixed(2)}</strong>
                       </p>
+                    )}
+
+                    {/* Acompañantes Registrados del Cliente */}
+                    {acompanantesMap[item.id] && acompanantesMap[item.id].length > 0 && (
+                      <div className="mt-2.5 bg-[#071521] p-3 rounded-2xl border border-amber-500/30 text-xs">
+                        <div className="text-amber-400 font-bold text-[11px] flex items-center gap-1.5 mb-1.5">
+                          <UserPlus size={13} /> Acompañantes Registrados en tu Reserva ({acompanantesMap[item.id].length}):
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {acompanantesMap[item.id].map((ac, idx) => (
+                            <span key={ac.id || idx} className="bg-white/5 border border-white/10 px-2.5 py-1 rounded-xl text-[11px] text-gray-200 flex items-center gap-1">
+                              👤 <strong>{ac.nombre_completo}</strong> {ac.documento_identidad ? `(DNI: ${ac.documento_identidad})` : ''}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
 
