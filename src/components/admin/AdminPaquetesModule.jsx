@@ -29,20 +29,22 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
 
   const cargarContadoresInscritos = async () => {
     try {
+      const counts = {};
+      paquetes.forEach(p => { counts[p.id] = 0; });
+
       const { data } = await supabase
         .from('inscripciones_grupo')
         .select('paquete_id, cantidad_personas, estado')
         .in('estado', ['confirmado', 'pendiente', 'pendiente_confirmacion_tarifa']);
 
       if (data) {
-        const counts = {};
         data.forEach(item => {
-          if (item.paquete_id) {
-            counts[item.paquete_id] = (counts[item.paquete_id] || 0) + (item.cantidad_personas || 1);
+          if (item.paquete_id && counts[item.paquete_id] !== undefined) {
+            counts[item.paquete_id] += (item.cantidad_personas || 1);
           }
         });
-        setInscritosCounts(counts);
       }
+      setInscritosCounts(counts);
     } catch (e) {
       console.log('Error al cargar contadores de inscritos:', e);
     }
