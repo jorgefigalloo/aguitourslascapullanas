@@ -73,7 +73,7 @@ export function VerInscritosModal({ paquete, isOpen, onClose }) {
           <div className="flex items-center gap-2">
             <span className="text-gray-400">Disponibles:</span>
             <span className="text-emerald-400 font-bold bg-emerald-500/20 border border-emerald-500/40 px-2.5 py-0.5 rounded-full">
-              {paquete.cupo_disponible} restantes
+              {Math.max(0, paquete.cupo_maximo - totalPersonasInscritas)} restantes
             </span>
           </div>
 

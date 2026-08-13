@@ -16,11 +16,37 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
   const [paqueteAInscritos, setPaqueteAInscritos] = useState(null);
   const [paqueteARecalcular, setPaqueteARecalcular] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [inscritosCounts, setInscritosCounts] = useState({});
 
   // Estados de Filtros y Búsqueda
   const [searchTerm, setSearchTerm] = useState('');
   const [ordenamiento, setOrdenamiento] = useState('reciente');
   const [filtroEstado, setFiltroEstado] = useState('todos');
+
+  React.useEffect(() => {
+    cargarContadoresInscritos();
+  }, [paquetes]);
+
+  const cargarContadoresInscritos = async () => {
+    try {
+      const { data } = await supabase
+        .from('inscripciones_grupo')
+        .select('paquete_id, cantidad_personas, estado')
+        .in('estado', ['confirmado', 'pendiente', 'pendiente_confirmacion_tarifa']);
+
+      if (data) {
+        const counts = {};
+        data.forEach(item => {
+          if (item.paquete_id) {
+            counts[item.paquete_id] = (counts[item.paquete_id] || 0) + (item.cantidad_personas || 1);
+          }
+        });
+        setInscritosCounts(counts);
+      }
+    } catch (e) {
+      console.log('Error al cargar contadores de inscritos:', e);
+    }
+  };
 
   const handleReiniciarCupos = async () => {
     const confirmacion = window.confirm('¿Deseas reiniciar la disponibilidad de cupos de TODOS los paquetes al 100%?');
@@ -178,7 +204,7 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
               </tr>
             ) : (
               paquetesFiltrados.map(pkg => {
-                const inscritos = pkg.cupo_maximo - pkg.cupo_disponible;
+                const inscritosReal = inscritosCounts[pkg.id] ?? Math.max(0, pkg.cupo_maximo - pkg.cupo_disponible);
                 const esOculto = pkg.estado === 'oculto';
                 return (
                   <tr key={pkg.id} className={`hover:bg-white/5 transition-colors ${esOculto ? 'opacity-60 bg-black/20' : ''}`}>
@@ -191,8 +217,12 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
                       />
                     </td>
                     <td className="p-4 font-bold flex flex-col">
-                      {pkg.titulo}
-                      {esOculto && <span className="text-[10px] text-amber-400 font-normal">Oculto</span>}
+                      <span>{pkg.titulo}</span>
+                      {esOculto && (
+                        <span className="text-[10px] text-amber-400 font-normal flex items-center gap-1">
+                          <EyeOff size={10} /> Oculto del público
+                        </span>
+                      )}
                     </td>
                     <td className="p-4 text-gray-300">
                       <span className="flex items-center gap-1"><MapPin size={14} className="text-[#1995ad]" /> {pkg.destino}</span>
@@ -205,24 +235,54 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
                       <button
                         onClick={() => setPaqueteAInscritos(pkg)}
                         className="bg-black/40 hover:bg-[#1995ad]/30 border border-white/15 hover:border-[#1995ad]/60 text-white px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-md group"
+                        title="Ver nómina completa de clientes inscritos en este viaje"
                       >
-                        <Users size={13} className="text-[#ffb703]" />
-                        {inscritos} / {pkg.cupo_maximo}
+                        <Users size={13} className="text-[#ffb703] group-hover:scale-110 transition-transform" />
+                        <span>{inscritosReal} / {pkg.cupo_maximo}</span>
+                        <span className="text-[10px] text-[#1995ad] font-normal underline ml-0.5">Ver</span>
                       </button>
                     </td>
+
                     <td className="p-4">
-                       <button
+                      <button
                         onClick={() => handleToggleVisibilidadOculto(pkg)}
-                        className={`text-[10px] uppercase font-extrabold px-2 py-1 rounded-full border ${esOculto ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'}`}
+                        className={`text-[10px] uppercase font-extrabold px-2.5 py-1.5 rounded-xl border flex items-center gap-1.5 transition-all cursor-pointer ${
+                          esOculto 
+                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500 hover:text-black' 
+                            : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-amber-500/30'
+                        }`}
+                        title={esOculto ? "Hacer visible y publicar en la web pública" : "Ocultar del catálogo público (Guardar como borrador)"}
                       >
-                        {esOculto ? <EyeOff size={12} /> : <Eye size={12} />}
+                        {esOculto ? <EyeOff size={13} /> : <Eye size={13} />}
+                        <span>{esOculto ? 'Oculto' : 'Publicado'}</span>
                       </button>
                     </td>
+
                     <td className="p-4">
-                      <div className="flex gap-2">
-                        <button onClick={() => setPaqueteARecalcular(pkg)} className="bg-amber-500/20 text-amber-300 px-2 py-1.5 rounded-xl"><Calculator size={14} /></button>
-                        <button onClick={() => setPaqueteAPdf(pkg)} className="bg-[#1995ad]/20 text-[#a0f0ff] px-2 py-1.5 rounded-xl"><FileText size={14} /></button>
-                        <button onClick={() => setPaqueteAEditar(pkg)} className="bg-white/10 text-white px-2 py-1.5 rounded-xl"><Edit3 size={14} /></button>
+                      <div className="flex flex-wrap gap-1.5">
+                        <button 
+                          onClick={() => setPaqueteARecalcular(pkg)} 
+                          className="bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500 hover:text-black text-xs font-bold px-2.5 py-1.5 rounded-xl transition-all flex items-center gap-1 cursor-pointer"
+                          title="Recalcular tarifa por persona y notificar ajuste a los clientes inscritos"
+                        >
+                          <Calculator size={14} /> Recalcular
+                        </button>
+
+                        <button 
+                          onClick={() => setPaqueteAPdf(pkg)} 
+                          className="bg-[#1995ad]/20 border border-[#1995ad]/40 text-[#a0f0ff] hover:bg-[#1995ad] hover:text-white text-xs font-bold px-2.5 py-1.5 rounded-xl transition-all flex items-center gap-1 cursor-pointer"
+                          title="Ver y descargar reporte PDF del itinerario del paquete"
+                        >
+                          <FileText size={14} /> PDF
+                        </button>
+
+                        <button 
+                          onClick={() => setPaqueteAEditar(pkg)} 
+                          className="bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xs font-bold px-2.5 py-1.5 rounded-xl transition-all flex items-center gap-1 cursor-pointer"
+                          title="Editar detalles, itinerario o eliminar este paquete"
+                        >
+                          <Edit3 size={14} /> Editar
+                        </button>
                       </div>
                     </td>
                   </tr>
