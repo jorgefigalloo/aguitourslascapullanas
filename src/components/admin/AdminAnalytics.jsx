@@ -1,13 +1,44 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Package, Users, DollarSign, Activity, TrendingUp, BarChart3 } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 export function AdminAnalytics({ paquetes = [], usuarios = [], auditorias = [] }) {
+  const [inscritosCounts, setInscritosCounts] = useState({});
+
+  useEffect(() => {
+    cargarContadoresInscritos();
+  }, [paquetes]);
+
+  const cargarContadoresInscritos = async () => {
+    try {
+      const counts = {};
+      paquetes.forEach(p => { counts[p.id] = 0; });
+
+      const { data } = await supabase
+        .from('inscripciones_grupo')
+        .select('paquete_id, cantidad_personas, estado')
+        .in('estado', ['confirmado', 'pendiente', 'pendiente_confirmacion_tarifa']);
+
+      if (data) {
+        data.forEach(item => {
+          if (item.paquete_id && counts[item.paquete_id] !== undefined) {
+            counts[item.paquete_id] += (item.cantidad_personas || 1);
+          }
+        });
+      }
+      setInscritosCounts(counts);
+    } catch (e) {
+      console.log('Error al cargar contadores de analítica:', e);
+    }
+  };
+
+  const getInscritos = (p) => inscritosCounts[p.id] ?? 0;
+
   const totalPaquetes = paquetes.length;
   const totalCupos = paquetes.reduce((acc, p) => acc + (p.cupo_maximo || 0), 0);
-  const totalInscritos = paquetes.reduce((acc, p) => acc + ((p.cupo_maximo || 0) - (p.cupo_disponible || 0)), 0);
+  const totalInscritos = paquetes.reduce((acc, p) => acc + getInscritos(p), 0);
   const estimacionIngresos = paquetes.reduce((acc, p) => {
-    const inscritos = (p.cupo_maximo || 0) - (p.cupo_disponible || 0);
-    return acc + (inscritos * (p.precio_persona || 0));
+    return acc + (getInscritos(p) * (p.precio_persona || 0));
   }, 0);
 
   return (
@@ -63,8 +94,8 @@ export function AdminAnalytics({ paquetes = [], usuarios = [], auditorias = [] }
 
         <div className="space-y-4">
           {paquetes.map(pkg => {
-            const inscritos = pkg.cupo_maximo - pkg.cupo_disponible;
-            const porcentaje = Math.round((inscritos / pkg.cupo_maximo) * 100);
+            const inscritos = getInscritos(pkg);
+            const porcentaje = pkg.cupo_maximo > 0 ? Math.round((inscritos / pkg.cupo_maximo) * 100) : 0;
 
             return (
               <div key={pkg.id} className="bg-[#071521] p-4 rounded-xl border border-white/10">
