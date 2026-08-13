@@ -14,19 +14,34 @@ export function RecalcularTarifaModal({ paquete, isOpen, onClose, onTarifaRecalc
 
   useEffect(() => {
     if (isOpen && paquete) {
+      cargarInscritosReales();
+    }
+  }, [isOpen, paquete]);
+
+  const cargarInscritosReales = async () => {
+    setLoading(true);
+    try {
       const precio = parseFloat(paquete.precio_persona || 0);
       setPrecioOriginal(precio);
 
-      // Calcular inscritos reales (cupo_maximo - cupo_disponible)
-      const cuposReservados = Math.max(1, (paquete.cupo_maximo || 1) - (paquete.cupo_disponible || 0));
-      setInscritosCount(cuposReservados);
+      const { data } = await supabase
+        .from('inscripciones_grupo')
+        .select('cantidad_personas, estado')
+        .eq('paquete_id', paquete.id)
+        .in('estado', ['confirmado', 'pendiente', 'pendiente_confirmacion_tarifa']);
 
-      // Sugerencia inicial: costo operativo = precio original × inscritos (lo que ya pagaron)
-      const costoSugerido = precio * cuposReservados;
+      const totalReal = data ? data.reduce((acc, item) => acc + (item.cantidad_personas || 1), 0) : 0;
+      setInscritosCount(totalReal);
+
+      const costoSugerido = totalReal > 0 ? precio * totalReal : precio * paquete.cupo_maximo;
       setCostoOperativoTotal(costoSugerido);
-      setNuevoPrecioPorPersona(precio); // Inicialmente igual al original
+      setNuevoPrecioPorPersona(totalReal > 0 ? Math.round((costoSugerido / totalReal) * 100) / 100 : precio);
+    } catch (e) {
+      console.error('Error al cargar inscritos reales para recálculo:', e);
+    } finally {
+      setLoading(false);
     }
-  }, [isOpen, paquete]);
+  };
 
   // Recalcular precio por persona cuando cambia el costo operativo
   const handleCostoChange = (valor) => {
@@ -34,6 +49,8 @@ export function RecalcularTarifaModal({ paquete, isOpen, onClose, onTarifaRecalc
     setCostoOperativoTotal(costo);
     if (inscritosCount > 0) {
       setNuevoPrecioPorPersona(Math.round((costo / inscritosCount) * 100) / 100);
+    } else {
+      setNuevoPrecioPorPersona(costo);
     }
   };
 
@@ -44,6 +61,10 @@ export function RecalcularTarifaModal({ paquete, isOpen, onClose, onTarifaRecalc
 
   const handleEjecutarRecalculo = async (e) => {
     e.preventDefault();
+    if (inscritosCount === 0) {
+      toast.warning('No hay clientes inscritos activos en este paquete para recalcular tarifa. Si deseas cerrar inscripciones, puedes editar el estado del paquete a "Cerrado".');
+      return;
+    }
     if (nuevoPrecioPorPersona <= 0) {
       toast.warning('El nuevo precio por persona debe ser mayor a S/ 0.00');
       return;
