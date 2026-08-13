@@ -171,13 +171,23 @@ export function RecalcularTarifaModal({ paquete, isOpen, onClose, onTarifaRecalc
           </div>
 
           {/* Alerta explicativa */}
-          <div className="bg-amber-500/10 border border-amber-500/25 p-3.5 rounded-2xl text-xs text-amber-200 leading-relaxed flex items-start gap-2.5">
-            <AlertTriangle size={18} className="text-amber-400 shrink-0 mt-0.5" />
-            <div>
-              <strong className="block text-amber-300 mb-0.5">¿Cómo funciona el recálculo?</strong>
-              Ingresa el <strong>costo operativo total del viaje</strong> (transporte, alojamiento, guías, etc.) y el sistema calculará automáticamente cuánto debe pagar cada pasajero inscrito. Al confirmar, el paquete se cerrará con <strong>{inscritosCount} pasajero(s)</strong> y cada uno recibirá una alerta para aceptar o rechazar la nueva tarifa.
+          {inscritosCount === 0 ? (
+            <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-2xl text-xs text-red-200 leading-relaxed flex items-start gap-2.5">
+              <AlertTriangle size={20} className="text-red-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="block text-red-300 font-bold mb-1">⚠️ Sin pasajeros inscritos (0 de {paquete.cupo_maximo} max)</strong>
+                No hay viajeros inscritos en este paquete para dividir los costos operativos. Si deseas cerrar el grupo sin pasajeros o suspender el viaje, puedes cambiar el estado a <strong>"Cerrado"</strong> u <strong>"Oculto"</strong> desde la opción <em>Editar Paquete</em>.
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-amber-500/10 border border-amber-500/25 p-3.5 rounded-2xl text-xs text-amber-200 leading-relaxed flex items-start gap-2.5">
+              <AlertTriangle size={18} className="text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="block text-amber-300 mb-0.5">¿Cómo funciona el recálculo por cupos reales?</strong>
+                Al llegar la fecha límite con <strong>{inscritosCount} de {paquete.cupo_maximo} cupos</strong>, se ingresa el costo operativo total del viaje. El cupo máximo bajará automáticamente de <strong>{paquete.cupo_maximo} a {inscritosCount} cupos</strong> y la tarifa por persona se ajustará. Cada uno de los {inscritosCount} viajeros recibirá la alerta para aceptar o rechazar la nueva tarifa.
+              </div>
+            </div>
+          )}
 
           {/* Campo: Costo Operativo Total */}
           <div>
@@ -190,36 +200,52 @@ export function RecalcularTarifaModal({ paquete, isOpen, onClose, onTarifaRecalc
                 type="number"
                 step="0.01"
                 min="1"
+                disabled={inscritosCount === 0}
                 value={costoOperativoTotal}
                 onChange={(e) => handleCostoChange(e.target.value)}
                 required
-                className="w-full bg-[#071521] border border-amber-500/50 rounded-xl py-2.5 pl-10 pr-4 text-white font-bold text-base focus:border-amber-400 focus:outline-none"
+                className="w-full bg-[#071521] border border-amber-500/50 rounded-xl py-2.5 pl-10 pr-4 text-white font-bold text-base focus:border-amber-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
             <p className="text-[10px] text-gray-400 mt-1">
-              Incluye todos los gastos operativos: transporte, hospedaje, alimentación, guías, seguros, etc.
+              Incluye transporte, hospedaje, alimentación, guías, seguros y todos los costos logísticos del grupo.
             </p>
           </div>
 
           {/* Resultado del cálculo */}
           <div className="bg-[#071521] border border-[#1995ad]/40 p-4 rounded-2xl">
-            <div className="text-xs text-gray-300 mb-2">📊 Resultado del Cálculo Automático:</div>
-            <div className="text-sm text-white">
-              <strong>S/ {costoOperativoTotal.toFixed(2)}</strong>
-              <span className="text-gray-400"> ÷ </span>
-              <strong>{inscritosCount} pasajero(s)</strong>
-              <span className="text-gray-400"> = </span>
-              <strong className="text-[#ffb703] text-lg">S/ {nuevoPrecioPorPersona.toFixed(2)}</strong>
-              <span className="text-gray-400 text-xs"> por persona</span>
-            </div>
+            <div className="text-xs text-gray-300 mb-2">📊 Resultado del Recálculo de Tarifa:</div>
+            {inscritosCount > 0 ? (
+              <div className="text-sm text-white space-y-1">
+                <div>
+                  <strong>S/ {costoOperativoTotal.toFixed(2)}</strong>
+                  <span className="text-gray-400"> ÷ </span>
+                  <strong className="text-emerald-400">{inscritosCount} pasajero(s) reales</strong>
+                  <span className="text-gray-400"> = </span>
+                  <strong className="text-[#ffb703] text-lg">S/ {nuevoPrecioPorPersona.toFixed(2)}</strong>
+                  <span className="text-gray-400 text-xs"> / persona</span>
+                </div>
+                <div className="text-[11px] text-cyan-300">
+                  📌 El paquete se cerrará ajustando la capacidad a <strong>{inscritosCount} cupos definitivos</strong>.
+                </div>
+              </div>
+            ) : (
+              <div className="text-xs text-red-400">
+                Imposible calcular: 0 pasajeros inscritos.
+              </div>
+            )}
           </div>
 
           <button
             type="submit"
-            disabled={loading}
-            className="btn-gold-3d justify-center py-3.5 mt-2 font-bold text-sm flex items-center gap-2 cursor-pointer"
+            disabled={loading || inscritosCount === 0}
+            className="btn-gold-3d justify-center py-3.5 mt-2 font-bold text-sm flex items-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <Send size={16} /> {loading ? 'Procesando Recálculo...' : `Cerrar con ${inscritosCount} Pasajero(s) y Notificar`}
+            <Send size={16} /> {
+              loading ? 'Procesando Recálculo...' :
+              inscritosCount === 0 ? 'Sin Pasajeros Inscritos (No aplicable)' :
+              `Cerrar Paquete con ${inscritosCount} Pasajero(s) y Notificar Nueva Tarifa`
+            }
           </button>
         </form>
 
