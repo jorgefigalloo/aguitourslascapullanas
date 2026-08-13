@@ -11,10 +11,40 @@ export function PaquetesGrupales({ user, profile, onOpenAuth }) {
   const [submittingId, setSubmittingId] = useState(null);
   const [selectedPaquete, setSelectedPaquete] = useState(null);
   const [paqueteAUnirme, setPaqueteAUnirme] = useState(null);
+  const [inscritosCounts, setInscritosCounts] = useState({});
 
   useEffect(() => {
     cargarPaquetes();
   }, []);
+
+  useEffect(() => {
+    if (paquetes.length > 0) {
+      cargarContadoresInscritos();
+    }
+  }, [paquetes]);
+
+  const cargarContadoresInscritos = async () => {
+    try {
+      const counts = {};
+      paquetes.forEach(p => { counts[p.id] = 0; });
+
+      const { data } = await supabase
+        .from('inscripciones_grupo')
+        .select('paquete_id, cantidad_personas, estado')
+        .in('estado', ['confirmado', 'pendiente', 'pendiente_confirmacion_tarifa']);
+
+      if (data) {
+        data.forEach(item => {
+          if (item.paquete_id && counts[item.paquete_id] !== undefined) {
+            counts[item.paquete_id] += (item.cantidad_personas || 1);
+          }
+        });
+      }
+      setInscritosCounts(counts);
+    } catch (e) {
+      console.log('Error al cargar contadores en catálogo público:', e);
+    }
+  };
 
   const cargarPaquetes = async () => {
     setLoading(true);
@@ -186,7 +216,9 @@ export function PaquetesGrupales({ user, profile, onOpenAuth }) {
         /* Bento Grid 12 Columnas */
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-16">
           {paquetes.map((pkg, idx) => {
-            const porcentaje = Math.round(((pkg.cupo_maximo - pkg.cupo_disponible) / pkg.cupo_maximo) * 100);
+            const inscritosReal = inscritosCounts[pkg.id] ?? 0;
+            const cuposDisponiblesReales = Math.max(0, pkg.cupo_maximo - inscritosReal);
+            const porcentaje = pkg.cupo_maximo > 0 ? Math.round((inscritosReal / pkg.cupo_maximo) * 100) : 0;
             const esDestacado = idx === 0; // El primer paquete ocupa 8 columnas Bento
             const colSpanClass = esDestacado ? 'md:col-span-8 h-[520px]' : idx === 1 ? 'md:col-span-4 h-[520px]' : 'md:col-span-6 h-[450px]';
 
@@ -213,7 +245,7 @@ export function PaquetesGrupales({ user, profile, onOpenAuth }) {
                         Destacado
                       </span>
                     )}
-                    <span className="bg-[#071521]/80 backdrop-blur-md text-white font-semibold text-xs px-3 py-1 rounded-full border border-white/20 flex items-center gap-1">
+                    <span className="bg-black/50 text-white font-semibold text-xs px-3 py-1 rounded-full border border-white/20 flex items-center gap-1">
                       <span className="material-symbols-outlined text-[14px]">calendar_month</span> {pkg.fecha_salida}
                     </span>
                   </div>
@@ -251,15 +283,15 @@ export function PaquetesGrupales({ user, profile, onOpenAuth }) {
                     <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-xl p-4 w-full md:max-w-md">
                       <div className="flex justify-between text-xs font-semibold text-white mb-2">
                         <span>Cupos Disponibles</span>
-                        <span className={pkg.cupo_disponible <= 3 ? 'text-red-400 font-bold' : 'text-[#ffb703]'}>
-                          {pkg.cupo_maximo - pkg.cupo_disponible} / {pkg.cupo_maximo}
+                        <span className={cuposDisponiblesReales <= 3 ? 'text-red-400 font-bold' : 'text-[#ffb703]'}>
+                          {cuposDisponiblesReales} de {pkg.cupo_maximo}
                         </span>
                       </div>
                       <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden mb-2">
                         <div className="h-full bg-gradient-to-r from-[#1995ad] to-[#ffb703] rounded-full transition-all duration-500" style={{ width: `${porcentaje}%` }}></div>
                       </div>
                       <span className="text-xs text-gray-300 flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[14px] text-[#1995ad]">group</span> {pkg.cupo_maximo - pkg.cupo_disponible} exploradores confirmados
+                        <span className="material-symbols-outlined text-[14px] text-[#1995ad]">group</span> {inscritosReal} exploradores confirmados
                       </span>
                     </div>
                   </div>

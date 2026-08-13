@@ -174,26 +174,24 @@ export function EditarPaqueteModal({ paquete, isOpen, onClose, onPaqueteActualiz
             </div>
 
             <div>
-              <label className="text-xs text-gray-300 font-bold block mb-1">Fecha de Salida</label>
+              <label className="text-xs text-gray-300 font-bold block mb-1">📅 Fecha de Salida (Calendario)</label>
               <input 
-                type="text" 
+                type="date" 
                 value={formData.fecha_salida} 
                 onChange={e => setFormData({...formData, fecha_salida: e.target.value})} 
                 required 
-                placeholder="2026-11-15"
-                className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
+                className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none cursor-pointer" 
               />
             </div>
 
             <div>
-              <label className="text-xs text-gray-300 font-bold block mb-1">Fecha de Retorno</label>
+              <label className="text-xs text-gray-300 font-bold block mb-1">📅 Fecha de Retorno (Calendario)</label>
               <input 
-                type="text" 
+                type="date" 
                 value={formData.fecha_retorno} 
                 onChange={e => setFormData({...formData, fecha_retorno: e.target.value})} 
                 required 
-                placeholder="2026-11-22"
-                className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
+                className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none cursor-pointer" 
               />
             </div>
 
