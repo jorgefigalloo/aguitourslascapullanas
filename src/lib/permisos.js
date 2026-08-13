@@ -92,6 +92,7 @@ export const CATEGORIAS_PERMISOS = [
       { id: 'caja_cobrar', label: 'Registrar nuevos cobros de cuotas y recibos' },
       { id: 'caja_editar', label: 'Editar montos y métodos de pago registrados' },
       { id: 'caja_anular', label: 'Anular cobros extornando fondos (Auditoría de Anulación)' },
+      { id: 'caja_supervisar', label: 'Supervisar arqueo de caja e historial de cobros de otros recaudadores' },
       { id: 'caja_exportar', label: 'Exportar libro diario de caja a PDF / Excel' }
     ]
   },

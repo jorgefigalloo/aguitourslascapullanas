@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   DollarSign, Calendar, Filter, Search, ShieldAlert, CheckCircle2, XCircle, 
-  RefreshCw, User, Package, CreditCard, ArrowDownRight, ArrowUpRight, Ban, FileText
+  RefreshCw, User, Package, CreditCard, ArrowDownRight, ArrowUpRight, Ban, FileText,
+  Users, ShieldCheck, Eye, Layers, Wallet
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
@@ -10,7 +11,11 @@ export function AdminCajaModule({ user, profile, tienePermiso }) {
   const toast = useToast();
   const [pagos, setPagos] = useState([]);
   const [paquetes, setPaquetes] = useState([]);
+  const [cobradores, setCobradores] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // SubTab de Caja
+  const [cajaSubTab, setCajaSubTab] = useState('diario'); // 'diario' | 'supervision'
 
   // Filtros
   const [filtroPeriodo, setFiltroPeriodo] = useState('mes'); // hoy, semana, mes, ano, todos, personalizado
@@ -18,6 +23,7 @@ export function AdminCajaModule({ user, profile, tienePermiso }) {
   const [fechaFin, setFechaFin] = useState('');
   const [filtroPaquete, setFiltroPaquete] = useState('todos');
   const [filtroMetodo, setFiltroMetodo] = useState('todos');
+  const [filtroCobrador, setFiltroCobrador] = useState('todos');
   const [busqueda, setBusqueda] = useState('');
 
   // Estado de Anulación Modal
@@ -26,22 +32,30 @@ export function AdminCajaModule({ user, profile, tienePermiso }) {
   const [loadingAnular, setLoadingAnular] = useState(false);
 
   const puedeAnular = tienePermiso ? tienePermiso('caja_anular') : (profile?.rol === 'admin' || profile?.rol === 'super_admin');
+  const puedeSupervisar = tienePermiso ? tienePermiso('caja_supervisar') : (profile?.rol === 'admin' || profile?.rol === 'super_admin' || profile?.rol === 'tesoreria');
 
   useEffect(() => {
     cargarDatos();
-  }, [filtroPeriodo, fechaInicio, fechaFin, filtroPaquete, filtroMetodo]);
+  }, [filtroPeriodo, fechaInicio, fechaFin, filtroPaquete, filtroMetodo, filtroCobrador]);
 
   const cargarDatos = async () => {
     setLoading(true);
     try {
-      // 1. Cargar Lista de Paquetes para el filtro
+      // 1. Cargar Lista de Paquetes
       const { data: paqData } = await supabase
         .from('paquetes_grupales')
         .select('id, titulo')
         .order('titulo', { ascending: true });
       if (paqData) setPaquetes(paqData);
 
-      // 2. Consultar Historial de Caja con relaciones
+      // 2. Cargar Lista de Recaudadores / Staff
+      const { data: cobradoresData } = await supabase
+        .from('perfiles')
+        .select('id, nombre_completo, username, rol')
+        .order('nombre_completo', { ascending: true });
+      if (cobradoresData) setCobradores(cobradoresData);
+
+      // 3. Consultar Historial de Caja con relaciones
       let query = supabase
         .from('historial_pagos_caja')
         .select(`
@@ -51,6 +65,17 @@ export function AdminCajaModule({ user, profile, tienePermiso }) {
           cobrador:procesado_por(nombre_completo, username)
         `)
         .order('created_at', { ascending: false });
+
+      // Si NO tiene permiso de supervisar, forzar filtro a únicamente sus propios cobros
+      if (!puedeSupervisar) {
+        query = query.eq('procesado_por', user?.id);
+      } else if (filtroCobrador !== 'todos') {
+        if (filtroCobrador === 'mi_caja') {
+          query = query.eq('procesado_por', user?.id);
+        } else {
+          query = query.eq('procesado_por', filtroCobrador);
+        }
+      }
 
       // Aplicar filtro de paquete
       if (filtroPaquete !== 'todos') {
@@ -90,7 +115,7 @@ export function AdminCajaModule({ user, profile, tienePermiso }) {
     }
   };
 
-  // Filtrado por búsqueda de texto local
+  // Búsqueda de texto local
   const pagosFiltrados = pagos.filter(p => {
     if (!busqueda.trim()) return true;
     const term = busqueda.toLowerCase();
@@ -102,7 +127,7 @@ export function AdminCajaModule({ user, profile, tienePermiso }) {
     return cliente.includes(term) || dni.includes(term) || paquete.includes(term) || ref.includes(term) || cobrador.includes(term);
   });
 
-  // Cálculo de KPIs
+  // Cálculo de KPIs Globales / del Filtro
   const totalRecaudado = pagosFiltrados
     .filter(p => p.tipo_movimiento === 'ingreso')
     .reduce((sum, p) => sum + parseFloat(p.monto || 0), 0);
@@ -119,6 +144,40 @@ export function AdminCajaModule({ user, profile, tienePermiso }) {
     .filter(p => p.tipo_movimiento === 'anulacion')
     .reduce((sum, p) => sum + parseFloat(p.monto || 0), 0);
 
+  // Arqueo Resumen por Recaudador (para Supervisión)
+  const arqueoPorRecaudadorMap = {};
+  pagos.forEach(p => {
+    const cobradorId = p.procesado_por || 'sin_asignar';
+    const nombreCobrador = p.cobrador?.nombre_completo || 'Administrador General';
+    const monto = parseFloat(p.monto || 0);
+
+    if (!arqueoPorRecaudadorMap[cobradorId]) {
+      arqueoPorRecaudadorMap[cobradorId] = {
+        id: cobradorId,
+        nombre: nombreCobrador,
+        efectivo: 0,
+        digital: 0,
+        anulado: 0,
+        total: 0,
+        count: 0
+      };
+    }
+
+    if (p.tipo_movimiento === 'anulacion') {
+      arqueoPorRecaudadorMap[cobradorId].anulado += monto;
+    } else {
+      if (p.metodo_pago === 'Efectivo') {
+        arqueoPorRecaudadorMap[cobradorId].efectivo += monto;
+      } else {
+        arqueoPorRecaudadorMap[cobradorId].digital += monto;
+      }
+      arqueoPorRecaudadorMap[cobradorId].total += monto;
+      arqueoPorRecaudadorMap[cobradorId].count += 1;
+    }
+  });
+
+  const listaArqueoRecaudadores = Object.values(arqueoPorRecaudadorMap);
+
   // Proceso de Anulación de Pago
   const handleConfirmarAnulacion = async (e) => {
     e.preventDefault();
@@ -131,7 +190,6 @@ export function AdminCajaModule({ user, profile, tienePermiso }) {
     try {
       const cuotaId = pagoAnulando.cuota_id;
 
-      // 1. Si la transacción está vinculada a una cuota, actualizarla a 'pendiente'
       if (cuotaId) {
         const { error: cuotaErr } = await supabase
           .from('cuotas_inscripcion')
@@ -149,7 +207,6 @@ export function AdminCajaModule({ user, profile, tienePermiso }) {
         if (cuotaErr) throw cuotaErr;
       }
 
-      // 2. Registrar asiento de contramovimiento (anulación) en el libro diario de caja
       const { error: ledgerErr } = await supabase
         .from('historial_pagos_caja')
         .insert([{
@@ -186,24 +243,55 @@ export function AdminCajaModule({ user, profile, tienePermiso }) {
       <div className="bg-[#071521] border border-white/10 p-6 rounded-3xl flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center font-bold">
-            <DollarSign size={26} />
+            <Wallet size={26} />
           </div>
           <div>
-            <h2 className="font-headline text-xl font-bold text-white m-0">
-              Caja, Recaudaciones & Historial de Pagos
+            <h2 className="font-headline text-xl font-bold text-white m-0 flex items-center gap-2">
+              Caja, Recaudaciones & Auditoría de Cobradores
+              {!puedeSupervisar && (
+                <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono px-2 py-0.5 rounded-full font-bold">
+                  Mi Caja Personal
+                </span>
+              )}
             </h2>
             <p className="text-xs text-gray-400 m-0 mt-0.5">
-              Libro diario de cobros por paquete, mes, día y auditoría de recaudador
+              Libro diario de cobros por paquete, mes, día y supervisión de cajas individuales por recaudador
             </p>
           </div>
         </div>
 
-        <button
-          onClick={cargarDatos}
-          className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2.5 px-4 rounded-xl border border-white/15 transition-all flex items-center gap-2 cursor-pointer"
-        >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Actualizar Caja
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Tabs Internas de Caja */}
+          <div className="flex bg-[#0d2538] p-1 rounded-2xl border border-white/10">
+            <button
+              onClick={() => setCajaSubTab('diario')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                cajaSubTab === 'diario' ? 'bg-[#1995ad] text-white shadow' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <FileText size={14} /> Libro Diario
+            </button>
+
+            {puedeSupervisar && (
+              <button
+                onClick={() => setCajaSubTab('supervision')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  cajaSubTab === 'supervision' ? 'bg-amber-500 text-black shadow font-bold' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Users size={14} /> Arqueo & Supervisión ({listaArqueoRecaudadores.length})
+              </button>
+            )}
+          </div>
+
+          <button
+            onClick={cargarDatos}
+            className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold p-2.5 rounded-2xl border border-white/15 transition-all flex items-center gap-1 cursor-pointer"
+            title="Recargar caja"
+          >
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          </button>
+        </div>
       </div>
 
       {/* KPIs de Caja */}
@@ -253,237 +341,343 @@ export function AdminCajaModule({ user, profile, tienePermiso }) {
         </div>
       </div>
 
-      {/* Barra de Filtros */}
-      <div className="bg-[#071521] border border-white/10 p-5 rounded-2xl flex flex-col gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Filter size={16} className="text-[#1995ad]" />
-            <span className="text-xs font-bold text-white uppercase tracking-wider">Período de Caja:</span>
-            
-            <button
-              onClick={() => setFiltroPeriodo('hoy')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-                filtroPeriodo === 'hoy' ? 'bg-[#1995ad] text-white border-[#1995ad]' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
-              }`}
-            >
-              Hoy
-            </button>
+      {/* VISTA 1: LIBRO DIARIO DE CAJA */}
+      {cajaSubTab === 'diario' && (
+        <>
+          {/* Barra de Filtros */}
+          <div className="bg-[#071521] border border-white/10 p-5 rounded-2xl flex flex-col gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Filter size={16} className="text-[#1995ad]" />
+                <span className="text-xs font-bold text-white uppercase tracking-wider">Período:</span>
+                
+                <button
+                  onClick={() => setFiltroPeriodo('hoy')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                    filtroPeriodo === 'hoy' ? 'bg-[#1995ad] text-white border-[#1995ad]' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
+                  }`}
+                >
+                  Hoy
+                </button>
 
-            <button
-              onClick={() => setFiltroPeriodo('semana')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-                filtroPeriodo === 'semana' ? 'bg-[#1995ad] text-white border-[#1995ad]' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
-              }`}
-            >
-              Esta Semana
-            </button>
+                <button
+                  onClick={() => setFiltroPeriodo('semana')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                    filtroPeriodo === 'semana' ? 'bg-[#1995ad] text-white border-[#1995ad]' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
+                  }`}
+                >
+                  Esta Semana
+                </button>
 
-            <button
-              onClick={() => setFiltroPeriodo('mes')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-                filtroPeriodo === 'mes' ? 'bg-[#1995ad] text-white border-[#1995ad]' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
-              }`}
-            >
-              Este Mes
-            </button>
+                <button
+                  onClick={() => setFiltroPeriodo('mes')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                    filtroPeriodo === 'mes' ? 'bg-[#1995ad] text-white border-[#1995ad]' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
+                  }`}
+                >
+                  Este Mes
+                </button>
 
-            <button
-              onClick={() => setFiltroPeriodo('todos')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-                filtroPeriodo === 'todos' ? 'bg-[#1995ad] text-white border-[#1995ad]' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
-              }`}
-            >
-              Histórico Completo
-            </button>
+                <button
+                  onClick={() => setFiltroPeriodo('todos')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                    filtroPeriodo === 'todos' ? 'bg-[#1995ad] text-white border-[#1995ad]' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
+                  }`}
+                >
+                  Histórico Completo
+                </button>
 
-            <button
-              onClick={() => setFiltroPeriodo('personalizado')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-                filtroPeriodo === 'personalizado' ? 'bg-[#ffb703] text-black border-[#ffb703]' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
-              }`}
-            >
-              📅 Rango de Fechas
-            </button>
-          </div>
+                <button
+                  onClick={() => setFiltroPeriodo('personalizado')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                    filtroPeriodo === 'personalizado' ? 'bg-[#ffb703] text-black border-[#ffb703]' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
+                  }`}
+                >
+                  📅 Rango de Fechas
+                </button>
+              </div>
 
-          <div className="relative w-full sm:w-64">
-            <Search size={16} className="absolute left-3 top-2.5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Buscar cliente, DNI, ref..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full bg-[#0d2538] border border-white/15 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:border-[#1995ad] focus:outline-none"
-            />
-          </div>
-        </div>
-
-        {/* Sub-filtros por Rango de Fechas, Paquete y Método de Pago */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 border-t border-white/10 pt-3">
-          {filtroPeriodo === 'personalizado' && (
-            <div className="sm:col-span-3 flex flex-wrap items-center gap-3 bg-[#0d2538] p-3 rounded-xl border border-amber-500/30">
-              <span className="text-xs text-amber-300 font-bold">Desde:</span>
-              <input
-                type="date"
-                value={fechaInicio}
-                onChange={(e) => setFechaInicio(e.target.value)}
-                className="bg-[#071521] border border-white/15 rounded-lg p-2 text-xs text-white cursor-pointer"
-              />
-              <span className="text-xs text-amber-300 font-bold">Hasta:</span>
-              <input
-                type="date"
-                value={fechaFin}
-                onChange={(e) => setFechaFin(e.target.value)}
-                className="bg-[#071521] border border-white/15 rounded-lg p-2 text-xs text-white cursor-pointer"
-              />
+              <div className="relative w-full sm:w-64">
+                <Search size={16} className="absolute left-3 top-2.5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Buscar cliente, DNI, ref..."
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  className="w-full bg-[#0d2538] border border-white/15 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:border-[#1995ad] focus:outline-none"
+                />
+              </div>
             </div>
-          )}
 
-          <div>
-            <label className="text-[11px] text-gray-400 font-bold block mb-1">Filtrar por Paquete Grupal:</label>
-            <select
-              value={filtroPaquete}
-              onChange={(e) => setFiltroPaquete(e.target.value)}
-              className="w-full bg-[#0d2538] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-[#1995ad]"
-            >
-              <option value="todos">Todos los Paquetes</option>
-              {paquetes.map(pq => (
-                <option key={pq.id} value={pq.id}>{pq.titulo}</option>
-              ))}
-            </select>
+            {/* Sub-filtros por Recaudador, Paquete y Método de Pago */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 border-t border-white/10 pt-3">
+              {filtroPeriodo === 'personalizado' && (
+                <div className="sm:col-span-3 flex flex-wrap items-center gap-3 bg-[#0d2538] p-3 rounded-xl border border-amber-500/30">
+                  <span className="text-xs text-amber-300 font-bold">Desde:</span>
+                  <input
+                    type="date"
+                    value={fechaInicio}
+                    onChange={(e) => setFechaInicio(e.target.value)}
+                    className="bg-[#071521] border border-white/15 rounded-lg p-2 text-xs text-white cursor-pointer"
+                  />
+                  <span className="text-xs text-amber-300 font-bold">Hasta:</span>
+                  <input
+                    type="date"
+                    value={fechaFin}
+                    onChange={(e) => setFechaFin(e.target.value)}
+                    className="bg-[#071521] border border-white/15 rounded-lg p-2 text-xs text-white cursor-pointer"
+                  />
+                </div>
+              )}
+
+              {/* Filtro por Recaudador / Cobrador (Solo si tiene permiso de supervisar) */}
+              <div>
+                <label className="text-[11px] text-amber-300 font-bold block mb-1 flex items-center gap-1">
+                  <User size={13} /> Filtrar por Recaudador / Staff:
+                </label>
+                {puedeSupervisar ? (
+                  <select
+                    value={filtroCobrador}
+                    onChange={(e) => setFiltroCobrador(e.target.value)}
+                    className="w-full bg-[#0d2538] border border-amber-500/40 rounded-xl p-2.5 text-xs text-white focus:border-amber-400"
+                  >
+                    <option value="todos">🌐 Todos los Recaudadores (Caja Empresa)</option>
+                    <option value="mi_caja">👤 Mi Caja Personal ({profile?.nombre_completo})</option>
+                    {cobradores.map(c => (
+                      <option key={c.id} value={c.id}>{c.nombre_completo || c.username} ({c.rol || 'staff'})</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    readOnly
+                    value={`👤 Mis Cobros (${profile?.nombre_completo || 'Usuario'})`}
+                    className="w-full bg-[#071521] border border-white/10 rounded-xl p-2.5 text-xs text-gray-300 cursor-not-allowed"
+                  />
+                )}
+              </div>
+
+              <div>
+                <label className="text-[11px] text-gray-400 font-bold block mb-1">Filtrar por Paquete Grupal:</label>
+                <select
+                  value={filtroPaquete}
+                  onChange={(e) => setFiltroPaquete(e.target.value)}
+                  className="w-full bg-[#0d2538] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-[#1995ad]"
+                >
+                  <option value="todos">Todos los Paquetes</option>
+                  {paquetes.map(pq => (
+                    <option key={pq.id} value={pq.id}>{pq.titulo}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[11px] text-gray-400 font-bold block mb-1">Filtrar por Método de Pago:</label>
+                <select
+                  value={filtroMetodo}
+                  onChange={(e) => setFiltroMetodo(e.target.value)}
+                  className="w-full bg-[#0d2538] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-[#1995ad]"
+                >
+                  <option value="todos">Todos los Métodos</option>
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Transferencia BCP">Transferencia BCP</option>
+                  <option value="Transferencia BBVA">Transferencia BBVA</option>
+                  <option value="Transferencia Interbank">Transferencia Interbank</option>
+                  <option value="Yape">Yape</option>
+                  <option value="Plin">Plin</option>
+                </select>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label className="text-[11px] text-gray-400 font-bold block mb-1">Filtrar por Método de Pago:</label>
-            <select
-              value={filtroMetodo}
-              onChange={(e) => setFiltroMetodo(e.target.value)}
-              className="w-full bg-[#0d2538] border border-white/15 rounded-xl p-2.5 text-xs text-white focus:border-[#1995ad]"
-            >
-              <option value="todos">Todos los Métodos</option>
-              <option value="Efectivo">Efectivo</option>
-              <option value="Transferencia BCP">Transferencia BCP</option>
-              <option value="Transferencia BBVA">Transferencia BBVA</option>
-              <option value="Yape">Yape</option>
-              <option value="Plin">Plin</option>
-            </select>
+          {/* Tabla de Movimientos de Caja */}
+          <div className="bg-[#071521] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
+            {loading ? (
+              <div className="text-center py-12 text-gray-400">
+                <span className="material-symbols-outlined animate-spin text-3xl text-[#1995ad] mb-2">progress_activity</span>
+                <p className="text-xs">Cargando libro de transacciones de caja...</p>
+              </div>
+            ) : pagosFiltrados.length === 0 ? (
+              <div className="p-8 text-center text-gray-400 text-xs">
+                No se encontraron cobros ni movimientos registrados para los filtros seleccionados.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs text-white">
+                  <thead className="bg-[#0d2538] text-[11px] uppercase text-gray-300 border-b border-white/15">
+                    <tr>
+                      <th className="p-3.5">Fecha & Hora</th>
+                      <th className="p-3.5">Cliente / Pasajero</th>
+                      <th className="p-3.5">Paquete Grupal</th>
+                      <th className="p-3.5">Concepto</th>
+                      <th className="p-3.5">Método / Ref.</th>
+                      <th className="p-3.5 text-right">Monto (S/)</th>
+                      <th className="p-3.5">Cobrado Por</th>
+                      <th className="p-3.5 text-center">Acciones / Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/10">
+                    {pagosFiltrados.map((item) => {
+                      const esAnulacion = item.tipo_movimiento === 'anulacion';
+                      const fechaFormateada = new Date(item.created_at).toLocaleString('es-PE', {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                      });
+
+                      return (
+                        <tr key={item.id} className={`hover:bg-white/5 transition-colors ${esAnulacion ? 'bg-red-500/5' : ''}`}>
+                          <td className="p-3.5 text-gray-300 font-medium whitespace-nowrap">
+                            <span className="flex items-center gap-1.5">
+                              <Calendar size={13} className="text-[#1995ad]" />
+                              {fechaFormateada}
+                            </span>
+                          </td>
+
+                          <td className="p-3.5">
+                            <div className="font-bold text-white">{item.perfiles?.nombre_completo || 'Cliente Registrado'}</div>
+                            <div className="text-[10px] text-gray-400">DNI: {item.perfiles?.documento_identidad || 'N/A'}</div>
+                          </td>
+
+                          <td className="p-3.5 text-gray-300 font-semibold max-w-[200px] truncate" title={item.paquetes_grupales?.titulo}>
+                            {item.paquetes_grupales?.titulo || 'Viaje Grupal'}
+                          </td>
+
+                          <td className="p-3.5">
+                            <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
+                              esAnulacion ? 'bg-red-500/20 text-red-300 border border-red-500/40' : 'bg-white/10 text-gray-200'
+                            }`}>
+                              {item.concepto}
+                            </span>
+                          </td>
+
+                          <td className="p-3.5">
+                            <div className="font-bold text-emerald-400">{item.metodo_pago}</div>
+                            {item.referencia_pago && (
+                              <div className="text-[10px] text-gray-400 font-mono">Ref: {item.referencia_pago}</div>
+                            )}
+                          </td>
+
+                          <td className="p-3.5 text-right font-bold whitespace-nowrap">
+                            <span className={esAnulacion ? 'text-red-400' : 'text-emerald-400'}>
+                              {esAnulacion ? '-' : ''}S/ {parseFloat(item.monto).toFixed(2)}
+                            </span>
+                          </td>
+
+                          <td className="p-3.5 text-gray-300">
+                            <span className="flex items-center gap-1 font-bold text-amber-300">
+                              <User size={12} className="text-[#ffb703]" />
+                              {item.cobrador?.nombre_completo || 'Administrador'}
+                            </span>
+                          </td>
+
+                          <td className="p-3.5 text-center">
+                            {esAnulacion ? (
+                              <span className="bg-red-500/20 text-red-300 border border-red-500/40 px-2.5 py-1 rounded-full font-bold text-[10px] uppercase inline-flex items-center gap-1" title={item.motivo}>
+                                <Ban size={11} /> ANULADO
+                              </span>
+                            ) : (
+                              <div className="flex items-center justify-center gap-2">
+                                <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold text-[10px] uppercase inline-flex items-center gap-1">
+                                  <CheckCircle2 size={11} /> INGRESADO
+                                </span>
+
+                                {puedeAnular ? (
+                                  <button
+                                    onClick={() => setPagoAnulando(item)}
+                                    className="bg-red-500/20 hover:bg-red-600 border border-red-500/40 text-red-300 hover:text-white px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer"
+                                    title="Anular este cobro con motivo de auditoría"
+                                  >
+                                    Anular
+                                  </button>
+                                ) : (
+                                  <span className="text-[9px] text-gray-500 italic" title="Requiere rol admin o permiso caja_anular">Sin permiso anulación</span>
+                                )}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* VISTA 2: SUPERVISIÓN Y ARQUEO DE CAJAS POR RECAUDADOR */}
+      {cajaSubTab === 'supervision' && puedeSupervisar && (
+        <div className="flex flex-col gap-5">
+          <div className="bg-[#071521] border border-amber-500/30 p-5 rounded-2xl flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+              <ShieldCheck size={18} /> Panel de Arqueo & Supervisión de Cajas Individuales
+            </div>
+            <p className="text-xs text-gray-300 m-0">
+              Visualiza el balance recaudado por cada vendedor o cobrador registrado en el sistema durante el período seleccionado.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {listaArqueoRecaudadores.length === 0 ? (
+              <div className="col-span-full bg-[#071521] p-8 rounded-2xl text-center border border-white/10 text-gray-400 text-xs">
+                No hay movimientos de recaudación registrados por cobradores en este período.
+              </div>
+            ) : (
+              listaArqueoRecaudadores.map(ar => (
+                <div key={ar.id} className="bg-[#071521] border border-white/15 p-5 rounded-2xl flex flex-col justify-between gap-4 shadow-lg hover:border-[#1995ad]/50 transition-colors">
+                  <div>
+                    <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold text-xs">
+                          {ar.nombre[0] || 'C'}
+                        </div>
+                        <div>
+                          <div className="font-bold text-white text-xs">{ar.nombre}</div>
+                          <div className="text-[10px] text-gray-400">{ar.count} cobro(s) registrados</div>
+                        </div>
+                      </div>
+
+                      <strong className="text-emerald-400 text-base font-bold">
+                        S/ {ar.total.toFixed(2)}
+                      </strong>
+                    </div>
+
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between items-center bg-[#0d2538] px-3 py-1.5 rounded-xl">
+                        <span className="text-gray-400 flex items-center gap-1">💵 Efectivo Presencial:</span>
+                        <strong className="text-cyan-300">S/ {ar.efectivo.toFixed(2)}</strong>
+                      </div>
+
+                      <div className="flex justify-between items-center bg-[#0d2538] px-3 py-1.5 rounded-xl">
+                        <span className="text-gray-400 flex items-center gap-1">📱 Digital (Yape / Bancos):</span>
+                        <strong className="text-[#ffb703]">S/ {ar.digital.toFixed(2)}</strong>
+                      </div>
+
+                      {ar.anulado > 0 && (
+                        <div className="flex justify-between items-center bg-red-500/10 border border-red-500/30 px-3 py-1.5 rounded-xl text-red-300">
+                          <span>🚫 Total Anulaciones:</span>
+                          <strong>-S/ {ar.anulado.toFixed(2)}</strong>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setFiltroCobrador(ar.id);
+                      setCajaSubTab('diario');
+                    }}
+                    className="w-full bg-[#1995ad]/20 hover:bg-[#1995ad] border border-[#1995ad]/40 text-[#a0f0ff] hover:text-white py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-2"
+                  >
+                    <Eye size={14} /> Auditar Libro Diario de {ar.nombre.split(' ')[0]}
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </div>
-      </div>
-
-      {/* Tabla de Movimientos de Caja */}
-      <div className="bg-[#071521] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-        {loading ? (
-          <div className="text-center py-12 text-gray-400">
-            <span className="material-symbols-outlined animate-spin text-3xl text-[#1995ad] mb-2">progress_activity</span>
-            <p className="text-xs">Cargando libro de transacciones de caja...</p>
-          </div>
-        ) : pagosFiltrados.length === 0 ? (
-          <div className="p-8 text-center text-gray-400 text-xs">
-            No se encontraron cobros ni movimientos registrados para los filtros seleccionados.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-white">
-              <thead className="bg-[#0d2538] text-[11px] uppercase text-gray-300 border-b border-white/15">
-                <tr>
-                  <th className="p-3.5">Fecha & Hora</th>
-                  <th className="p-3.5">Cliente / Pasajero</th>
-                  <th className="p-3.5">Paquete Grupal</th>
-                  <th className="p-3.5">Concepto</th>
-                  <th className="p-3.5">Método / Ref.</th>
-                  <th className="p-3.5 text-right">Monto (S/)</th>
-                  <th className="p-3.5">Cobrado Por</th>
-                  <th className="p-3.5 text-center">Acciones / Estado</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/10">
-                {pagosFiltrados.map((item) => {
-                  const esAnulacion = item.tipo_movimiento === 'anulacion';
-                  const fechaFormateada = new Date(item.created_at).toLocaleString('es-PE', {
-                    day: '2-digit', month: '2-digit', year: 'numeric',
-                    hour: '2-digit', minute: '2-digit'
-                  });
-
-                  return (
-                    <tr key={item.id} className={`hover:bg-white/5 transition-colors ${esAnulacion ? 'bg-red-500/5' : ''}`}>
-                      <td className="p-3.5 text-gray-300 font-medium whitespace-nowrap">
-                        <span className="flex items-center gap-1.5">
-                          <Calendar size={13} className="text-[#1995ad]" />
-                          {fechaFormateada}
-                        </span>
-                      </td>
-
-                      <td className="p-3.5">
-                        <div className="font-bold text-white">{item.perfiles?.nombre_completo || 'Cliente Registrado'}</div>
-                        <div className="text-[10px] text-gray-400">DNI: {item.perfiles?.documento_identidad || 'N/A'}</div>
-                      </td>
-
-                      <td className="p-3.5 text-gray-300 font-semibold max-w-[200px] truncate" title={item.paquetes_grupales?.titulo}>
-                        {item.paquetes_grupales?.titulo || 'Viaje Grupal'}
-                      </td>
-
-                      <td className="p-3.5">
-                        <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
-                          esAnulacion ? 'bg-red-500/20 text-red-300 border border-red-500/40' : 'bg-white/10 text-gray-200'
-                        }`}>
-                          {item.concepto}
-                        </span>
-                      </td>
-
-                      <td className="p-3.5">
-                        <div className="font-bold text-emerald-400">{item.metodo_pago}</div>
-                        {item.referencia_pago && (
-                          <div className="text-[10px] text-gray-400 font-mono">Ref: {item.referencia_pago}</div>
-                        )}
-                      </td>
-
-                      <td className="p-3.5 text-right font-bold whitespace-nowrap">
-                        <span className={esAnulacion ? 'text-red-400' : 'text-emerald-400'}>
-                          {esAnulacion ? '-' : ''}S/ {parseFloat(item.monto).toFixed(2)}
-                        </span>
-                      </td>
-
-                      <td className="p-3.5 text-gray-300">
-                        <span className="flex items-center gap-1">
-                          <User size={12} className="text-[#ffb703]" />
-                          {item.cobrador?.nombre_completo || 'Administrador'}
-                        </span>
-                      </td>
-
-                      <td className="p-3.5 text-center">
-                        {esAnulacion ? (
-                          <span className="bg-red-500/20 text-red-300 border border-red-500/40 px-2.5 py-1 rounded-full font-bold text-[10px] uppercase inline-flex items-center gap-1" title={item.motivo}>
-                            <Ban size={11} /> ANULADO
-                          </span>
-                        ) : (
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold text-[10px] uppercase inline-flex items-center gap-1">
-                              <CheckCircle2 size={11} /> INGRESADO
-                            </span>
-
-                            {puedeAnular ? (
-                              <button
-                                onClick={() => setPagoAnulando(item)}
-                                className="bg-red-500/20 hover:bg-red-600 border border-red-500/40 text-red-300 hover:text-white px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer"
-                                title="Anular este cobro con motivo de auditoría"
-                              >
-                                Anular
-                              </button>
-                            ) : (
-                              <span className="text-[9px] text-gray-500 italic" title="Requiere rol admin o permiso caja_anular">Sin permiso anulación</span>
-                            )}
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Modal de Confirmación de Anulación con Motivo Auditable */}
       {pagoAnulando && (
