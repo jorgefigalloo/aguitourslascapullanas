@@ -8,18 +8,43 @@ export function UnirmePaqueteModal({ paquete, isOpen, onClose, user, profile, on
   const toast = useToast();
   const [cantidadPersonas, setCantidadPersonas] = useState(1);
   const [acompanantes, setAcompanantes] = useState([]);
+  const [cuposLibresReales, setCuposLibresReales] = useState(paquete?.cupo_disponible ?? 10);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && paquete) {
       setCantidadPersonas(1);
       setAcompanantes([]);
+      cargarCuposReales();
     }
-  }, [isOpen]);
+  }, [isOpen, paquete]);
+
+  const cargarCuposReales = async () => {
+    try {
+      const { data } = await supabase
+        .from('inscripciones_grupo')
+        .select('cantidad_personas')
+        .eq('paquete_id', paquete.id)
+        .in('estado', ['confirmado', 'pendiente', 'pendiente_confirmacion_tarifa']);
+
+      const totalInscritos = data ? data.reduce((sum, item) => sum + (item.cantidad_personas || 1), 0) : 0;
+      const libres = Math.max(0, (paquete.cupo_maximo || 10) - totalInscritos);
+      setCuposLibresReales(libres);
+
+      if (paquete.cupo_disponible !== libres) {
+        await supabase
+          .from('paquetes_grupales')
+          .update({ cupo_disponible: libres })
+          .eq('id', paquete.id);
+      }
+    } catch (e) {
+      console.error('Error al verificar cupos libres reales:', e);
+    }
+  };
 
   const handleCantidadChange = (num) => {
     const total = parseInt(num, 10) || 1;
-    const maxDisponibles = paquete?.cupo_disponible || 1;
+    const maxDisponibles = cuposLibresReales || 1;
     const finalNum = Math.min(Math.max(1, total), maxDisponibles);
 
     setCantidadPersonas(finalNum);
@@ -196,7 +221,7 @@ export function UnirmePaqueteModal({ paquete, isOpen, onClose, user, profile, on
             </div>
             <div>
               <span className="text-gray-400 block">Cupos Libres:</span>
-              <strong className="text-emerald-400 text-sm">{paquete.cupo_disponible} disponibles</strong>
+              <strong className="text-emerald-400 text-sm">{cuposLibresReales} disponibles</strong>
             </div>
           </div>
 
@@ -211,7 +236,7 @@ export function UnirmePaqueteModal({ paquete, isOpen, onClose, user, profile, on
                 onChange={(e) => handleCantidadChange(e.target.value)}
                 className="bg-[#071521] border border-[#1995ad]/50 rounded-xl px-4 py-2.5 text-white font-bold text-sm focus:border-[#1995ad] focus:outline-none cursor-pointer"
               >
-                {Array.from({ length: Math.min(paquete.cupo_disponible || 1, 10) }, (_, i) => i + 1).map(num => (
+                {Array.from({ length: Math.min(cuposLibresReales || 1, 10) }, (_, i) => i + 1).map(num => (
                   <option key={num} value={num}>{num} {num === 1 ? 'persona (Titular)' : 'personas'}</option>
                 ))}
               </select>
