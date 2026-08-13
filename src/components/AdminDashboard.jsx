@@ -12,6 +12,7 @@ import { AdminUsuariosModule } from './admin/AdminUsuariosModule';
 import { AdminAuditoriaModule } from './admin/AdminAuditoriaModule';
 import { AdminClientesModule } from './admin/AdminClientesModule';
 import { AdminSolicitudesModule } from './admin/AdminSolicitudesModule';
+import { AdminCajaModule } from './admin/AdminCajaModule';
 
 export function AdminDashboard({ user, profile, onBackToSite }) {
   const [activeTab, setActiveTab] = useState('analytics');
@@ -91,6 +92,7 @@ export function AdminDashboard({ user, profile, onBackToSite }) {
 
   const navItems = [
     { id: 'analytics', label: 'Métricas & Ventas', icon: LayoutDashboard, perm: 'analytics_ver' },
+    { id: 'caja', label: 'Caja & Recaudaciones', icon: DollarSign, perm: 'caja_ver' },
     { id: 'clientes', label: 'Clientes & Reservas', icon: UserCheck, perm: 'clientes_ver' },
     { id: 'cotizaciones', label: 'Cotizaciones A Medida', icon: Sparkles, perm: 'cotizaciones_ver' },
     { id: 'paquetes', label: 'Paquetes Grupales', icon: Package, perm: 'paquetes_ver' },
@@ -283,6 +285,10 @@ export function AdminDashboard({ user, profile, onBackToSite }) {
         <main className="flex-1 p-4 md:p-10 overflow-y-auto">
           {activeTab === 'analytics' && (
             <AdminAnalytics paquetes={paquetes} usuarios={usuarios} auditorias={auditorias} tienePermiso={tienePermiso} />
+          )}
+
+          {activeTab === 'caja' && (
+            <AdminCajaModule user={user} profile={profile} tienePermiso={tienePermiso} />
           )}
 
           {activeTab === 'clientes' && (

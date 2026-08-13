@@ -13,8 +13,9 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
     monto: 100,
     fecha_vencimiento: ''
   });
-  const [showFormCrear, setShowFormCrear] = useState(false);
-  const [cuotaEditando, setCuotaEditando] = useState(null);
+  const [cuotaProcesandoCobro, setCuotaProcesandoCobro] = useState(null);
+  const [datosCobro, setDatosCobro] = useState({ metodo_pago: 'Efectivo', referencia_pago: '' });
+  const [loadingCobro, setLoadingCobro] = useState(false);
 
   useEffect(() => {
     if (isOpen && inscripcion) {
@@ -40,30 +41,87 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
     }
   };
 
-  const handleMarcarPagado = async (cuotaId, estadoActual) => {
-    const nuevoEstado = estadoActual === 'pagado' ? 'pendiente' : 'pagado';
-    const metodoPago = nuevoEstado === 'pagado' ? (window.prompt('Método de pago (Efectivo / Transferencia / Yape / Plin):', 'Efectivo') || 'Efectivo') : null;
+  const handleIniciarCobro = (cuota) => {
+    if (cuota.estado === 'pagado') {
+      // Si ya está pagado, desmarcar a pendiente
+      handleDesmarcarPagado(cuota);
+    } else {
+      setCuotaProcesandoCobro(cuota);
+      setDatosCobro({ metodo_pago: 'Efectivo', referencia_pago: '' });
+    }
+  };
+
+  const handleDesmarcarPagado = async (cuota) => {
+    if (!window.confirm(`¿Deseas desmarcar la Cuota #${cuota.numero_cuota} a PENDIENTE?`)) return;
 
     try {
       const { error } = await supabase
         .from('cuotas_inscripcion')
         .update({
-          estado: nuevoEstado,
-          metodo_pago: metodoPago,
-          fecha_pago: nuevoEstado === 'pagado' ? new Date().toISOString() : null
+          estado: 'pendiente',
+          metodo_pago: null,
+          referencia_pago: null,
+          fecha_pago: null
         })
-        .eq('id', cuotaId);
+        .eq('id', cuota.id);
 
       if (error) throw error;
-
-      toast.success(
-        nuevoEstado === 'pagado' ? 'Cuota marcada como PAGADA con éxito.' : 'Cuota marcada como PENDIENTE.',
-        'Estado de Cuota Actualizado'
-      );
+      toast.info('Cuota marcada como PENDIENTE.');
       cargarCuotas();
       if (onCuotasActualizadas) onCuotasActualizadas();
     } catch (err) {
-      toast.error('Error al actualizar cuota: ' + err.message);
+      toast.error('Error al desmarcar cuota: ' + err.message);
+    }
+  };
+
+  const handleConfirmarCobroSubmit = async (e) => {
+    e.preventDefault();
+    setLoadingCobro(true);
+
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const currentUserId = userData?.user?.id || null;
+
+      // 1. Actualizar cuotas_inscripcion
+      const { error: cuotaErr } = await supabase
+        .from('cuotas_inscripcion')
+        .update({
+          estado: 'pagado',
+          metodo_pago: datosCobro.metodo_pago,
+          referencia_pago: datosCobro.referencia_pago.trim() || null,
+          fecha_pago: new Date().toISOString(),
+          cobrado_por: currentUserId
+        })
+        .eq('id', cuotaProcesandoCobro.id);
+
+      if (cuotaErr) throw cuotaErr;
+
+      // 2. Insertar movimiento en historial_pagos_caja
+      const { error: cajaErr } = await supabase
+        .from('historial_pagos_caja')
+        .insert([{
+          cuota_id: cuotaProcesandoCobro.id,
+          inscripcion_id: inscripcion.id,
+          paquete_id: inscripcion.paquete_id,
+          cliente_id: inscripcion.usuario_id,
+          tipo_movimiento: 'ingreso',
+          concepto: `Cuota #${cuotaProcesandoCobro.numero_cuota}: ${cuotaProcesandoCobro.concepto}`,
+          monto: parseFloat(cuotaProcesandoCobro.monto),
+          metodo_pago: datosCobro.metodo_pago,
+          referencia_pago: datosCobro.referencia_pago.trim() || null,
+          procesado_por: currentUserId
+        }]);
+
+      if (cajaErr) console.warn('Aviso: No se pudo guardar en historial de caja:', cajaErr);
+
+      toast.success(`Pago de S/ ${parseFloat(cuotaProcesandoCobro.monto).toFixed(2)} registrado con éxito en Caja.`, 'Cobro Confirmado 💰');
+      setCuotaProcesandoCobro(null);
+      cargarCuotas();
+      if (onCuotasActualizadas) onCuotasActualizadas();
+    } catch (err) {
+      toast.error('Error al procesar cobro: ' + err.message);
+    } finally {
+      setLoadingCobro(false);
     }
   };
 
@@ -322,7 +380,7 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
                       </button>
 
                       <button
-                        onClick={() => handleMarcarPagado(c.id, c.estado)}
+                        onClick={() => handleIniciarCobro(c)}
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer border ${
                           esPagado 
                             ? 'bg-white/10 hover:bg-amber-500/20 text-gray-300 border-white/15' 
@@ -349,6 +407,75 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
         </div>
 
       </div>
+
+      {/* Modal de Cobro Personalizado */}
+      {cuotaProcesandoCobro && (
+        <div className="fixed inset-0 z-[100060] flex items-center justify-center p-4 bg-[#071521]/90 backdrop-blur-md">
+          <div className="bg-[#0d2538] border border-emerald-500/40 rounded-3xl w-full max-w-md p-6 shadow-2xl flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                <DollarSign size={20} /> Registrar Cobro de Cuota
+              </div>
+              <button onClick={() => setCuotaProcesandoCobro(null)} className="text-gray-400 hover:text-white cursor-pointer">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="bg-[#071521] p-3.5 rounded-2xl border border-white/10 text-xs text-gray-300 flex flex-col gap-1.5">
+              <div><strong>Pasajero:</strong> {inscripcion.perfiles?.nombre_completo}</div>
+              <div><strong>Concepto:</strong> Cuota #{cuotaProcesandoCobro.numero_cuota}: {cuotaProcesandoCobro.concepto}</div>
+              <div><strong>Monto a Cobrar:</strong> <strong className="text-emerald-400 text-sm">S/ {parseFloat(cuotaProcesandoCobro.monto).toFixed(2)}</strong></div>
+            </div>
+
+            <form onSubmit={handleConfirmarCobroSubmit} className="flex flex-col gap-3">
+              <div>
+                <label className="text-xs text-gray-300 font-bold block mb-1">Método de Pago *</label>
+                <select
+                  value={datosCobro.metodo_pago}
+                  onChange={(e) => setDatosCobro({ ...datosCobro, metodo_pago: e.target.value })}
+                  className="w-full bg-[#071521] border border-white/15 rounded-xl p-2.5 text-white text-xs"
+                >
+                  <option value="Efectivo">Efectivo (Cobro Presencial)</option>
+                  <option value="Transferencia BCP">Transferencia BCP</option>
+                  <option value="Transferencia BBVA">Transferencia BBVA</option>
+                  <option value="Transferencia Interbank">Transferencia Interbank</option>
+                  <option value="Yape">Yape</option>
+                  <option value="Plin">Plin</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-300 font-bold block mb-1">Nº Operación / Referencia (Opcional)</label>
+                <input
+                  type="text"
+                  placeholder="ej: Op. #987654 / Ref BCP 123"
+                  value={datosCobro.referencia_pago}
+                  onChange={(e) => setDatosCobro({ ...datosCobro, referencia_pago: e.target.value })}
+                  className="w-full bg-[#071521] border border-white/15 rounded-xl p-2.5 text-white text-xs font-mono"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 mt-3">
+                <button
+                  type="button"
+                  onClick={() => setCuotaProcesandoCobro(null)}
+                  className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-2 rounded-xl cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={loadingCobro}
+                  className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs px-5 py-2 rounded-xl flex items-center gap-1.5 shadow-lg cursor-pointer"
+                >
+                  <CheckCircle2 size={16} /> {loadingCobro ? 'Procesando Cobro...' : 'Confirmar & Guardar en Caja'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>,
     document.body
   );
