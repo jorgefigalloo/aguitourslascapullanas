@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Save, Folder, Link2, Image as ImageIcon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Save, Folder, Link2, Image as ImageIcon, Phone, Mail, MapPin, Globe } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
 
@@ -29,12 +29,27 @@ export function AdminCMSModule({ cmsSections = [], user, onActualizar }) {
   });
   const [tipoOrigenImagen, setTipoOrigenImagen] = useState('local');
   const [contactoCampos, setContactoCampos] = useState({
-    telefono: '+51 987 654 321',
+    telefono: '+51 987 654 320',
     email: 'contacto@aguitourslascapullanas.com',
     direccion: 'Cusco & Piura, Perú',
     facebook_url: 'https://www.facebook.com/people/Aguitours-las-capullanas/100054386595848/'
   });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (cmsSections.length > 0) {
+      const foundContacto = cmsSections.find(s => s.clave_seccion === 'contacto_info');
+      if (foundContacto && foundContacto.cuerpo_texto) {
+        const partes = foundContacto.cuerpo_texto.split('|');
+        setContactoCampos({
+          telefono: partes[0] ? partes[0].trim() : '+51 987 654 320',
+          email: partes[1] ? partes[1].trim() : 'contacto@aguitourslascapullanas.com',
+          direccion: partes[2] ? partes[2].trim() : 'Cusco & Piura, Perú',
+          facebook_url: partes[3] ? partes[3].trim() : 'https://www.facebook.com/people/Aguitours-las-capullanas/100054386595848/'
+        });
+      }
+    }
+  }, [cmsSections]);
 
   const handleSeleccionarSeccionCMS = (seccionKey) => {
     const found = cmsSections.find(s => s.clave_seccion === seccionKey);
@@ -48,7 +63,7 @@ export function AdminCMSModule({ cmsSections = [], user, onActualizar }) {
       if (seccionKey === 'contacto_info' && found.cuerpo_texto) {
         const partes = found.cuerpo_texto.split('|');
         setContactoCampos({
-          telefono: partes[0] ? partes[0].trim() : '+51 987 654 321',
+          telefono: partes[0] ? partes[0].trim() : '+51 987 654 320',
           email: partes[1] ? partes[1].trim() : 'contacto@aguitourslascapullanas.com',
           direccion: partes[2] ? partes[2].trim() : 'Cusco & Piura, Perú',
           facebook_url: partes[3] ? partes[3].trim() : 'https://www.facebook.com/people/Aguitours-las-capullanas/100054386595848/'
@@ -112,7 +127,7 @@ export function AdminCMSModule({ cmsSections = [], user, onActualizar }) {
           <select 
             value={cmsEditando.clave_seccion} 
             onChange={e => handleSeleccionarSeccionCMS(e.target.value)} 
-            className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none"
+            className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none cursor-pointer font-bold"
           >
             <option value="navbar_brand">Navegación & Marca (navbar_brand)</option>
             <option value="hero_inicio">Portada Hero Principal (hero_inicio)</option>
@@ -130,7 +145,7 @@ export function AdminCMSModule({ cmsSections = [], user, onActualizar }) {
             value={cmsEditando.titulo || ''} 
             onChange={e => setCmsEditando({...cmsEditando, titulo: e.target.value})} 
             required 
-            className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm" 
+            className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm font-semibold" 
           />
         </div>
 
@@ -231,17 +246,80 @@ export function AdminCMSModule({ cmsSections = [], user, onActualizar }) {
           </div>
         </div>
 
-        <div>
-          <label className="text-xs text-gray-300 font-bold block mb-1">Cuerpo de Texto</label>
-          <textarea 
-            rows={4} 
-            value={cmsEditando.cuerpo_texto || ''} 
-            onChange={e => setCmsEditando({...cmsEditando, cuerpo_texto: e.target.value})} 
-            className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm" 
-          />
-        </div>
+        {/* Formulario Especial Separado para Información de Contacto */}
+        {cmsEditando.clave_seccion === 'contacto_info' ? (
+          <div className="bg-[#071521] p-5 rounded-2xl border border-[#1995ad]/40 flex flex-col gap-4 shadow-inner">
+            <h4 className="text-xs text-[#ffb703] font-bold uppercase tracking-wider m-0 flex items-center gap-1.5">
+              📞 Datos Específicos de Atención & Contacto (Edición Fácil por Campo)
+            </h4>
 
-        <button type="submit" disabled={loading} className="btn-gold-3d text-sm font-bold py-3 mt-2 flex items-center justify-center gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-[#25D366] font-bold block mb-1 flex items-center gap-1">
+                  <Phone size={13} /> Teléfono / WhatsApp de Atención
+                </label>
+                <input 
+                  type="text" 
+                  value={contactoCampos.telefono} 
+                  onChange={e => setContactoCampos({ ...contactoCampos, telefono: e.target.value })} 
+                  placeholder="ej: +51 987 654 320"
+                  className="w-full bg-[#0d2538] border border-[#25D366]/40 rounded-xl p-3 text-white text-sm focus:border-[#25D366] focus:outline-none" 
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-cyan-300 font-bold block mb-1 flex items-center gap-1">
+                  <Mail size={13} /> Correo Electrónico Oficial
+                </label>
+                <input 
+                  type="email" 
+                  value={contactoCampos.email} 
+                  onChange={e => setContactoCampos({ ...contactoCampos, email: e.target.value })} 
+                  placeholder="ej: contacto@aguitourslascapullanas.com"
+                  className="w-full bg-[#0d2538] border border-cyan-400/40 rounded-xl p-3 text-white text-sm focus:border-cyan-400 focus:outline-none" 
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-amber-300 font-bold block mb-1 flex items-center gap-1">
+                  <MapPin size={13} /> Oficina Principal / Dirección
+                </label>
+                <input 
+                  type="text" 
+                  value={contactoCampos.direccion} 
+                  onChange={e => setContactoCampos({ ...contactoCampos, direccion: e.target.value })} 
+                  placeholder="ej: Cusco & Piura, Perú"
+                  className="w-full bg-[#0d2538] border border-amber-400/40 rounded-xl p-3 text-white text-sm focus:border-amber-400 focus:outline-none" 
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-blue-400 font-bold block mb-1 flex items-center gap-1">
+                  <Globe size={13} /> Enlace Facebook Oficial
+                </label>
+                <input 
+                  type="text" 
+                  value={contactoCampos.facebook_url} 
+                  onChange={e => setContactoCampos({ ...contactoCampos, facebook_url: e.target.value })} 
+                  placeholder="https://www.facebook.com/..."
+                  className="w-full bg-[#0d2538] border border-blue-400/40 rounded-xl p-3 text-white text-sm focus:border-blue-400 focus:outline-none" 
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <label className="text-xs text-gray-300 font-bold block mb-1">Cuerpo de Texto</label>
+            <textarea 
+              rows={4} 
+              value={cmsEditando.cuerpo_texto || ''} 
+              onChange={e => setCmsEditando({...cmsEditando, cuerpo_texto: e.target.value})} 
+              className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm" 
+            />
+          </div>
+        )}
+
+        <button type="submit" disabled={loading} className="btn-gold-3d text-sm font-bold py-3 mt-2 flex items-center justify-center gap-2 cursor-pointer shadow-lg">
           <Save size={18} /> {loading ? 'Guardando...' : 'Guardar Cambios del CMS'}
         </button>
       </form>
