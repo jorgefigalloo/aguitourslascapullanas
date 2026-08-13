@@ -151,26 +151,59 @@ export function EditarPaqueteModal({ paquete, isOpen, onClose, onPaqueteActualiz
             </div>
 
             <div>
-              <label className="text-xs text-gray-300 font-bold block mb-1">Precio por Persona (S/)</label>
+              <label className="text-xs text-amber-300 font-bold block mb-1">💼 Costo Operativo Total Estimado (S/)</label>
+              <input 
+                type="number" 
+                step="0.01"
+                placeholder="ej: 9000.00"
+                value={formData.costo_total || (formData.precio_persona * formData.cupo_maximo) || ''} 
+                onChange={e => {
+                  const costo = parseFloat(e.target.value) || 0;
+                  const cupos = parseInt(formData.cupo_maximo) || 1;
+                  const precioPersonaCalc = cupos > 0 && costo > 0 ? Math.round((costo / cupos) * 100) / 100 : formData.precio_persona;
+                  setFormData({
+                    ...formData, 
+                    costo_total: e.target.value,
+                    precio_persona: precioPersonaCalc
+                  });
+                }} 
+                className="w-full bg-[#071521] border border-amber-500/40 rounded-xl p-3 text-white text-sm focus:border-amber-400 focus:outline-none" 
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-300 font-bold block mb-1">Cupo Máximo del Grupo</label>
+              <input 
+                type="number" 
+                value={formData.cupo_maximo} 
+                onChange={e => {
+                  const cupos = parseInt(e.target.value) || 1;
+                  const costo = parseFloat(formData.costo_total || (formData.precio_persona * formData.cupo_maximo)) || 0;
+                  const precioPersonaCalc = costo > 0 && cupos > 0 ? Math.round((costo / cupos) * 100) / 100 : formData.precio_persona;
+                  setFormData({
+                    ...formData, 
+                    cupo_maximo: e.target.value,
+                    precio_persona: precioPersonaCalc
+                  });
+                }} 
+                required 
+                className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="text-xs text-[#ffb703] font-bold block mb-1">💰 Precio por Persona (S/)</label>
               <input 
                 type="number" 
                 step="0.01"
                 value={formData.precio_persona} 
                 onChange={e => setFormData({...formData, precio_persona: e.target.value})} 
                 required 
-                className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
+                className="w-full bg-[#071521] border border-[#ffb703]/50 rounded-xl p-3 text-[#ffb703] font-bold text-sm focus:border-[#ffb703] focus:outline-none" 
               />
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-300 font-bold block mb-1">Cupo Máximo</label>
-              <input 
-                type="number" 
-                value={formData.cupo_maximo} 
-                onChange={e => setFormData({...formData, cupo_maximo: e.target.value})} 
-                required 
-                className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
-              />
+              <p className="text-[10px] text-gray-400 mt-1">
+                Fórmula: Costo Operativo Total (S/ {(formData.precio_persona * formData.cupo_maximo).toFixed(2)}) ÷ {formData.cupo_maximo} cupos = <strong>S/ {parseFloat(formData.precio_persona || 0).toFixed(2)} por persona</strong>.
+              </p>
             </div>
 
             <div>
