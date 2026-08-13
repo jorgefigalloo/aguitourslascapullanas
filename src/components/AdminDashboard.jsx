@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  LayoutDashboard, Edit3, Plus, Users, Globe, ArrowLeft, Search, Bell, LogOut, CheckCircle, Clock, Calendar, ChevronRight, ChevronLeft, ShieldCheck, Database, Package, UserCheck, Sparkles, Menu, X, User, Settings, ChevronDown
+  LayoutDashboard, Edit3, Plus, Users, Globe, ArrowLeft, Search, Bell, LogOut, CheckCircle, Clock, Calendar, ChevronRight, ChevronLeft, ShieldCheck, Database, Package, UserCheck, Sparkles, Menu, X, User, Settings, ChevronDown, DollarSign
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { MisDatosModal } from './MisDatosModal';
