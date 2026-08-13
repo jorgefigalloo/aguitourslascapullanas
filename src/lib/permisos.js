@@ -85,6 +85,17 @@ export const CATEGORIAS_PERMISOS = [
     ]
   },
   {
+    categoria: '💵 Módulo Caja, Tesorería & Recaudaciones (Libro Diario)',
+    items: [
+      { id: 'caja_ver', label: 'Ver módulo de caja, totales e historial de cobros' },
+      { id: 'caja_listar', label: 'Listar transacciones por fecha, mes y paquete' },
+      { id: 'caja_cobrar', label: 'Registrar nuevos cobros de cuotas y recibos' },
+      { id: 'caja_editar', label: 'Editar montos y métodos de pago registrados' },
+      { id: 'caja_anular', label: 'Anular cobros extornando fondos (Auditoría de Anulación)' },
+      { id: 'caja_exportar', label: 'Exportar libro diario de caja a PDF / Excel' }
+    ]
+  },
+  {
     categoria: '📊 Módulo Analytics, Reportes & Auditoría BD',
     items: [
       { id: 'analytics_ver', label: 'Ver métricas, ocupación e ingresos' },
