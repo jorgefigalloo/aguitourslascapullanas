@@ -122,7 +122,7 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
   const saldoPendiente = Math.max(0, parseFloat(inscripcion.precio_total || 0) - totalPagado);
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#071521]/90 backdrop-blur-md overflow-y-auto">
+    <div className="fixed inset-0 z-[100050] flex items-center justify-center p-4 bg-[#071521]/90 backdrop-blur-md overflow-y-auto">
       <div className="bg-[#0d2538] border border-white/15 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden relative my-auto max-h-[90vh] flex flex-col">
 
         {/* Header Modal */}
