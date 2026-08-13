@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, Calendar, MapPin, CheckCircle2, MessageCircle, FileText, Users, ChevronDown, ChevronUp, ExternalLink, Download } from 'lucide-react';
+import { Briefcase, Calendar, MapPin, CheckCircle2, MessageCircle, FileText, Users, ChevronDown, ChevronUp, ExternalLink, Download, Trash2, LogOut } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useToast } from '../../context/ToastContext';
 
 export function ClientMisViajes({ user }) {
+  const toast = useToast();
   const [inscripciones, setInscripciones] = useState([]);
   const [grupoMiembros, setGrupoMiembros] = useState({});
   const [openItinerarioId, setOpenItinerarioId] = useState(null);
@@ -29,6 +31,8 @@ export function ClientMisViajes({ user }) {
             cargarMiembrosGrupo(item.paquetes_grupales.id);
           }
         });
+      } else {
+        setInscripciones([]);
       }
     } catch (e) {
       console.error(e);
@@ -53,6 +57,53 @@ export function ClientMisViajes({ user }) {
       }
     } catch (e) {
       console.log('Error al cargar grupo de viajeros:', e);
+    }
+  };
+
+  const handleRetirarmeDelViaje = async (item) => {
+    const confirm = window.confirm(`¿Estás seguro de que deseas retirarte del paquete "${item.paquetes_grupales?.titulo}"?`);
+    if (!confirm) return;
+
+    try {
+      // 1. Cancelar inscripción
+      const { error } = await supabase
+        .from('inscripciones_grupo')
+        .update({ estado: 'cancelado' })
+        .eq('id', item.id);
+
+      if (error) throw error;
+
+      // 2. Liberar cupo en el paquete
+      if (item.paquetes_grupales?.id) {
+        await supabase
+          .from('paquetes_grupales')
+          .update({ cupo_disponible: item.paquetes_grupales.cupo_disponible + (item.cantidad_personas || 1) })
+          .eq('id', item.paquetes_grupales.id);
+      }
+
+      toast.info('Te has retirado del viaje. Tu cupo ha sido liberado.', 'Reserva Cancelada');
+      cargarMisViajes();
+    } catch (err) {
+      toast.error('Error al retirarte del viaje: ' + err.message);
+    }
+  };
+
+  const handleEliminarInscripcion = async (item) => {
+    const confirm = window.confirm('¿Deseas quitar este historial de viaje de tu panel personal?');
+    if (!confirm) return;
+
+    try {
+      const { error } = await supabase
+        .from('inscripciones_grupo')
+        .delete()
+        .eq('id', item.id);
+
+      if (error) throw error;
+
+      toast.success('Viaje removido de tu panel personal.', 'Historial Limpiado');
+      cargarMisViajes();
+    } catch (err) {
+      toast.error('Error al eliminar registro: ' + err.message);
     }
   };
 
@@ -114,7 +165,7 @@ export function ClientMisViajes({ user }) {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
                     <span className={`px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 border ${
                       item.estado === 'confirmado' ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' :
                       item.estado === 'pendiente_confirmacion_tarifa' ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 animate-pulse' :
@@ -124,10 +175,28 @@ export function ClientMisViajes({ user }) {
                       <CheckCircle2 size={16} /> {
                         item.estado === 'confirmado' ? 'Cupo Confirmado' :
                         item.estado === 'pendiente_confirmacion_tarifa' ? '⏳ Tarifa en Revisión' :
-                        item.estado === 'cancelado' ? 'Cancelado' :
+                        item.estado === 'cancelado' ? 'Cancelado / Retirado' :
                         item.estado
                       }
                     </span>
+
+                    {item.estado === 'cancelado' ? (
+                      <button
+                        onClick={() => handleEliminarInscripcion(item)}
+                        className="bg-red-500/20 hover:bg-red-600 border border-red-500/40 text-red-300 hover:text-white px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+                        title="Quitar este historial de viaje cancelado de tu panel personal"
+                      >
+                        <Trash2 size={14} /> Quitar de Mi Perfil
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleRetirarmeDelViaje(item)}
+                        className="bg-white/10 hover:bg-red-500/30 border border-white/15 text-gray-300 hover:text-red-300 px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                        title="Cancelar reserva y salirte de este grupo"
+                      >
+                        <LogOut size={14} /> Retirarme del Viaje
+                      </button>
+                    )}
                   </div>
                 </div>
 

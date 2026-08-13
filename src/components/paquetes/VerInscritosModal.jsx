@@ -34,7 +34,9 @@ export function VerInscritosModal({ paquete, isOpen, onClose }) {
 
   if (!isOpen || !paquete) return null;
 
-  const totalPersonasInscritas = inscritos.reduce((sum, item) => sum + (item.cantidad_personas || 1), 0);
+  const totalPersonasInscritas = inscritos
+    .filter(item => item.estado !== 'cancelado' && item.estado !== 'rechazado_tarifa')
+    .reduce((sum, item) => sum + (item.cantidad_personas || 1), 0);
 
   return createPortal(
     <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-[#071521]/90 backdrop-blur-md overflow-y-auto">
