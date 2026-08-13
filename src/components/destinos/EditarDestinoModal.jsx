@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Trash2, Globe, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useToast } from '../../context/ToastContext';
 
 export function EditarDestinoModal({ destino, isOpen, onClose, onDestinoActualizado }) {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     nombre: '',
     tipo: 'nacional',
@@ -40,11 +42,11 @@ export function EditarDestinoModal({ destino, isOpen, onClose, onDestinoActualiz
         .eq('id', destino.id);
 
       if (error) throw error;
-      alert('¡Destino turístico actualizado correctamente!');
+      toast.success('Destino turístico actualizado correctamente.', 'Destino Guardado 🌎');
       onDestinoActualizado();
       onClose();
     } catch (err) {
-      alert('Error al actualizar destino: ' + err.message);
+      toast.error('Error al actualizar destino: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -62,11 +64,11 @@ export function EditarDestinoModal({ destino, isOpen, onClose, onDestinoActualiz
         .eq('id', destino.id);
 
       if (error) throw error;
-      alert('¡Destino eliminado correctamente!');
+      toast.success('Destino eliminado correctamente.', 'Destino Eliminado');
       onDestinoActualizado();
       onClose();
     } catch (err) {
-      alert('Error al eliminar destino: ' + err.message);
+      toast.error('Error al eliminar destino: ' + err.message);
     } finally {
       setLoading(false);
     }

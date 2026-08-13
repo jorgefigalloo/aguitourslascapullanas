@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, UserPlus, Shield, Lock, Mail, Phone, FileText, CheckCircle2 } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
-import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../lib/supabase';
-
-// Cliente Supabase temporal aislado sin persistencia de sesión para no cerrar la sesión del Admin actual
-const tempAuthClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false }
-});
+import { supabase, tempAuthClient } from '../../lib/supabase';
+import { useToast } from '../../context/ToastContext';
 
 export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado, fixedRol, title }) {
   const targetRol = fixedRol || 'cliente';
@@ -35,7 +30,7 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado, fixedRol, 
     e.preventDefault();
 
     if (!validarPasswordSegura(formData.password)) {
-      alert('La contraseña no cumple los requisitos de seguridad:\n- Mínimo 8 caracteres\n- Al menos 1 letra mayúscula (A-Z)\n- Al menos 1 letra minúscula (a-z)\n- Al menos 1 número (0-9)\n- Al menos 1 símbolo especial (!@#$%^&*)');
+      toast.warning('La contraseña requiere mín. 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo (!@#$%^&*).', 'Requisitos de Contraseña');
       return;
     }
 
@@ -77,7 +72,7 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado, fixedRol, 
         if (profileError) console.log('Info de perfil:', profileError);
       }
 
-      alert(`¡${fixedRol === 'cliente' ? 'Cliente' : 'Usuario'} "${formData.nombre_completo}" (${cleanUsername}) registrado exitosamente!`);
+      toast.success(`${fixedRol === 'cliente' ? 'Cliente' : 'Usuario'} "${formData.nombre_completo}" (${cleanUsername}) registrado exitosamente.`, 'Registro Exitoso');
       if (onUsuarioCreado) onUsuarioCreado();
       onClose();
       setFormData({
@@ -90,7 +85,7 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado, fixedRol, 
         rol: targetRol
       });
     } catch (err) {
-      alert('Error al registrar: ' + err.message);
+      toast.error('Error al registrar: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -144,8 +139,8 @@ export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado, fixedRol, 
                 autoComplete="new-password"
                 className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
               />
-              <p className="text-[10px] text-amber-400 mt-1 font-semibold leading-tight">
-                🔒 Requisito: Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo especial (!@#$%^&*)
+              <p className="text-[11px] text-amber-300 mt-2 font-semibold bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/25 leading-snug">
+                🔒 Requisito: Mínimo 8 caracteres, 1 mayúscula (A-Z), 1 minúscula (a-z), 1 número (0-9) y 1 símbolo especial (!@#$%^&*)
               </p>
             </div>
           </div>

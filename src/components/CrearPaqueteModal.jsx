@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { X, PlusCircle, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useToast } from '../context/ToastContext';
 
 export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     titulo: '', destino: '', precio_persona: 1000, cupo_maximo: 15,
     fecha_salida: '', fecha_retorno: '', 
@@ -42,7 +44,7 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
       }]);
 
       if (error) throw error;
-      alert('¡Nuevo paquete grupal publicado exitosamente!');
+      toast.success('Nuevo paquete grupal publicado exitosamente.', 'Paquete Creado 🎉');
       onPaqueteCreado();
       onClose();
       setFormData({
@@ -54,7 +56,7 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
         pdf_formulario_url: ''
       });
     } catch (err) {
-      alert('Error al publicar paquete: ' + err.message);
+      toast.error('Error al publicar paquete: ' + err.message);
     } finally {
       setLoading(false);
     }

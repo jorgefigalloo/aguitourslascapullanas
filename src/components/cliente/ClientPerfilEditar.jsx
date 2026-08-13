@@ -243,8 +243,8 @@ export function ClientPerfilEditar({ user, profile, onProfileUpdated }) {
             </div>
           </div>
 
-          <p className="text-[11px] text-amber-400 mt-3 font-semibold leading-tight flex items-center gap-1">
-            🔒 Requisito: Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo especial (!@#$%^&*)
+          <p className="text-[11px] text-amber-300 mt-3 font-semibold bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/25 leading-snug">
+            🔒 Requisito: Mínimo 8 caracteres, 1 mayúscula (A-Z), 1 minúscula (a-z), 1 número (0-9) y 1 símbolo especial (!@#$%^&*)
           </p>
         </div>
 

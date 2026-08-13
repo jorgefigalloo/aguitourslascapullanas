@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Phone, MapPin, Send, MessageCircle, Facebook, Sparkles } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, MessageCircle, Clock, Sparkles, Facebook, Instagram } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useToast } from '../context/ToastContext';
 
 export function ContactoSection() {
+  const toast = useToast();
   const [formData, setFormData] = useState({ nombre: '', email: '', telefono: '', mensaje: '' });
   const [enviado, setEnviado] = useState(false);
 
@@ -61,7 +63,7 @@ export function ContactoSection() {
     e.preventDefault();
     setEnviado(true);
     setTimeout(() => {
-      alert('¡Gracias por contactarnos! Un asesor de Aguitours Las Capullanas te responderá a la brevedad.');
+      toast.success('Un asesor de Aguitours Las Capullanas te responderá a la brevedad.', '¡Gracias por contactarnos!');
       setFormData({ nombre: '', email: '', telefono: '', mensaje: '' });
       setEnviado(false);
     }, 500);

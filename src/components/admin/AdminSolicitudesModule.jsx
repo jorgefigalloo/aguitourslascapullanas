@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, Search, Filter, MapPin, Calendar, Users, DollarSign, CheckCircle2, Clock, XCircle, Plus, User, Phone } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { CrearPaqueteModal } from '../CrearPaqueteModal';
+import { useToast } from '../../context/ToastContext';
 
 export function AdminSolicitudesModule() {
+  const toast = useToast();
   const [solicitudes, setSolicitudes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,10 +45,10 @@ export function AdminSolicitudesModule() {
         .eq('id', solicitudId);
 
       if (error) throw error;
-      alert(`Estado de la solicitud actualizado a "${nuevoEstado.toUpperCase()}".`);
+      toast.success(`Estado de la solicitud actualizado a "${nuevoEstado.toUpperCase()}".`, 'Estado Actualizado');
       cargarSolicitudes();
     } catch (err) {
-      alert('Error al actualizar estado: ' + err.message);
+      toast.error('Error al actualizar estado: ' + err.message);
     }
   };
 
@@ -78,7 +80,7 @@ export function AdminSolicitudesModule() {
             notas: 'Inscripción automática por solicitud de cotización personalizada'
           }]);
 
-        alert(`¡Paquete Creado con Éxito y Cliente "${solicitudSeleccionada.perfiles?.nombre_completo || 'Solicitante'}" inscrito automáticamente!`);
+        toast.success(`Paquete creado y cliente "${solicitudSeleccionada.perfiles?.nombre_completo || 'Solicitante'}" inscrito automáticamente.`, 'Paquete Creado 🎉');
         cargarSolicitudes();
       } catch (e) {
         console.error('Error al vincular paquete con cliente:', e);

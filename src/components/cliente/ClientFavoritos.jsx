@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, MapPin, Calendar, Trash2, ExternalLink, Package, Globe } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useToast } from '../../context/ToastContext';
 
 export function ClientFavoritos({ user, onExplorarPaquetes }) {
+  const toast = useToast();
   const [favoritos, setFavoritos] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,8 +42,9 @@ export function ClientFavoritos({ user, onExplorarPaquetes }) {
 
       if (error) throw error;
       setFavoritos(prev => prev.filter(f => f.id !== favId));
+      toast.info('Elemento removido de tus favoritos.', 'Favoritos');
     } catch (err) {
-      alert('Error al eliminar favorito: ' + err.message);
+      toast.error('Error al eliminar favorito: ' + err.message);
     }
   };
 

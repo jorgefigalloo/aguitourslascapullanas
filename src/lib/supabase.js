@@ -5,3 +5,7 @@ export const SUPABASE_ANON_KEY = import.meta.env?.VITE_SUPABASE_ANON_KEY || 'eyJ
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Cliente Supabase temporal aislado sin persistencia de sesión (para creación de usuarios sin desloguear al Admin)
+export const tempAuthClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false }
+});

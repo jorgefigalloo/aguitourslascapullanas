@@ -2,16 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { MapPin, Globe, Sparkles, ArrowRight, Star, Heart } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useToast } from '../context/ToastContext';
 
 export function DestinosSection({ user, onOpenAuth }) {
+  const toast = useToast();
   const targetRef = useRef(null);
   const [destinos, setDestinos] = useState([]);
   const [filtro, setFiltro] = useState('todos');
-  const [likedDestinos, setLikedDestinos] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('aguitours_liked_destinos') || '[]');
-    } catch (e) { return []; }
-  });
+  const [likedDestinos, setLikedDestinos] = useState([]);
 
   // Scroll Horizontal animado con Framer Motion
   const { scrollYProgress } = useScroll({
@@ -23,22 +21,56 @@ export function DestinosSection({ user, onOpenAuth }) {
 
   useEffect(() => {
     cargarDestinos();
-  }, []);
+    if (user) cargarFavoritosUsuario();
+  }, [user]);
 
-  const handleToggleLike = (destinoId) => {
+  const cargarFavoritosUsuario = async () => {
+    try {
+      const { data } = await supabase
+        .from('favoritos_usuario')
+        .select('destino_id')
+        .eq('usuario_id', user.id)
+        .eq('tipo', 'destino');
+      if (data) {
+        setLikedDestinos(data.map(f => f.destino_id));
+      }
+    } catch (e) {
+      console.log('Error al cargar favoritos destinos:', e);
+    }
+  };
+
+  const handleToggleLike = async (destinoId) => {
     if (!user) {
-      alert('Para guardar tus destinos favoritos debes iniciar sesión o registrarte primero.');
+      toast.info('Para guardar tus destinos favoritos debes iniciar sesión o registrarte primero.', 'Acceso Requerido');
       if (onOpenAuth) onOpenAuth();
       return;
     }
 
-    const exists = likedDestinos.includes(destinoId);
-    const updated = exists 
-      ? likedDestinos.filter(id => id !== destinoId)
-      : [...likedDestinos, destinoId];
-
-    setLikedDestinos(updated);
-    localStorage.setItem('aguitours_liked_destinos', JSON.stringify(updated));
+    const isLiked = likedDestinos.includes(destinoId);
+    try {
+      if (isLiked) {
+        await supabase
+          .from('favoritos_usuario')
+          .delete()
+          .eq('usuario_id', user.id)
+          .eq('destino_id', destinoId)
+          .eq('tipo', 'destino');
+        setLikedDestinos(prev => prev.filter(id => id !== destinoId));
+        toast.info('Destino removido de tus favoritos.', 'Favoritos');
+      } else {
+        await supabase
+          .from('favoritos_usuario')
+          .insert({
+            usuario_id: user.id,
+            destino_id: destinoId,
+            tipo: 'destino'
+          });
+        setLikedDestinos(prev => [...prev, destinoId]);
+        toast.success('¡Destino guardado en tus favoritos!', 'Me Gusta ❤️');
+      }
+    } catch (err) {
+      console.log('Error al actualizar favorito destino:', err);
+    }
   };
 
   const cargarDestinos = async () => {

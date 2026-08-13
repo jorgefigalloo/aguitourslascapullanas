@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Save, User, Shield, Lock, Mail, Send, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useToast } from '../context/ToastContext';
 
 export function EditarUsuarioAdminModal({ usuario, isOpen, onClose, onUsuarioActualizado, fixedRol, isClientModule }) {
+  const toast = useToast();
   const isClienteOnly = isClientModule || fixedRol === 'cliente' || usuario?.rol === 'cliente';
 
   const [formData, setFormData] = useState({
@@ -33,7 +35,7 @@ export function EditarUsuarioAdminModal({ usuario, isOpen, onClose, onUsuarioAct
   const handleEnviarCorreoActivacion = async () => {
     const targetEmail = formData.email.trim();
     if (!targetEmail) {
-      alert('Este usuario no tiene un correo electrónico válido registrado.');
+      toast.warning('Este usuario no tiene un correo electrónico válido registrado.');
       return;
     }
 
@@ -44,9 +46,9 @@ export function EditarUsuarioAdminModal({ usuario, isOpen, onClose, onUsuarioAct
       });
 
       if (error) throw error;
-      alert(`¡Correo de activación / restablecimiento enviado con éxito a "${targetEmail}"! El cliente podrá configurar su contraseña desde el enlace enviado.`);
+      toast.success(`Correo de activación enviado con éxito a "${targetEmail}". El cliente podrá configurar su clave desde el enlace.`, 'Correo Enviado');
     } catch (err) {
-      alert('Error al enviar correo de activación: ' + err.message);
+      toast.error('Error al enviar correo de activación: ' + err.message);
     } finally {
       setSendingEmail(false);
     }
@@ -104,7 +106,14 @@ export function EditarUsuarioAdminModal({ usuario, isOpen, onClose, onUsuarioAct
       }
 
       // 3. Si se ingresó una nueva contraseña, actualizar credenciales de Auth vía RPC administrativa
-      if (formData.nueva_password && formData.nueva_password.trim().length >= 6) {
+      if (formData.nueva_password && formData.nueva_password.trim() !== '') {
+        const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+        if (!regexPassword.test(formData.nueva_password)) {
+          toast.warning('La nueva contraseña no cumple los requisitos: Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo especial (!@#$%^&*).', 'Requisitos de Contraseña');
+          setLoading(false);
+          return;
+        }
+
         const { error: rpcErr } = await supabase.rpc('admin_cambiar_password_usuario', {
           p_target_user_id: usuario.id,
           p_new_password: formData.nueva_password
@@ -119,11 +128,11 @@ export function EditarUsuarioAdminModal({ usuario, isOpen, onClose, onUsuarioAct
         }
       }
 
-      alert(`¡Datos, correo, fecha de nacimiento, estado y contraseña de "${formData.nombre_completo}" actualizados correctamente!`);
+      toast.success(`Datos, correo, fecha de nacimiento, estado y clave de "${formData.nombre_completo}" actualizados correctamente.`, 'Perfil Actualizado');
       if (onUsuarioActualizado) onUsuarioActualizado();
       onClose();
     } catch (err) {
-      alert('Error al actualizar usuario: ' + err.message);
+      toast.error('Error al actualizar usuario: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -292,11 +301,14 @@ export function EditarUsuarioAdminModal({ usuario, isOpen, onClose, onUsuarioAct
               type="password" 
               value={formData.nueva_password} 
               onChange={e => setFormData({...formData, nueva_password: e.target.value})} 
-              placeholder="Escribe la nueva contraseña (mínimo 6 caracteres)..."
-              minLength={6}
+              placeholder="•••••••• (Nueva contraseña)"
+              minLength={8}
               autoComplete="new-password"
               className="w-full bg-[#071521] border border-[#ffb703]/40 rounded-xl p-3 text-white text-sm focus:border-[#ffb703] focus:outline-none" 
             />
+            <span className="text-[11px] text-amber-300 mt-2 block font-semibold bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/25 leading-snug">
+              🔒 Requisito: Mínimo 8 caracteres, 1 mayúscula (A-Z), 1 minúscula (a-z), 1 número (0-9) y 1 símbolo especial (!@#$%^&*)
+            </span>
             <span className="text-[10px] text-gray-400 mt-1 block">
               * Si no deseas cambiar la contraseña del usuario, deja este campo en blanco.
             </span>

@@ -68,19 +68,50 @@ export default function App() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) cargarPerfil(session.user);
+      if (session?.user) {
+        const lastActiveStr = localStorage.getItem('aguitours_last_active');
+        if (lastActiveStr) {
+          const lastActive = parseInt(lastActiveStr, 10);
+          const elapsedMinutes = (Date.now() - lastActive) / (1000 * 60);
+          if (elapsedMinutes >= 60) {
+            console.warn(`⌛ Inactividad al iniciar app: transcurrieron ${elapsedMinutes.toFixed(1)} min. Cerrando sesión.`);
+            localStorage.removeItem('aguitours_last_active');
+            supabase.auth.signOut();
+            setUser(null);
+            setProfile(null);
+            alert(`⌛ Tu sesión ha caducado por inactividad (${Math.round(elapsedMinutes)} minutos sin interacción). Por seguridad debes volver a ingresar.`);
+            return;
+          }
+        }
+        setUser(session.user);
+        cargarPerfil(session.user);
+      } else {
+        setUser(null);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
       if (session?.user) {
+        const lastActiveStr = localStorage.getItem('aguitours_last_active');
+        if (lastActiveStr) {
+          const lastActive = parseInt(lastActiveStr, 10);
+          const elapsedMinutes = (Date.now() - lastActive) / (1000 * 60);
+          if (elapsedMinutes >= 60) {
+            localStorage.removeItem('aguitours_last_active');
+            supabase.auth.signOut();
+            setUser(null);
+            setProfile(null);
+            return;
+          }
+        }
+        setUser(session.user);
         cargarPerfil(session.user);
         if (_event === 'PASSWORD_RECOVERY') {
           navigateToView('mi-perfil', 'mi-perfil');
           alert('🔑 ¡Bienvenido a Aguitours Las Capullanas!\n\nHas ingresado mediante tu enlace de correo. Ve a "Configuración de Mi Cuenta" para definir tu contraseña de acceso.');
         }
       } else {
+        setUser(null);
         setProfile(null);
       }
     });

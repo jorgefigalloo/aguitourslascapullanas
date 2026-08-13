@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Save, Folder, Link2, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useToast } from '../../context/ToastContext';
 
 const GALERIA_PREDETERMINADA = [
   { label: 'Logo Aguitours Principal', url: '/images/capullanas1.jpg' },
@@ -92,10 +93,10 @@ export function AdminCMSModule({ cmsSections = [], user, onActualizar }) {
         }], { onConflict: 'clave_seccion' });
 
       if (error) throw error;
-      alert('¡Sección CMS actualizada con éxito!');
+      toast.success('Sección CMS actualizada con éxito.', 'CMS Actualizado');
       onActualizar();
     } catch (err) {
-      alert('Error al guardar los cambios.');
+      toast.error('Error al guardar los cambios en el CMS: ' + err.message);
     } finally {
       setLoading(false);
     }

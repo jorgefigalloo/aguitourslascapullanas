@@ -190,8 +190,8 @@ export function MisDatosModal({ isOpen, onClose, user, profile, onProfileUpdated
                 className="w-full bg-[#071521] border border-white/15 rounded-xl py-3 pl-10 pr-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
               />
             </div>
-            <p className="text-[10px] text-amber-400 mt-1.5 font-semibold leading-tight">
-              🔒 Requisito: Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo especial (!@#$%^&*)
+            <p className="text-[11px] text-amber-300 mt-2 font-semibold bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/25 leading-snug">
+              🔒 Requisito: Mínimo 8 caracteres, 1 mayúscula (A-Z), 1 minúscula (a-z), 1 número (0-9) y 1 símbolo especial (!@#$%^&*)
             </p>
           </div>
 

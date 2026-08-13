@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { Users, ShieldCheck, Key, UserCheck, Edit3, UserPlus, Search, Filter, ShieldPlus, Power, Table, CheckCircle2, Circle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { EditarUsuarioAdminModal } from '../EditarUsuarioAdminModal';
-import { EditarRolModal, CATEGORIAS_PERMISOS } from '../EditarRolModal';
+import { EditarRolModal } from '../EditarRolModal';
+import { CATEGORIAS_PERMISOS } from '../../lib/permisos';
 import { CrearUsuarioModal } from '../usuarios/CrearUsuarioModal';
 import { CrearRolModal } from '../CrearRolModal';
+import { useToast } from '../../context/ToastContext';
 
 export function AdminUsuariosModule({ usuarios = [], rolesSistema = [], onActualizar, tienePermiso }) {
+  const toast = useToast();
   const [rbacSubTab, setRbacSubTab] = useState('usuarios');
   const [usuarioAEditar, setUsuarioAEditar] = useState(null);
   const [rolAEditar, setRolAEditar] = useState(null);
@@ -35,10 +38,10 @@ export function AdminUsuariosModule({ usuarios = [], rolesSistema = [], onActual
         .eq('id', usuario.id);
 
       if (error) throw error;
-      alert(`Usuario "${usuario.nombre_completo}" ${nuevoEstado ? 'ACTIVADO 🟢' : 'DESACTIVADO 🔴'} con éxito.`);
+      toast.success(`Usuario "${usuario.nombre_completo}" ${nuevoEstado ? 'ACTIVADO 🟢' : 'DESACTIVADO 🔴'} con éxito.`, 'Estado Actualizado');
       if (onActualizar) onActualizar();
     } catch (err) {
-      alert('Error al cambiar estado del usuario: ' + err.message);
+      toast.error('Error al cambiar estado del usuario: ' + err.message);
     }
   };
 

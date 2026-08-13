@@ -3,8 +3,10 @@ import { Users, Search, Filter, CheckCircle2, XCircle, Clock, MapPin, Calendar, 
 import { supabase } from '../../lib/supabase';
 import { CrearUsuarioModal } from '../usuarios/CrearUsuarioModal';
 import { EditarUsuarioAdminModal } from '../EditarUsuarioAdminModal';
+import { useToast } from '../../context/ToastContext';
 
 export function AdminClientesModule() {
+  const toast = useToast();
   const [subTab, setSubTab] = useState('directorio'); // 'directorio' | 'inscripciones'
   const [clientes, setClientes] = useState([]);
   const [inscripciones, setInscripciones] = useState([]);
@@ -77,10 +79,10 @@ export function AdminClientesModule() {
         .eq('id', cliente.id);
 
       if (error) throw error;
-      alert(`Cliente "${cliente.nombre_completo}" ${nuevoEstado ? 'ACTIVADO 🟢' : 'DESACTIVADO 🔴'} con éxito.`);
+      toast.success(`Cliente "${cliente.nombre_completo}" ${nuevoEstado ? 'ACTIVADO 🟢' : 'DESACTIVADO 🔴'} con éxito.`, 'Estado Actualizado');
       cargarClientes();
     } catch (err) {
-      alert('Error al actualizar estado del cliente: ' + err.message);
+      toast.error('Error al actualizar estado del cliente: ' + err.message);
     }
   };
 
@@ -95,10 +97,10 @@ export function AdminClientesModule() {
         .eq('id', inscripcionId);
 
       if (error) throw error;
-      alert(`¡Estado de la reserva actualizado a ${nuevoEstado}!`);
+      toast.success(`Estado de la reserva actualizado a ${nuevoEstado.toUpperCase()}.`, 'Reserva Actualizada');
       cargarInscripciones();
     } catch (err) {
-      alert('Error al actualizar reserva: ' + err.message);
+      toast.error('Error al actualizar reserva: ' + err.message);
     }
   };
 

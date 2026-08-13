@@ -3,12 +3,16 @@ import { Package, Plus, RefreshCw, Edit3, FileText, Calendar, MapPin, Users, Sea
 import { CrearPaqueteModal } from '../CrearPaqueteModal';
 import { EditarPaqueteModal } from '../EditarPaqueteModal';
 import { ReportePdfModal } from '../paquetes/ReportePdfModal';
+import { VerInscritosModal } from '../paquetes/VerInscritosModal';
 import { supabase } from '../../lib/supabase';
+import { useToast } from '../../context/ToastContext';
 
 export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar }) {
+  const toast = useToast();
   const [crearModalOpen, setCrearModalOpen] = useState(false);
   const [paqueteAEditar, setPaqueteAEditar] = useState(null);
   const [paqueteAPdf, setPaqueteAPdf] = useState(null);
+  const [paqueteAInscritos, setPaqueteAInscritos] = useState(null);
   const [loading, setLoading] = useState(false);
 
   // Estados de Filtros y Búsqueda
@@ -28,10 +32,10 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
           .update({ cupo_disponible: p.cupo_maximo, estado: 'abierto' })
           .eq('id', p.id);
       }
-      alert('¡Cupos reiniciados al 100% exitosamente!');
+      toast.success('Cupos de todos los paquetes reiniciados al 100% exitosamente.', 'Cupos Reiniciados');
       onActualizar();
     } catch (e) {
-      alert('Error al reiniciar cupos.');
+      toast.error('Error al reiniciar cupos: ' + e.message);
     } finally {
       setLoading(false);
     }
@@ -172,9 +176,15 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
                     </td>
                     <td className="p-4 font-bold text-[#ffb703]">S/ {parseFloat(pkg.precio_persona).toFixed(2)}</td>
                     <td className="p-4">
-                      <span className="bg-black/40 px-3 py-1 rounded-full text-xs font-bold border border-white/10">
-                        {inscritos} / {pkg.cupo_maximo}
-                      </span>
+                      <button
+                        onClick={() => setPaqueteAInscritos(pkg)}
+                        className="bg-black/40 hover:bg-[#1995ad]/30 border border-white/15 hover:border-[#1995ad]/60 text-white px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-md group"
+                        title="Ver lista completa de personas inscritas en este paquete"
+                      >
+                        <Users size={13} className="text-[#ffb703] group-hover:scale-110 transition-transform" />
+                        <span>{inscritos} / {pkg.cupo_maximo}</span>
+                        <span className="text-[10px] text-[#1995ad] font-normal underline ml-0.5">Ver Inscritos</span>
+                      </button>
                     </td>
                     <td className="p-4">
                       <div className="flex gap-2">
@@ -221,6 +231,12 @@ export function AdminPaquetesModule({ paquetes = [], user, profile, onActualizar
         paquete={paqueteAPdf} 
         isOpen={!!paqueteAPdf} 
         onClose={() => setPaqueteAPdf(null)} 
+      />
+
+      <VerInscritosModal 
+        paquete={paqueteAInscritos} 
+        isOpen={!!paqueteAInscritos} 
+        onClose={() => setPaqueteAInscritos(null)} 
       />
     </div>
   );

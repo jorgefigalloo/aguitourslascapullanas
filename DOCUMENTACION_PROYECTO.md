@@ -28,10 +28,11 @@ c:\xampp\htdocs\aguitourslascapullanas\
 │   ├── cms_and_rbac_schema.sql         # Tablas del CMS y Roles RBAC
 │   ├── fase_seguridad_y_auditoria.sql  # RLS estricto y triggers de auditoría
 │   ├── modulo_clientes_y_cotizaciones.sql # Script SQL para favoritos, cotizaciones, RLS y triggers
-│   ├── agregar_campo_activo_perfiles.sql  # Script SQL para campo activo en perfiles
-│   ├── solucion_login_y_usuarios_admin.sql # Script SQL para login por username y actualización de clave admin
-│   ├── auditoria_y_rls_completa.sql    # Script SQL de auditoría inmutable y RLS para todas las tablas
-│   └── script_auditoria_completa_triggers.sql # [NUEVO] Triggers automáticos de auditoría para las 9 tablas
+│   ├── agregar_columna_email_perfiles.sql # Script SQL para columna email en perfiles
+│   ├── solucion_definitiva_perfiles_y_trigger.sql # Trigger handle_new_user y sync perfiles
+│   ├── actualizar_email_rpc.sql         # RPC admin_actualizar_email_usuario y desvinculación de duplicados
+│   ├── script_inscripciones_y_favoritos.sql # [NUEVO] Inscripción atómica fn_inscribir_usuario_paquete, toggle favorito y RLS
+│   └── script_auditoria_todas_las_tablas.sql # [NUEVO] Triggers automáticos de auditoría para las 10 tablas del sistema
 ├── php/                                # [BACKEND PHP SEGURO]
 │   ├── config/ (env.php, supabase.php, smtp.php)
 │   ├── middleware/ (cors.php, rate_limit.php, sanitizer.php)

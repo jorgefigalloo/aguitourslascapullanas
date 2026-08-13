@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Edit3, Image as ImageIcon, Plus, Trash2, Calendar, MapPin, ShieldCheck } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useToast } from '../context/ToastContext';
 
 export function EditarPaqueteModal({ paquete, isOpen, onClose, onPaqueteActualizado }) {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     titulo: '', destino: '', precio_persona: 1000, cupo_maximo: 10,
     fecha_salida: '', fecha_retorno: '', imagen_portada: '', descripcion: '',
@@ -93,11 +95,11 @@ export function EditarPaqueteModal({ paquete, isOpen, onClose, onPaqueteActualiz
         .eq('id', paquete.id);
 
       if (error) throw error;
-      alert('¡Paquete e Itinerario guardados en la Base de Datos exitosamente!');
+      toast.success('Paquete e Itinerario actualizados con éxito.', 'Paquete Guardado');
       onPaqueteActualizado();
       onClose();
     } catch (err) {
-      alert('Error al actualizar paquete: ' + err.message);
+      toast.error('Error al actualizar paquete: ' + err.message);
     } finally {
       setLoading(false);
     }

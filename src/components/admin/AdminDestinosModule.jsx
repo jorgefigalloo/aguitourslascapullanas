@@ -1,11 +1,38 @@
-import React, { useState } from 'react';
-import { Globe, Plus, Edit3, Trash2, MapPin } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Globe, Plus, Edit3, Trash2, MapPin, Heart } from 'lucide-react';
 import { CrearDestinoModal } from '../destinos/CrearDestinoModal';
 import { EditarDestinoModal } from '../destinos/EditarDestinoModal';
+import { supabase } from '../../lib/supabase';
 
 export function AdminDestinosModule({ destinos = [], onActualizar }) {
   const [crearModalOpen, setCrearModalOpen] = useState(false);
   const [destinoAEditar, setDestinoAEditar] = useState(null);
+  const [likesCounts, setLikesCounts] = useState({});
+
+  useEffect(() => {
+    cargarContadoresLikes();
+  }, [destinos]);
+
+  const cargarContadoresLikes = async () => {
+    try {
+      const { data } = await supabase
+        .from('favoritos_usuario')
+        .select('destino_id')
+        .eq('tipo', 'destino');
+
+      if (data) {
+        const counts = {};
+        data.forEach(item => {
+          if (item.destino_id) {
+            counts[item.destino_id] = (counts[item.destino_id] || 0) + 1;
+          }
+        });
+        setLikesCounts(counts);
+      }
+    } catch (e) {
+      console.log('Error al contar likes de destinos:', e);
+    }
+  };
 
   return (
     <div className="bg-[#0d2538] border border-white/15 p-8 rounded-3xl shadow-xl">
@@ -29,22 +56,29 @@ export function AdminDestinosModule({ destinos = [], onActualizar }) {
 
       {/* Grid de Destinos */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {destinos.map(d => (
-          <div 
-            key={d.id} 
-            className="bg-[#071521] border border-white/10 rounded-2xl overflow-hidden shadow-lg flex flex-col justify-between group hover:border-[#1995ad]/50 transition-all"
-          >
-            <div className="h-40 overflow-hidden relative">
-              <img 
-                src={d.imagen_portada} 
-                alt={d.nombre} 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                onError={(e) => { e.target.src = '/images/ciudades/fondo-destinos1.png'; }}
-              />
-              <span className="absolute top-3 left-3 bg-[#071521]/80 backdrop-blur-md text-[#1995ad] border border-[#1995ad]/40 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">
-                {d.tipo}
-              </span>
-            </div>
+        {destinos.map(d => {
+          const totalLikes = likesCounts[d.id] || 0;
+
+          return (
+            <div 
+              key={d.id} 
+              className="bg-[#071521] border border-white/10 rounded-2xl overflow-hidden shadow-lg flex flex-col justify-between group hover:border-[#1995ad]/50 transition-all"
+            >
+              <div className="h-40 overflow-hidden relative">
+                <img 
+                  src={d.imagen_portada} 
+                  alt={d.nombre} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                  onError={(e) => { e.target.src = '/images/ciudades/fondo-destinos1.png'; }}
+                />
+                <span className="absolute top-3 left-3 bg-[#071521]/80 backdrop-blur-md text-[#1995ad] border border-[#1995ad]/40 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">
+                  {d.tipo}
+                </span>
+
+                <span className="absolute top-3 right-3 bg-red-950/80 backdrop-blur-md text-red-300 border border-red-500/40 text-[10px] font-extrabold px-2.5 py-1 rounded-full flex items-center gap-1">
+                  <Heart size={12} className="fill-red-400 text-red-400" /> {totalLikes} Me Gusta
+                </span>
+              </div>
 
             <div className="p-5 flex-1 flex flex-col justify-between">
               <div>
@@ -64,7 +98,8 @@ export function AdminDestinosModule({ destinos = [], onActualizar }) {
               </button>
             </div>
           </div>
-        ))}
+        );
+      })}
       </div>
 
       {/* Modales */}

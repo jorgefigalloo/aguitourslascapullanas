@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Lock, AtSign, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
+import { X, Lock, Mail, User, Phone, FileText, ArrowRight, ShieldCheck, CheckCircle2, AtSign } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useToast } from '../../context/ToastContext';
 
 export function AuthModal({ isOpen, onClose, onAuthSuccess }) {
+  const toast = useToast();
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -151,7 +153,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         });
 
         // Notificar al cliente y redirigir al formulario de inicio de sesión
-        alert(`¡Cuenta de cliente creada con éxito! 📧\n\nHemos enviado un correo de activación a "${email.trim()}".\nPor favor revisa tu bandeja de entrada o spam para confirmar tu cuenta e iniciar sesión.`);
+        toast.success(`Hemos enviado un correo de activación a "${email.trim()}". Revisa tu bandeja de entrada o spam para confirmar e iniciar sesión.`, '¡Cuenta Creada!');
         resetForm();
         setIsRegisterMode(false); // Redirigir automáticamente a Iniciar Sesión
         return;
@@ -281,16 +283,20 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
               <div>
                 <label className="text-xs text-gray-300 font-semibold block mb-1">
-                  Contraseña Segura (Min 8 caract., Mayús., Núm. y Símbolo)
+                  Contraseña de Acceso
                 </label>
                 <input 
                   type="password" 
                   value={password} 
                   onChange={e => setPassword(e.target.value)} 
                   required 
-                  placeholder="Ej: MiClaveSegura2026!" 
+                  minLength={8}
+                  placeholder="••••••••" 
                   className="w-full bg-[#071521] border border-white/15 rounded-xl p-2.5 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
                 />
+                <p className="text-[11px] text-amber-300 mt-2 font-semibold bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/25 leading-snug">
+                  🔒 Requisito: Mínimo 8 caracteres, 1 mayúscula (A-Z), 1 minúscula (a-z), 1 número (0-9) y 1 símbolo especial (!@#$%^&*)
+                </p>
               </div>
 
               <button type="submit" disabled={loading} className="btn-gold-3d justify-center py-3.5 mt-2 font-bold text-sm">

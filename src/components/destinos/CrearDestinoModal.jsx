@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, PlusCircle, Globe, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useToast } from '../../context/ToastContext';
 
 export function CrearDestinoModal({ isOpen, onClose, onDestinoCreado }) {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     nombre: '',
     tipo: 'nacional',
@@ -28,7 +31,7 @@ export function CrearDestinoModal({ isOpen, onClose, onDestinoCreado }) {
         }]);
 
       if (error) throw error;
-      alert('¡Nuevo destino turístico registrado exitosamente!');
+      toast.success('Nuevo destino turístico registrado exitosamente.', 'Destino Registrado 🌎');
       onDestinoCreado();
       onClose();
       setFormData({
@@ -38,7 +41,7 @@ export function CrearDestinoModal({ isOpen, onClose, onDestinoCreado }) {
         imagen_portada: '/images/ciudades/nacionales/arequipa.png'
       });
     } catch (err) {
-      alert('Error al registrar destino: ' + err.message);
+      toast.error('Error al registrar destino: ' + err.message);
     } finally {
       setLoading(false);
     }
