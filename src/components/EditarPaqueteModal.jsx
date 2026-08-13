@@ -434,7 +434,7 @@ export function EditarPaqueteModal({ paquete, isOpen, onClose, onPaqueteActualiz
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-[440px] overflow-y-auto pr-2">
               {diasItinerario.map((d, idx) => (
                 <div key={idx} className="bg-[#0d2538] border border-white/15 p-4 rounded-2xl flex flex-col gap-3 relative shadow-lg">
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">

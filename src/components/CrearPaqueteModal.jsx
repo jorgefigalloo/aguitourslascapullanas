@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, PlusCircle, Image as ImageIcon } from 'lucide-react';
+import { X, PlusCircle, Plus, Trash2, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../context/ToastContext';
 
@@ -13,9 +13,32 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
     whatsapp_url: '',
     pdf_formulario_url: ''
   });
+  const [diasItinerario, setDiasItinerario] = useState([
+    { dia: 'Día 1', titulo: 'Bienvenida y Recepción', detalle: 'Llegada al destino, recepción en aeropuerto/terminal y traslado al hotel.' },
+    { dia: 'Día 2', titulo: 'Excursión Principal & Tour Guiado', detalle: 'Tour guiado completo por los principales atractivos turísticos.' },
+    { dia: 'Día 3', titulo: 'Día Libre & Retorno', detalle: 'Tiempo libre para compras de artesanías y traslado de retorno.' }
+  ]);
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleAddDia = () => {
+    const nextNum = diasItinerario.length + 1;
+    setDiasItinerario([
+      ...diasItinerario,
+      { dia: `Día ${nextNum}`, titulo: `Actividad del Día ${nextNum}`, detalle: 'Detalle de traslados, visitas y excursiones...' }
+    ]);
+  };
+
+  const handleRemoveDia = (index) => {
+    setDiasItinerario(diasItinerario.filter((_, i) => i !== index));
+  };
+
+  const handleDiaChange = (index, field, value) => {
+    const updated = [...diasItinerario];
+    updated[index][field] = value;
+    setDiasItinerario(updated);
+  };
 
   const handleCrear = async (e) => {
     e.preventDefault();
@@ -23,7 +46,7 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
 
     try {
       const itinerarioPayload = {
-        dias: [],
+        dias: diasItinerario,
         whatsapp_url: formData.whatsapp_url || 'https://chat.whatsapp.com/ExclusivoAguitoursCapullanas',
         pdf_formulario_url: formData.pdf_formulario_url || '/rutas.txt'
       };
@@ -361,6 +384,71 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
                   className="w-full bg-[#0d2538] border border-blue-400/40 rounded-xl p-3 text-white text-sm focus:border-blue-400 focus:outline-none" 
                 />
               </div>
+            </div>
+          </div>
+
+          {/* 6. Editor de Días del Itinerario Amplio y Claro */}
+          <div className="bg-[#071521] p-5 rounded-2xl border border-white/10 flex flex-col gap-4">
+            <div className="flex flex-wrap justify-between items-center gap-2">
+              <div>
+                <h4 className="text-xs text-[#ffb703] font-bold uppercase tracking-wider m-0">
+                  🗺️ Itinerario Día por Día del Viaje
+                </h4>
+                <p className="text-[11px] text-gray-400 m-0 mt-0.5">Agrega, edita o remueve los días y detalles de la expedición</p>
+              </div>
+
+              <button 
+                type="button" 
+                onClick={handleAddDia}
+                className="bg-[#1995ad]/20 border border-[#1995ad]/40 text-[#a0f0ff] hover:bg-[#1995ad] hover:text-white text-xs font-bold px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+              >
+                <Plus size={16} /> Agregar Día
+              </button>
+            </div>
+
+            <div className="space-y-4 max-h-[440px] overflow-y-auto pr-2">
+              {diasItinerario.map((d, idx) => (
+                <div key={idx} className="bg-[#0d2538] border border-white/15 p-4 rounded-2xl flex flex-col gap-3 relative shadow-lg">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="text" 
+                        value={d.dia || `Día ${idx + 1}`}
+                        onChange={e => handleDiaChange(idx, 'dia', e.target.value)}
+                        className="w-28 bg-[#071521] border border-[#ffb703]/50 rounded-xl p-2.5 text-xs text-[#ffb703] font-bold"
+                      />
+                      <span className="text-xs text-gray-400 hidden sm:inline">—</span>
+                    </div>
+
+                    <input 
+                      type="text" 
+                      value={d.titulo || ''}
+                      placeholder="Título de la Actividad (ej: Bienvenida & Tour Guiado)"
+                      onChange={e => handleDiaChange(idx, 'titulo', e.target.value)}
+                      className="flex-1 bg-[#071521] border border-white/15 rounded-xl p-2.5 text-xs text-white font-bold"
+                    />
+
+                    {diasItinerario.length > 1 && (
+                      <button 
+                        type="button"
+                        onClick={() => handleRemoveDia(idx)}
+                        className="text-gray-400 hover:text-red-400 p-2 rounded-xl hover:bg-white/5 transition-colors self-end sm:self-auto cursor-pointer"
+                        title="Eliminar este día"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
+                  </div>
+
+                  <textarea 
+                    rows={3}
+                    value={d.detalle || d.descripcion || ''}
+                    placeholder="Escribe aquí la descripción detallada del itinerario para este día..."
+                    onChange={e => handleDiaChange(idx, 'detalle', e.target.value)}
+                    className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-xs text-gray-200 leading-relaxed focus:border-[#1995ad] focus:outline-none"
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
