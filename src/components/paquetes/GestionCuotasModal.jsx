@@ -16,6 +16,8 @@ export function GestionCuotasModal({ inscripcion, isOpen, onClose, onCuotasActua
   const [cuotaProcesandoCobro, setCuotaProcesandoCobro] = useState(null);
   const [datosCobro, setDatosCobro] = useState({ metodo_pago: 'Efectivo', referencia_pago: '' });
   const [loadingCobro, setLoadingCobro] = useState(false);
+  const [showFormCrear, setShowFormCrear] = useState(false);
+  const [cuotaEditando, setCuotaEditando] = useState(null);
 
   useEffect(() => {
     if (isOpen && inscripcion) {
