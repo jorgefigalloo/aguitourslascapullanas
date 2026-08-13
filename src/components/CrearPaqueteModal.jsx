@@ -40,6 +40,7 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
         numero_cuotas: formData.numero_cuotas || 2,
         porcentaje_cuota_inicial: formData.porcentaje_cuota_inicial || 50,
         dias_limite_cuota_inicial: formData.dias_limite_cuota_inicial || 5,
+        fecha_limite_cuota_inicial: formData.fecha_limite_cuota_inicial || null,
         imagen_portada: formData.imagen_portada,
         descripcion: formData.descripcion,
         itinerario: itinerarioPayload,
@@ -243,8 +244,20 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
                   />
                 </div>
               </div>
+
+              <div>
+                <label className="text-[11px] text-amber-300 font-bold block mb-1">📅 Fecha Límite Fija para Pagar Cuota Inicial (Opcional - Calendario)</label>
+                <input
+                  type="date"
+                  value={formData.fecha_limite_cuota_inicial || ''}
+                  onChange={e => setFormData({...formData, fecha_limite_cuota_inicial: e.target.value})}
+                  className="w-full bg-[#0d2538] border border-amber-500/40 rounded-xl p-2.5 text-white text-xs focus:border-amber-400 focus:outline-none cursor-pointer"
+                />
+                <p className="text-[10px] text-gray-400 mt-1">
+                  Si se especifica una fecha exacta, la 1ra cuota vencerá en esa fecha. Si se deja vacío, vencerá en {formData.dias_limite_cuota_inicial || 5} días hábiles tras inscribirse.
+                </p>
+              </div>
             </div>
-          </div>
 
           <div>
             <label className="text-xs text-gray-300 font-bold block mb-1">Ruta / URL Imagen Portada</label>
@@ -306,6 +319,7 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
                 className="w-full bg-[#071521] border border-[#ffb703]/40 rounded-xl p-3 text-white text-sm focus:border-[#ffb703] focus:outline-none" 
               />
             </div>
+          </div>
           </div>
 
           <button type="submit" disabled={loading} className="btn-primary-3d justify-center py-3.5 mt-2 font-bold text-sm">

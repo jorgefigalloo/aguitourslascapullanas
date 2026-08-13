@@ -132,7 +132,8 @@ export function UnirmePaqueteModal({ paquete, isOpen, onClose, user, profile, on
 
       // 3. Crear Cronograma Dinámico de Cuotas según configuración del paquete
       const fechaHoy = new Date();
-      const fechaVencCuota1 = new Date(fechaHoy.setDate(fechaHoy.getDate() + diasPlazoInicial)).toISOString().split('T')[0];
+      const fechaCalculadaRelativa = new Date(fechaHoy.setDate(fechaHoy.getDate() + diasPlazoInicial)).toISOString().split('T')[0];
+      const fechaVencCuota1 = paquete.fecha_limite_cuota_inicial || fechaCalculadaRelativa;
       
       const payloadCuotas = [];
 
@@ -314,10 +315,18 @@ export function UnirmePaqueteModal({ paquete, isOpen, onClose, user, profile, on
             </strong>
             <ul className="text-gray-300 space-y-1 ml-4 list-disc mt-2">
               {numCuotasConfigured === 1 ? (
-                <li><strong>Pago Único (100%):</strong> S/ {precioTotalCalculado.toFixed(2)} (Plazo de {diasPlazoInicial} días para abonar).</li>
+                <li>
+                  <strong>Pago Único (100%):</strong> S/ {precioTotalCalculado.toFixed(2)} (
+                  {paquete.fecha_limite_cuota_inicial ? `Vence el ${paquete.fecha_limite_cuota_inicial}` : `Plazo de ${diasPlazoInicial} días para abonar`}
+                  ).
+                </li>
               ) : (
                 <>
-                  <li><strong>Cuota Inicial / Reserva ({pctInicial}%):</strong> S/ {cuotaInicialCalculada.toFixed(2)} (Plazo de {diasPlazoInicial} días hábiles para abonar).</li>
+                  <li>
+                    <strong>Cuota Inicial / Reserva ({pctInicial}%):</strong> S/ {cuotaInicialCalculada.toFixed(2)} (
+                    {paquete.fecha_limite_cuota_inicial ? `Vence el ${paquete.fecha_limite_cuota_inicial}` : `Plazo de ${diasPlazoInicial} días hábiles para abonar`}
+                    ).
+                  </li>
                   <li><strong>Saldo Restante en {numCuotasConfigured - 1} cuota(s):</strong> S/ {saldoRestanteCalculado.toFixed(2)} (Vence el {paquete.fecha_salida || 'fecha de salida'}).</li>
                 </>
               )}
