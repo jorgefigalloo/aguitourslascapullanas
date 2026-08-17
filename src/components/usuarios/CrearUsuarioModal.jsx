@@ -5,6 +5,7 @@ import { supabase, tempAuthClient } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
 
 export function CrearUsuarioModal({ isOpen, onClose, onUsuarioCreado, fixedRol, title }) {
+  const toast = useToast();
   const targetRol = fixedRol || 'cliente';
   const modalTitle = title || (fixedRol === 'cliente' ? 'Registrar Nuevo Cliente Viajero' : 'Registrar Nuevo Usuario en el Sistema');
 
