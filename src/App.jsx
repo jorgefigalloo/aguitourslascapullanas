@@ -63,6 +63,7 @@ export default function App() {
     } catch (e) {
       console.warn('Error al cerrar sesión:', e);
     }
+    localStorage.removeItem('aguitours_last_active');
     setUser(null);
     setProfile(null);
     navigateToView('inicio');
@@ -137,16 +138,22 @@ export default function App() {
       if (!isMounted) return;
 
       if (session?.user) {
-        const lastActiveStr = localStorage.getItem('aguitours_last_active');
-        if (lastActiveStr) {
-          const lastActive = parseInt(lastActiveStr, 10);
-          const elapsedMinutes = (Date.now() - lastActive) / (1000 * 60);
-          if (elapsedMinutes >= 60) {
-            localStorage.removeItem('aguitours_last_active');
-            supabase.auth.signOut().catch(() => {});
-            setUser(null);
-            setProfile(null);
-            return;
+        if (_event === 'SIGNED_IN') {
+          // El usuario acaba de iniciar sesión activamente: reseteamos el reloj de inactividad
+          localStorage.setItem('aguitours_last_active', Date.now().toString());
+        } else {
+          // Solo verificar inactividad si no es un evento de login reciente
+          const lastActiveStr = localStorage.getItem('aguitours_last_active');
+          if (lastActiveStr) {
+            const lastActive = parseInt(lastActiveStr, 10);
+            const elapsedMinutes = (Date.now() - lastActive) / (1000 * 60);
+            if (elapsedMinutes >= 60) {
+              localStorage.removeItem('aguitours_last_active');
+              supabase.auth.signOut().catch(() => {});
+              setUser(null);
+              setProfile(null);
+              return;
+            }
           }
         }
         setUser(session.user);
@@ -294,10 +301,12 @@ export default function App() {
       <AuthModal 
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
-        onAuthSuccess={() => {
-          supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session?.user) cargarPerfil(session.user);
-          }).catch(() => {});
+        onAuthSuccess={(authUser) => {
+          localStorage.setItem('aguitours_last_active', Date.now().toString());
+          if (authUser) {
+            setUser(authUser);
+            cargarPerfil(authUser);
+          }
         }}
       />
     </div>

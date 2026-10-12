@@ -39,3 +39,35 @@ function callSupabaseRPC($functionName, $params = [], $bearerToken = null) {
         'data' => json_decode($response, true)
     ];
 }
+
+/**
+ * Inserta un registro en una tabla de Supabase usando Service Role Key
+ */
+function insertSupabaseTable($table, $data) {
+    $url = SUPABASE_URL . '/rest/v1/' . $table;
+    $serviceKey = SUPABASE_SERVICE_ROLE_KEY ?: SUPABASE_ANON_KEY;
+
+    $headers = [
+        'Content-Type: application/json',
+        'apikey: ' . SUPABASE_ANON_KEY,
+        'Authorization: Bearer ' . $serviceKey,
+        'Prefer: return=representation'
+    ];
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    return [
+        'status' => $httpCode,
+        'data' => json_decode($response, true)
+    ];
+}
+

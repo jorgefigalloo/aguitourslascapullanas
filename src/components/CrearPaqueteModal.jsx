@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { X, PlusCircle, Plus, Trash2, Image as ImageIcon } from 'lucide-react';
+import { X, PlusCircle, Plus, Trash2, Image as ImageIcon, Cloud } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../context/ToastContext';
+import { SelectorImagenModal } from './common/SelectorImagenModal';
 
 export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) {
   const toast = useToast();
+  const [selectorImagenOpen, setSelectorImagenOpen] = useState(false);
   const [formData, setFormData] = useState({
     titulo: '', destino: '', precio_persona: 1000, cupo_maximo: 15,
     fecha_salida: '', fecha_retorno: '', 
@@ -152,13 +154,22 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
             </div>
 
             <div>
-              <label className="text-xs text-gray-300 font-bold block mb-1">Ruta / URL Imagen Portada</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs text-gray-300 font-bold">Ruta / URL Imagen Portada</label>
+                <button
+                  type="button"
+                  onClick={() => setSelectorImagenOpen(true)}
+                  className="px-2.5 py-1 bg-gradient-to-r from-[#1995ad] to-[#ffb703] text-black font-bold text-[11px] rounded-lg flex items-center gap-1.5 shadow-md hover:brightness-110 transition-all cursor-pointer"
+                >
+                  <Cloud size={13} /> Elegir / Subir a Cloudflare R2
+                </button>
+              </div>
               <input 
                 type="text" 
                 value={formData.imagen_portada} 
                 onChange={e => setFormData({...formData, imagen_portada: e.target.value})} 
                 required 
-                placeholder="images/ciudades/nacionales/cusco.jpg"
+                placeholder="https://pub-... o /images/..."
                 className="w-full bg-[#0d2538] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
               />
               
@@ -169,7 +180,7 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
                     src={formData.imagen_portada} 
                     alt="Vista previa" 
                     className="w-full h-full object-cover"
-                    onError={(e) => { e.target.src = '/images/ciudades/fondo-destinos.png'; }}
+                    onError={(e) => { e.target.src = '/images/ciudades/fondo-destinos1.png'; }}
                   />
                   <span className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1">
                     <ImageIcon size={12} /> Vista Previa en Vivo
@@ -460,6 +471,16 @@ export function CrearPaqueteModal({ isOpen, onClose, onPaqueteCreado, userId }) 
             {loading ? 'Publicando...' : 'Publicar Nuevo Paquete'}
           </button>
         </form>
+
+        {/* Modal de Selección y Carga en Cloudflare R2 */}
+        <SelectorImagenModal
+          isOpen={selectorImagenOpen}
+          onClose={() => setSelectorImagenOpen(false)}
+          onSeleccionar={(url) => setFormData(prev => ({ ...prev, imagen_portada: url }))}
+          imagenActual={formData.imagen_portada}
+          categoriaSugerida="paquetes"
+          userId={userId}
+        />
       </div>
     </div>
   );

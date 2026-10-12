@@ -55,70 +55,21 @@ export function PaquetesGrupales({ user, profile, onOpenAuth }) {
         .neq('estado', 'oculto')
         .order('fecha_salida', { ascending: true });
 
-      if (data && data.length > 0) {
-        setPaquetes(data);
+      if (error) {
+        console.warn('Error al cargar paquetes desde la base de datos:', error.message);
+        setPaquetes([]);
       } else {
-        setPaquetes([
-          {
-            id: '11111111-1111-1111-1111-111111111111',
-            titulo: 'Expedición Sagrada a Cusco',
-            destino: 'Cusco, Perú',
-            descripcion: 'Ocho días de inmersión cultural y paisajes espectaculares con guías expertos y alojamiento premium.',
-            fecha_salida: '15-22 Nov',
-            fecha_retorno: '22 Nov',
-            precio_persona: 1250.00,
-            cupo_maximo: 20,
-            cupo_disponible: 8,
-            estado: 'abierto',
-            imagen_portada: 'https://images.unsplash.com/photo-1526392060635-9d6019884377?q=80&w=1200&auto=format&fit=crop'
-          },
-          {
-            id: '22222222-2222-2222-2222-222222222222',
-            titulo: 'Aventura en Dunas y Oasis',
-            destino: 'Huacachina, Perú',
-            descripcion: 'Paseo en carros tubulares, sandboard y atardecer mágico en el desierto de Ica.',
-            fecha_salida: '01-04 Dic',
-            fecha_retorno: '04 Dic',
-            precio_persona: 450.00,
-            cupo_maximo: 25,
-            cupo_disponible: 15,
-            estado: 'abierto',
-            imagen_portada: 'https://images.unsplash.com/photo-1589556264800-08ae9e129a8c?q=80&w=800&auto=format&fit=crop'
-          },
-          {
-            id: '33333333-3333-3333-3333-333333333333',
-            titulo: 'Trekking Colores del Sur',
-            destino: 'Vinicunca, Perú',
-            descripcion: 'Vinicunca y Valle Rojo con campamento de lujo.',
-            fecha_salida: '10-12 Ene',
-            fecha_retorno: '12 Ene',
-            precio_persona: 650.00,
-            cupo_maximo: 12,
-            cupo_disponible: 2,
-            estado: 'abierto',
-            imagen_portada: 'https://images.unsplash.com/photo-1580619305218-8423a7ef79b4?q=80&w=800&auto=format&fit=crop'
-          },
-          {
-            id: '44444444-4444-4444-4444-444444444444',
-            titulo: 'Misterios del Titicaca',
-            destino: 'Puno, Perú',
-            descripcion: 'Navegación premium y estancia en islas flotantes exclusivas.',
-            fecha_salida: '05-09 Feb',
-            fecha_retorno: '09 Feb',
-            precio_persona: 820.00,
-            cupo_maximo: 15,
-            cupo_disponible: 10,
-            estado: 'abierto',
-            imagen_portada: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?q=80&w=800&auto=format&fit=crop'
-          }
-        ]);
+        // Respetamos estrictamente la base de datos: si todos están ocultos, data es []
+        setPaquetes(data || []);
       }
     } catch (e) {
       console.error('Error al cargar paquetes:', e);
+      setPaquetes([]);
     } finally {
       setLoading(false);
     }
   };
+
 
   const [userFavorites, setUserFavorites] = useState([]);
 
@@ -211,6 +162,22 @@ export function PaquetesGrupales({ user, profile, onOpenAuth }) {
         <div className="text-center py-16">
           <span className="material-symbols-outlined animate-spin text-4xl text-[#1995ad]">progress_activity</span>
           <p className="mt-4 text-gray-400">Cargando las mejores expediciones grupales...</p>
+        </div>
+      ) : paquetes.length === 0 ? (
+        <div className="text-center py-16 px-6 bg-gradient-to-b from-white/[0.04] to-transparent border border-white/10 rounded-3xl max-w-xl mx-auto my-8 shadow-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-[#ffb703]/10 border border-[#ffb703]/30 flex items-center justify-center mx-auto mb-4 text-[#ffb703] shadow-lg">
+            <span className="material-symbols-outlined text-3xl">travel_explore</span>
+          </div>
+          <h3 className="text-2xl font-bold text-white mb-2 font-headline">
+            Próximamente Nuevas Salidas Grupales
+          </h3>
+          <p className="text-sm text-gray-300 leading-relaxed mb-6">
+            Actualmente todas las salidas grupales se encuentran cerradas o en preparación para las próximas temporadas. ¡Mantente atento a las nuevas fechas o solicita un itinerario a tu medida!
+          </p>
+          <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-semibold">
+            <span className="material-symbols-outlined text-base">support_agent</span>
+            Consulta con nuestro equipo para viajes privados o fechas personalizadas
+          </div>
         </div>
       ) : (
         /* Bento Grid 12 Columnas */

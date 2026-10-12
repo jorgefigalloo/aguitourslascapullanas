@@ -99,6 +99,9 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         }
       }
 
+      // Resetear reloj de inactividad al iniciar sesión exitosamente
+      localStorage.setItem('aguitours_last_active', Date.now().toString());
+
       resetForm();
       if (onAuthSuccess) onAuthSuccess(data.user);
       onClose();

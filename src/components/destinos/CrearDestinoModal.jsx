@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, PlusCircle, Globe, Image as ImageIcon } from 'lucide-react';
+import { X, PlusCircle, Globe, Image as ImageIcon, Cloud } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
+import { SelectorImagenModal } from '../common/SelectorImagenModal';
 
 export function CrearDestinoModal({ isOpen, onClose, onDestinoCreado }) {
   const toast = useToast();
+  const [selectorImagenOpen, setSelectorImagenOpen] = useState(false);
   const [formData, setFormData] = useState({
     nombre: '',
     tipo: 'nacional',
@@ -92,13 +94,22 @@ export function CrearDestinoModal({ isOpen, onClose, onDestinoCreado }) {
           </div>
 
           <div>
-            <label className="text-xs text-gray-300 font-bold block mb-1">Ruta o URL de Imagen de Portada</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs text-gray-300 font-bold">Ruta o URL de Imagen de Portada</label>
+              <button
+                type="button"
+                onClick={() => setSelectorImagenOpen(true)}
+                className="px-2.5 py-1 bg-gradient-to-r from-[#1995ad] to-[#ffb703] text-black font-bold text-[11px] rounded-lg flex items-center gap-1.5 shadow-md hover:brightness-110 transition-all cursor-pointer"
+              >
+                <Cloud size={13} /> Elegir / Subir a Cloudflare R2
+              </button>
+            </div>
             <input 
               type="text" 
               value={formData.imagen_portada} 
               onChange={e => setFormData({...formData, imagen_portada: e.target.value})} 
               required 
-              placeholder="/images/ciudades/nacionales/cuzco.png"
+              placeholder="/images/... o https://pub-..."
               className="w-full bg-[#071521] border border-white/15 rounded-xl p-3 text-white text-sm focus:border-[#1995ad] focus:outline-none" 
             />
 
@@ -133,7 +144,18 @@ export function CrearDestinoModal({ isOpen, onClose, onDestinoCreado }) {
             <Globe size={18} /> {loading ? 'Registrando...' : 'Registrar Destino'}
           </button>
         </form>
+
+        {/* Modal Selector de Imágenes y Cloudflare R2 */}
+        <SelectorImagenModal
+          isOpen={selectorImagenOpen}
+          onClose={() => setSelectorImagenOpen(false)}
+          onSeleccionar={(url) => setFormData(prev => ({ ...prev, imagen_portada: url }))}
+          imagenActual={formData.imagen_portada}
+          categoriaSugerida="destinos"
+        />
+
       </div>
     </div>
   );
 }
+

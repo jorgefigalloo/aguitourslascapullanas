@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Folder, Link2, Image as ImageIcon, Phone, Mail, MapPin, Globe } from 'lucide-react';
+import { Save, Folder, Link2, Image as ImageIcon, Phone, Mail, MapPin, Globe, Cloud } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
+import { SelectorImagenModal } from '../common/SelectorImagenModal';
 
 const GALERIA_PREDETERMINADA = [
   { label: 'Logo Aguitours Principal', url: '/images/capullanas1.jpg' },
@@ -24,6 +25,7 @@ const IMAGENES_PREDETERMINADAS_CMS = {
 
 export function AdminCMSModule({ cmsSections = [], user, onActualizar }) {
   const toast = useToast();
+  const [selectorImagenOpen, setSelectorImagenOpen] = useState(false);
   const [cmsEditando, setCmsEditando] = useState({
     clave_seccion: 'hero_inicio',
     titulo: '', subtitulo: '', cuerpo_texto: '', imagen_url: '/images/ciudades/fondo-destinos1.png'
@@ -177,7 +179,16 @@ export function AdminCMSModule({ cmsSections = [], user, onActualizar }) {
         )}
 
         <div className="bg-white/5 border border-white/10 p-4 rounded-2xl">
-          <label className="text-xs text-gray-300 font-bold block mb-2">Seleccionar Origen de Imagen</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs text-gray-300 font-bold">Seleccionar Origen de Imagen</label>
+            <button
+              type="button"
+              onClick={() => setSelectorImagenOpen(true)}
+              className="px-3 py-1.5 bg-gradient-to-r from-[#1995ad] to-[#ffb703] text-black font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md hover:brightness-110 transition-all cursor-pointer"
+            >
+              <Cloud size={14} /> Abrir Galería / Subir a Cloudflare R2
+            </button>
+          </div>
           <div className="flex gap-4 mb-4">
             <label className={`flex-1 p-3 rounded-xl border cursor-pointer flex items-center justify-center gap-2 text-xs font-bold transition-all ${tipoOrigenImagen === 'local' ? 'bg-[#ffb703] text-black border-[#ffb703]' : 'bg-[#071521] text-gray-300 border-white/15'}`}>
               <input 
@@ -324,6 +335,19 @@ export function AdminCMSModule({ cmsSections = [], user, onActualizar }) {
           <Save size={18} /> {loading ? 'Guardando...' : 'Guardar Cambios del CMS'}
         </button>
       </form>
+
+      {/* Modal Selector de Imágenes y Cloudflare R2 */}
+      <SelectorImagenModal
+        isOpen={selectorImagenOpen}
+        onClose={() => setSelectorImagenOpen(false)}
+        onSeleccionar={(url) => {
+          setCmsEditando(prev => ({ ...prev, imagen_url: url }));
+          setTipoOrigenImagen(url.startsWith('http') ? 'url' : 'local');
+        }}
+        imagenActual={cmsEditando.imagen_url}
+        categoriaSugerida="cms"
+        userId={user?.id}
+      />
     </div>
   );
 }
