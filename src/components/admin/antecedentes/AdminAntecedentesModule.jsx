@@ -23,6 +23,11 @@ export function AdminAntecedentesModule({ user, profile, tienePermiso }) {
   const [viajeAEditar, setViajeAEditar] = useState(null);
   const [viajeAPreview, setViajeAPreview] = useState(null);
 
+  const can = (perm) => {
+    if (!tienePermiso) return true;
+    return tienePermiso(perm);
+  };
+
   useEffect(() => {
     cargarViajes();
   }, []);
@@ -49,6 +54,10 @@ export function AdminAntecedentesModule({ user, profile, tienePermiso }) {
   };
 
   const handleToggleDestacado = async (viaje) => {
+    if (!can('antecedentes_destacar')) {
+      toast.warning('No tienes permiso para cambiar experiencias destacadas.');
+      return;
+    }
     const nuevoDestacado = !viaje.destacado;
     try {
       const { error } = await supabase
@@ -65,6 +74,10 @@ export function AdminAntecedentesModule({ user, profile, tienePermiso }) {
   };
 
   const handleToggleActivo = async (viaje) => {
+    if (!can('antecedentes_bloquear')) {
+      toast.warning('No tienes permiso para cambiar la visibilidad de experiencias.');
+      return;
+    }
     const nuevoActivo = !viaje.activo;
     try {
       const { error } = await supabase
@@ -141,12 +154,14 @@ export function AdminAntecedentesModule({ user, profile, tienePermiso }) {
             <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
           </button>
 
-          <button 
-            onClick={() => setCrearModalOpen(true)} 
-            className="btn-gold-3d text-xs font-bold py-2.5 px-5 rounded-2xl flex items-center justify-center gap-2 shadow-lg cursor-pointer flex-1 md:flex-none"
-          >
-            <Plus size={18} /> Registrar Nueva Experiencia
-          </button>
+          {can('antecedentes_crear') && (
+            <button 
+              onClick={() => setCrearModalOpen(true)} 
+              className="btn-gold-3d text-xs font-bold py-2.5 px-5 rounded-2xl flex items-center justify-center gap-2 shadow-lg cursor-pointer flex-1 md:flex-none"
+            >
+              <Plus size={18} /> Registrar Nueva Experiencia
+            </button>
+          )}
         </div>
       </div>
 
@@ -379,12 +394,14 @@ export function AdminAntecedentesModule({ user, profile, tienePermiso }) {
                       <CheckCircle2 size={16} />
                     </button>
 
-                    <button
-                      onClick={() => setViajeAEditar(v)}
-                      className="flex-1 bg-white/10 hover:bg-[#1995ad] hover:text-white text-gray-200 border border-white/15 text-xs font-bold py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <Edit3 size={14} /> Gestionar / Fotos
-                    </button>
+                    {can('antecedentes_editar') && (
+                      <button
+                        onClick={() => setViajeAEditar(v)}
+                        className="flex-1 bg-white/10 hover:bg-[#1995ad] hover:text-white text-gray-200 border border-white/15 text-xs font-bold py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <Edit3 size={14} /> Gestionar / Fotos
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -408,6 +425,7 @@ export function AdminAntecedentesModule({ user, profile, tienePermiso }) {
         onClose={() => setViajeAEditar(null)}
         onViajeActualizado={cargarViajes}
         user={user}
+        can={can}
       />
 
       {/* Modal Lightbox Preview */}

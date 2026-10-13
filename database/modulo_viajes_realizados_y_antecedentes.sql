@@ -144,12 +144,16 @@ CREATE TRIGGER audit_historial_pagos_caja
 -- 5. ACTUALIZAR MATRIZ DE PERMISOS EN ROLES_SISTEMA
 -- ==============================================================================
 UPDATE public.roles_sistema 
-SET permisos = permisos || '["antecedentes_ver", "antecedentes_read", "antecedentes_write"]'::jsonb
-WHERE id = 'editor_contenido' AND NOT (permisos @> '["antecedentes_ver"]'::jsonb);
+SET permisos = permisos || '["antecedentes_ver", "antecedentes_listar", "antecedentes_crear", "antecedentes_editar", "antecedentes_destacar", "antecedentes_bloquear", "antecedentes_eliminar"]'::jsonb
+WHERE id IN ('admin', 'super_admin');
 
 UPDATE public.roles_sistema 
-SET permisos = permisos || '["antecedentes_ver", "antecedentes_read"]'::jsonb
-WHERE id IN ('agente_ventas', 'cliente') AND NOT (permisos @> '["antecedentes_ver"]'::jsonb);
+SET permisos = permisos || '["antecedentes_ver", "antecedentes_listar", "antecedentes_crear", "antecedentes_editar", "antecedentes_destacar", "antecedentes_bloquear"]'::jsonb
+WHERE id = 'editor_contenido';
+
+UPDATE public.roles_sistema 
+SET permisos = permisos || '["antecedentes_ver", "antecedentes_listar"]'::jsonb
+WHERE id IN ('agente_ventas', 'cliente');
 
 -- ==============================================================================
 -- 6. DATOS INICIALES DE MUESTRA (SEED) PARA VIAJES REALIZADOS

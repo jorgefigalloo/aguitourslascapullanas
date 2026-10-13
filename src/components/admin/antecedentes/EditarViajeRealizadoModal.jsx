@@ -7,7 +7,7 @@ import { supabase } from '../../../lib/supabase';
 import { useToast } from '../../../context/ToastContext';
 import { SelectorImagenModal } from '../../common/SelectorImagenModal';
 
-export function EditarViajeRealizadoModal({ isOpen, onClose, viaje, onViajeActualizado, user }) {
+export function EditarViajeRealizadoModal({ isOpen, onClose, viaje, onViajeActualizado, user, can }) {
   const toast = useToast();
   const [selectorPortadaOpen, setSelectorPortadaOpen] = useState(false);
   const [selectorGaleriaOpen, setSelectorGaleriaOpen] = useState(false);
@@ -396,40 +396,42 @@ export function EditarViajeRealizadoModal({ isOpen, onClose, viaje, onViajeActua
               </div>
             </div>
 
-            {/* Eliminar Sección */}
-            {confirmarEliminar ? (
-              <div className="bg-red-950/60 border border-red-500/40 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-red-200 text-xs">
-                  <AlertTriangle size={18} className="text-red-400 shrink-0" />
-                  <span>¿Confirmas eliminar permanentemente esta experiencia de la base de datos?</span>
+            {/* Eliminar Sección si tiene permiso */}
+            {(!can || can('antecedentes_eliminar')) && (
+              confirmarEliminar ? (
+                <div className="bg-red-950/60 border border-red-500/40 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-red-200 text-xs">
+                    <AlertTriangle size={18} className="text-red-400 shrink-0" />
+                    <span>¿Confirmas eliminar permanentemente esta experiencia de la base de datos?</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setConfirmarEliminar(false)}
+                      className="bg-white/10 hover:bg-white/20 text-white text-xs px-3 py-1.5 rounded-lg cursor-pointer"
+                    >
+                      No, Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleEliminar}
+                      className="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg cursor-pointer"
+                    >
+                      Sí, Eliminar
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+              ) : (
+                <div className="pt-1">
                   <button
                     type="button"
-                    onClick={() => setConfirmarEliminar(false)}
-                    className="bg-white/10 hover:bg-white/20 text-white text-xs px-3 py-1.5 rounded-lg cursor-pointer"
+                    onClick={() => setConfirmarEliminar(true)}
+                    className="text-red-400 hover:text-red-300 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
-                    No, Cancelar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleEliminar}
-                    className="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg cursor-pointer"
-                  >
-                    Sí, Eliminar
+                    <Trash2 size={14} /> Eliminar esta experiencia...
                   </button>
                 </div>
-              </div>
-            ) : (
-              <div className="pt-1">
-                <button
-                  type="button"
-                  onClick={() => setConfirmarEliminar(true)}
-                  className="text-red-400 hover:text-red-300 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <Trash2 size={14} /> Eliminar esta experiencia...
-                </button>
-              </div>
+              )
             )}
 
             {/* Botones de Acción */}

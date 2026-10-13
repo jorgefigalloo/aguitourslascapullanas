@@ -49,6 +49,18 @@ export const CATEGORIAS_PERMISOS = [
     ]
   },
   {
+    categoria: '🎓 Módulo Viajes Realizados & Antecedentes',
+    items: [
+      { id: 'antecedentes_ver', label: 'Ver módulo y detalle de viajes realizados' },
+      { id: 'antecedentes_listar', label: 'Listar catálogo de antecedentes y casos de éxito' },
+      { id: 'antecedentes_crear', label: 'Registrar nuevas experiencias y subir fotos a Cloudflare R2' },
+      { id: 'antecedentes_editar', label: 'Editar descripciones, fechas, pasajeros y álbumes' },
+      { id: 'antecedentes_destacar', label: 'Marcar o desmarcar experiencias destacadas en el Home (⭐)' },
+      { id: 'antecedentes_bloquear', label: 'Ocultar / Desactivar experiencias de la web pública' },
+      { id: 'antecedentes_eliminar', label: 'Eliminar experiencias y antecedentes de la base de datos' }
+    ]
+  },
+  {
     categoria: '📝 Módulo CMS & Contenidos Web',
     items: [
       { id: 'cms_ver', label: 'Ver configuración de secciones web' },

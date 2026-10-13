@@ -168,6 +168,16 @@ c:\xampp\htdocs\aguitourslascapullanas\
   - `src/components/admin/antecedentes/EditarViajeRealizadoModal.jsx`: Edición completa, gestión de fotos del álbum y eliminación segura.
 - **Navegación Fluida (Single Page Scroll):**
   - Enlace "Experiencias" en Navbar de escritorio y menú móvil que realiza desplazamiento suave hacia `#antecedentes` sin recargar ni desmontar vistas.
+- **Matriz de Permisos RBAC (68 Permisos Totales):**
+  - Nuevo bloque `🎓 Módulo Viajes Realizados & Antecedentes` en `src/lib/permisos.js`:
+    - `antecedentes_ver`: Ver módulo y detalle de viajes realizados
+    - `antecedentes_listar`: Listar catálogo de antecedentes y casos de éxito
+    - `antecedentes_crear`: Registrar nuevas experiencias y subir fotos a Cloudflare R2
+    - `antecedentes_editar`: Editar descripciones, fechas, pasajeros y álbumes
+    - `antecedentes_destacar`: Marcar o desmarcar experiencias destacadas en el Home (⭐)
+    - `antecedentes_bloquear`: Ocultar / Desactivar experiencias de la web pública
+    - `antecedentes_eliminar`: Eliminar experiencias y antecedentes de la base de datos
+  - Totalmente configurable desde el modal *"Editar Rol & Matriz de Permisos"* en el módulo RBAC.
 
 ---
 
