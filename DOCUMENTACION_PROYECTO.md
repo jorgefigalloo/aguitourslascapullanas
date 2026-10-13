@@ -112,7 +112,7 @@ c:\xampp\htdocs\aguitourslascapullanas\
 ## 3. 🛡️ Medidas de Seguridad Backend & Supabase (5 Puntos Clave)
 
 1. **Row Level Security (RLS) Estricto en Supabase:**
-   - Aplicado en todas las tablas (`perfiles`, `inscripciones_grupo`, `paquetes_grupales`, `destinos_turisticos`, `cms_contenido`, `pagos`, `tabla_auditoria`, `favoritos_usuario`, `solicitudes_cotizacion`).
+   - Aplicado en las 15 tablas (`perfiles`, `inscripciones_grupo`, `paquetes_grupales`, `destinos_turisticos`, `cms_contenido`, `pagos`, `tabla_auditoria`, `favoritos_usuario`, `solicitudes_cotizacion`, `cuotas_inscripcion`, `acompanantes_inscripcion`, `historial_pagos_caja`, `imagenes_galeria`, `viajes_realizados`, `notificaciones`).
    - Cada cliente solo puede leer y modificar sus propios datos, favoritos y cotizaciones (`usuario_id = auth.uid()`).
 2. **Políticas de Contraseña Segura:**
    - En el registro de clientes y usuarios del sistema, la contraseña requiere:
@@ -121,8 +121,11 @@ c:\xampp\htdocs\aguitourslascapullanas\
      - Al menos 1 letra minúscula (a-z)
      - Al menos 1 número (0-9)
      - Al menos 1 símbolo especial (`!@#$%^&*`)
-3. **CORS Restringido:** Middleware `php/middleware/cors.php` valida dominios permitidos.
-4. **Credenciales en Variables de Entorno:** Todas las llaves públicas y privadas se almacenan en `.env`.
+3. **CORS Restringido & Rate Limiting:** 
+   - `php/middleware/cors.php`: Valida orígenes autorizados.
+   - `php/middleware/rate_limit.php`: Límite de 60 peticiones por minuto por dirección IP.
+4. **Credenciales Sensibles en Variables de Entorno (.env):** 
+   - Tokens de Supabase y credenciales de **Cloudflare R2 Object Storage** (`CLOUDFLARE_R2_ACCESS_KEY_ID`, `CLOUDFLARE_R2_SECRET_ACCESS_KEY`, bucket `aguitourscapullanas` y URL pública `r2.dev`) aisladas en `.env`.
 5. **Sanitización de Entradas:** Middleware `php/middleware/sanitizer.php` sanitiza inputs contra inyecciones XSS y SQLi.
 
 ---
@@ -130,11 +133,45 @@ c:\xampp\htdocs\aguitourslascapullanas\
 ## 4. ⌛ Control de Sesión e Inactividad (1 Hora)
 
 - **Duración de Inactividad:** Cierre de sesión automático tras **60 minutos (1 hora)** sin interacción del usuario.
-- **Persistencia en Re-apertura:** Se registra la última actividad en `localStorage.aguitours_last_active`. Si el navegador se reabre tras más de 1 hora de inactividad, la sesión se expira automáticamente con una notificación informativa.
+- **Protección en Inicio de Sesión:** El temporizador se reinicia inmediatamente a `Date.now()` en cada login exitoso, evitando cierres falsos por sesiones previas.
+- **Persistencia en Re-apertura:** Se registra la última actividad en `localStorage.aguitours_last_active`. Si el navegador se reabre tras más de 1 hora de inactividad, la sesión se expira automáticamente con notificación de seguridad.
 
 ---
 
-## 5. 🚀 Instrucciones para Ejecutar en Local
+## 5. 📸 Cloudflare R2 Object Storage & Galería
+
+- **Bucket:** `aguitourscapullanas`
+- **URL Pública:** `https://pub-6782babd351c499982137c48af2c6241.r2.dev`
+- **Firma AWS V4 Nativa:** `php/config/r2.php` realiza uploads directos a R2 usando firma HMAC-SHA256 en PHP puro sin dependencias externas.
+- **Selector Reutilizable:** `SelectorImagenModal.jsx` permite alternar entre:
+  1. Fotos en la nube Cloudflare R2
+  2. Fotos predeterminadas locales del proyecto (`/images/...`)
+  3. Carga directa drag & drop con barra de progreso
+  4. Enlace URL externo
+
+---
+
+## 6. 🎓 Nuevo Módulo: Viajes Realizados, Antecedentes & Notificaciones
+
+- **Script SQL:** `database/modulo_viajes_realizados_y_antecedentes.sql`
+- **Tablas Creadas:**
+  - `public.viajes_realizados`: Colegios, Empresas, Organizaciones, Grupos Privados y Familias con fotos en Cloudflare R2 y galería fotográfica.
+  - `public.notificaciones`: Sistema de avisos para usuarios y clientes con RLS.
+- **Auditoría Integral (15 Tablas):** Triggers automáticos conectados a `public.tabla_auditoria` para todas las tablas del sistema.
+- **Componentes Públicos:**
+  - `src/components/antecedentes/ViajesRealizadosSection.jsx`: Sección principal en el Home con filtros interactivos por categoría (Colegios/Promociones, Empresas, Grupos Privados, Familias), contadores de viajeros, tarjetas con efecto hover y badges Cloudflare R2.
+  - `src/components/antecedentes/VerDetalleViajeModal.jsx`: Visor Lightbox cinemático con carrusel fotográfico, tira de miniaturas, información de delegación, fecha, destino y reseña.
+  - `src/components/antecedentes/GaleriaCompletaAntecedentesModal.jsx`: Catálogo completo con buscador en tiempo real y selector de delegaciones.
+- **Componentes Administrativos:**
+  - `src/components/admin/antecedentes/AdminAntecedentesModule.jsx`: Dashboard de administración con métricas de viajeros atendidos, búsqueda rápida, toggle directo de "Destacado en Inicio" (⭐) y visibilidad pública.
+  - `src/components/admin/antecedentes/CrearViajeRealizadoModal.jsx`: Registro de nuevas experiencias con integración al selector de Cloudflare R2 y carga múltiple de imágenes de álbum.
+  - `src/components/admin/antecedentes/EditarViajeRealizadoModal.jsx`: Edición completa, gestión de fotos del álbum y eliminación segura.
+- **Navegación Fluida (Single Page Scroll):**
+  - Enlace "Experiencias" en Navbar de escritorio y menú móvil que realiza desplazamiento suave hacia `#antecedentes` sin recargar ni desmontar vistas.
+
+---
+
+## 7. 🚀 Instrucciones para Ejecutar en Local
 
 1. Abrir terminal en la carpeta del proyecto:
    ```bash
@@ -142,5 +179,8 @@ c:\xampp\htdocs\aguitourslascapullanas\
    npm run dev
    ```
 2. La Web App abrirá en **`http://localhost:5173/`**.
-3. **Script SQL para Triggers de Auditoría:** Ejecutar el archivo `database/script_auditoria_completa_triggers.sql` dentro del Editor SQL del panel de Supabase.
+3. **Scripts SQL en Supabase:**
+   - Ejecutar `database/modulo_galeria_imagenes_r2.sql` (Galería Cloudflare R2)
+   - Ejecutar `database/modulo_viajes_realizados_y_antecedentes.sql` (Viajes Realizados, Notificaciones y Triggers de Auditoría)
+
 

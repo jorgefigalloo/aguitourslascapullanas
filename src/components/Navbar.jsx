@@ -2,12 +2,32 @@ import React, { useState } from 'react';
 import { User, LogOut, LayoutDashboard, Briefcase, Settings, Menu, X, Sparkles, Heart } from 'lucide-react';
 import { MisDatosModal } from './MisDatosModal';
 
-export function Navbar({ onOpenAuth, activeView, setActiveView, user, profile, onLogout, onProfileUpdated, onCotizarClick }) {
+export function Navbar({ 
+  onOpenAuth, 
+  activeView, 
+  activeSection = 'inicio',
+  setActiveView, 
+  onNavigateSection,
+  user, 
+  profile, 
+  onLogout, 
+  onProfileUpdated, 
+  onCotizarClick 
+}) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [misDatosOpen, setMisDatosOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const userRole = profile?.rol || 'cliente';
+
+  const handleNav = (sectionId) => {
+    setMobileMenuOpen(false);
+    if (onNavigateSection) {
+      onNavigateSection(sectionId);
+    } else if (setActiveView) {
+      setActiveView(sectionId);
+    }
+  };
 
   const getRoleBadge = (rol) => {
     switch (rol) {
@@ -33,10 +53,12 @@ export function Navbar({ onOpenAuth, activeView, setActiveView, user, profile, o
     }
   };
 
+  const isSectionActive = (sec) => activeView === 'inicio' && activeSection === sec;
+
   return (
     <header className="fixed top-0 w-full z-50 bg-[#071521]/95 backdrop-blur-md border-b border-white/10 px-3 md:px-6 h-16 flex justify-between items-center transition-all">
       {/* Brand & Logo */}
-      <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => { setActiveView('inicio'); setMobileMenuOpen(false); }}>
+      <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => handleNav('inicio')}>
         <img 
           src="/images/capullanas1.jpg" 
           alt="Aguitours Logo" 
@@ -51,39 +73,47 @@ export function Navbar({ onOpenAuth, activeView, setActiveView, user, profile, o
       {/* Nav Links Desktop */}
       <nav className="hidden lg:flex items-center gap-2 xl:gap-4">
         <button 
-          onClick={() => setActiveView('inicio')}
-          className={`font-body text-xs xl:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap px-2 py-1 ${activeView === 'inicio' ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
+          onClick={() => handleNav('inicio')}
+          className={`font-body text-xs xl:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap px-2 py-1 ${isSectionActive('inicio') ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
         >
           <span className="material-symbols-outlined text-[18px]">explore</span> Inicio
         </button>
 
         <button 
-          onClick={() => setActiveView('grupales')}
-          className={`font-body text-xs xl:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap px-2 py-1 ${activeView === 'grupales' ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
+          onClick={() => handleNav('grupales')}
+          className={`font-body text-xs xl:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap px-2 py-1 ${isSectionActive('grupales') ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
         >
           <span className="material-symbols-outlined text-[18px]">groups</span> Paquetes Grupales
         </button>
 
         <button 
-          onClick={() => setActiveView('destinos')}
-          className={`font-body text-xs xl:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap px-2 py-1 ${activeView === 'destinos' ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
+          onClick={() => handleNav('destinos')}
+          className={`font-body text-xs xl:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap px-2 py-1 ${isSectionActive('destinos') ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
         >
           <span className="material-symbols-outlined text-[18px]">public</span> Destinos
         </button>
 
         <button 
-          onClick={() => setActiveView('nosotros')}
-          className={`font-body text-xs xl:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap px-2 py-1 ${activeView === 'nosotros' ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
+          onClick={() => handleNav('antecedentes')}
+          className={`font-body text-xs xl:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap px-2 py-1 ${isSectionActive('antecedentes') ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
+        >
+          <span className="material-symbols-outlined text-[18px]">photo_library</span> Experiencias
+        </button>
+
+        <button 
+          onClick={() => handleNav('nosotros')}
+          className={`font-body text-xs xl:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap px-2 py-1 ${isSectionActive('nosotros') ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
         >
           <span className="material-symbols-outlined text-[18px]">info</span> Quiénes Somos
         </button>
 
         <button 
-          onClick={() => setActiveView('contacto')}
-          className={`font-body text-xs xl:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap px-2 py-1 ${activeView === 'contacto' ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
+          onClick={() => handleNav('contacto')}
+          className={`font-body text-xs xl:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap px-2 py-1 ${isSectionActive('contacto') ? 'text-[#ffb703]' : 'text-white hover:text-[#1995ad]'}`}
         >
           <span className="material-symbols-outlined text-[18px]">support_agent</span> Contacto
         </button>
+
 
         {/* Botón Destacado: Cotizar Paquete Personalizado */}
         <button
@@ -173,39 +203,47 @@ export function Navbar({ onOpenAuth, activeView, setActiveView, user, profile, o
       {mobileMenuOpen && (
         <div className="lg:hidden fixed top-20 left-0 right-0 bg-[#071521] border-b border-white/15 p-6 flex flex-col gap-4 shadow-2xl z-50 backdrop-blur-xl">
           <button 
-            onClick={() => { setActiveView('inicio'); setMobileMenuOpen(false); }}
-            className={`text-left text-sm font-bold p-3 rounded-xl flex items-center gap-3 ${activeView === 'inicio' ? 'bg-[#1995ad] text-white' : 'text-gray-200 bg-white/5'}`}
+            onClick={() => handleNav('inicio')}
+            className={`text-left text-sm font-bold p-3 rounded-xl flex items-center gap-3 ${isSectionActive('inicio') ? 'bg-[#1995ad] text-white' : 'text-gray-200 bg-white/5'}`}
           >
             <span className="material-symbols-outlined">explore</span> Inicio
           </button>
 
           <button 
-            onClick={() => { setActiveView('grupales'); setMobileMenuOpen(false); }}
-            className={`text-left text-sm font-bold p-3 rounded-xl flex items-center gap-3 ${activeView === 'grupales' ? 'bg-[#1995ad] text-white' : 'text-gray-200 bg-white/5'}`}
+            onClick={() => handleNav('grupales')}
+            className={`text-left text-sm font-bold p-3 rounded-xl flex items-center gap-3 ${isSectionActive('grupales') ? 'bg-[#1995ad] text-white' : 'text-gray-200 bg-white/5'}`}
           >
             <span className="material-symbols-outlined">groups</span> Paquetes Grupales
           </button>
 
           <button 
-            onClick={() => { setActiveView('destinos'); setMobileMenuOpen(false); }}
-            className={`text-left text-sm font-bold p-3 rounded-xl flex items-center gap-3 ${activeView === 'destinos' ? 'bg-[#1995ad] text-white' : 'text-gray-200 bg-white/5'}`}
+            onClick={() => handleNav('destinos')}
+            className={`text-left text-sm font-bold p-3 rounded-xl flex items-center gap-3 ${isSectionActive('destinos') ? 'bg-[#1995ad] text-white' : 'text-gray-200 bg-white/5'}`}
           >
             <span className="material-symbols-outlined">public</span> Destinos
           </button>
 
           <button 
-            onClick={() => { setActiveView('nosotros'); setMobileMenuOpen(false); }}
-            className={`text-left text-sm font-bold p-3 rounded-xl flex items-center gap-3 ${activeView === 'nosotros' ? 'bg-[#1995ad] text-white' : 'text-gray-200 bg-white/5'}`}
+            onClick={() => handleNav('antecedentes')}
+            className={`text-left text-sm font-bold p-3 rounded-xl flex items-center gap-3 ${isSectionActive('antecedentes') ? 'bg-[#1995ad] text-white' : 'text-gray-200 bg-white/5'}`}
+          >
+            <span className="material-symbols-outlined">photo_library</span> Experiencias / Viajes Realizados
+          </button>
+
+          <button 
+            onClick={() => handleNav('nosotros')}
+            className={`text-left text-sm font-bold p-3 rounded-xl flex items-center gap-3 ${isSectionActive('nosotros') ? 'bg-[#1995ad] text-white' : 'text-gray-200 bg-white/5'}`}
           >
             <span className="material-symbols-outlined">info</span> Quiénes Somos
           </button>
 
           <button 
-            onClick={() => { setActiveView('contacto'); setMobileMenuOpen(false); }}
-            className={`text-left text-sm font-bold p-3 rounded-xl flex items-center gap-3 ${activeView === 'contacto' ? 'bg-[#1995ad] text-white' : 'text-gray-200 bg-white/5'}`}
+            onClick={() => handleNav('contacto')}
+            className={`text-left text-sm font-bold p-3 rounded-xl flex items-center gap-3 ${isSectionActive('contacto') ? 'bg-[#1995ad] text-white' : 'text-gray-200 bg-white/5'}`}
           >
             <span className="material-symbols-outlined">support_agent</span> Contacto
           </button>
+
 
           {user && (
             <button 

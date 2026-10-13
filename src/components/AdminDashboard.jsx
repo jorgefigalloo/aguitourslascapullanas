@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  LayoutDashboard, Edit3, Plus, Users, Globe, ArrowLeft, Search, Bell, LogOut, CheckCircle, Clock, Calendar, ChevronRight, ChevronLeft, ShieldCheck, Database, Package, UserCheck, Sparkles, Menu, X, User, Settings, ChevronDown, DollarSign
+  LayoutDashboard, Edit3, Plus, Users, Globe, ArrowLeft, Search, Bell, LogOut, CheckCircle, Clock, Calendar, ChevronRight, ChevronLeft, ShieldCheck, Database, Package, UserCheck, Sparkles, Menu, X, User, Settings, ChevronDown, DollarSign, Award
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { MisDatosModal } from './MisDatosModal';
@@ -8,6 +8,7 @@ import { AdminAnalytics } from './admin/AdminAnalytics';
 import { AdminPaquetesModule } from './admin/AdminPaquetesModule';
 import { AdminCMSModule } from './admin/AdminCMSModule';
 import { AdminDestinosModule } from './admin/AdminDestinosModule';
+import { AdminAntecedentesModule } from './admin/antecedentes/AdminAntecedentesModule';
 import { AdminUsuariosModule } from './admin/AdminUsuariosModule';
 import { AdminAuditoriaModule } from './admin/AdminAuditoriaModule';
 import { AdminClientesModule } from './admin/AdminClientesModule';
@@ -85,6 +86,7 @@ export function AdminDashboard({ user, profile, onBackToSite }) {
   const tienePermiso = (permisoId) => {
     if (!profile) return true; // Fallback
     if (profile.rol === 'super_admin') return true; // Solo Super Admin ignora la matriz
+    if (permisoId === 'antecedentes_ver' && ['admin', 'editor_contenido'].includes(profile.rol)) return true;
     const userRoleObj = rolesSistema.find(r => r.id === profile.rol);
     if (!userRoleObj || !Array.isArray(userRoleObj.permisos)) return false;
     return userRoleObj.permisos.includes(permisoId) || userRoleObj.permisos.includes('all');
@@ -97,6 +99,7 @@ export function AdminDashboard({ user, profile, onBackToSite }) {
     { id: 'cotizaciones', label: 'Cotizaciones A Medida', icon: Sparkles, perm: 'cotizaciones_ver' },
     { id: 'paquetes', label: 'Paquetes Grupales', icon: Package, perm: 'paquetes_ver' },
     { id: 'destinos', label: 'Destinos Turísticos', icon: Globe, perm: 'destinos_ver' },
+    { id: 'antecedentes', label: 'Viajes Realizados', icon: Award, perm: 'antecedentes_ver' },
     { id: 'cms', label: 'Gestión CMS', icon: Edit3, perm: 'cms_ver' },
     { id: 'rbac', label: 'Usuarios & Permisos', icon: ShieldCheck, perm: 'usuarios_ver' },
     { id: 'auditoria', label: 'Auditoría BD', icon: Database, perm: 'auditoria_ver' }
@@ -305,6 +308,10 @@ export function AdminDashboard({ user, profile, onBackToSite }) {
 
           {activeTab === 'destinos' && (
             <AdminDestinosModule destinos={destinos} onActualizar={cargarTodo} tienePermiso={tienePermiso} />
+          )}
+
+          {activeTab === 'antecedentes' && (
+            <AdminAntecedentesModule user={user} profile={profile} tienePermiso={tienePermiso} />
           )}
 
           {activeTab === 'cms' && (

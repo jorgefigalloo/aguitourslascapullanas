@@ -4,6 +4,7 @@ import { Hero3D } from './components/Hero3D';
 import { FlightIntro3D } from './components/FlightIntro3D';
 import { PaquetesGrupales } from './components/PaquetesGrupales';
 import { DestinosSection } from './components/DestinosSection';
+import { ViajesRealizadosSection } from './components/antecedentes/ViajesRealizadosSection';
 import { QuienesSomosSection } from './components/QuienesSomosSection';
 import { ContactoSection } from './components/ContactoSection';
 import { AuthModal } from './components/auth/AuthModal';
@@ -19,13 +20,10 @@ export default function App() {
     const path = window.location.pathname.toLowerCase();
     if (path.includes('/admin') || path.includes('/dashboard')) return 'admin';
     if (path.includes('/cliente') || path.includes('/perfil')) return 'mi-perfil';
-    if (path.includes('/grupales')) return 'grupales';
-    if (path.includes('/destinos')) return 'destinos';
-    if (path.includes('/nosotros')) return 'nosotros';
-    if (path.includes('/contacto')) return 'contacto';
     return 'inicio';
   });
 
+  const [activeSection, setActiveSection] = useState('inicio');
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [user, setUser] = useState(null);
@@ -41,13 +39,59 @@ export default function App() {
     let targetPath = '/';
     if (view === 'admin') targetPath = '/admin';
     else if (view === 'mi-perfil') targetPath = '/cliente';
-    else if (view === 'grupales') targetPath = '/grupales';
-    else if (view === 'destinos') targetPath = '/destinos';
-    else if (view === 'nosotros') targetPath = '/nosotros';
-    else if (view === 'contacto') targetPath = '/contacto';
 
     window.history.pushState(null, '', targetPath);
   };
+
+  const handleScrollToSection = (sectionId) => {
+    setActiveSection(sectionId);
+
+    if (activeView !== 'inicio') {
+      setActiveView('inicio');
+      window.history.pushState(null, '', '/');
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          const navOffset = 64;
+          const elementPosition = el.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+          window.scrollTo({ top: Math.max(0, offsetPosition), behavior: 'smooth' });
+        }
+      }, 150);
+    } else {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        const navOffset = 64;
+        const elementPosition = el.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+        window.scrollTo({ top: Math.max(0, offsetPosition), behavior: 'smooth' });
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (activeView !== 'inicio') return;
+
+    const sections = ['inicio', 'grupales', 'destinos', 'antecedentes', 'nosotros', 'contacto'];
+    const handleScroll = () => {
+      const scrollY = window.pageYOffset;
+      const navOffset = 120;
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sections[i]);
+        if (el) {
+          const top = el.offsetTop - navOffset;
+          if (scrollY >= top) {
+            setActiveSection(sections[i]);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [activeView]);
 
   const handleCotizarClick = () => {
     if (user) {
@@ -236,7 +280,9 @@ export default function App() {
       <Navbar 
         onOpenAuth={() => setAuthModalOpen(true)}
         activeView={activeView}
+        activeSection={activeSection}
         setActiveView={navigateToView}
+        onNavigateSection={handleScrollToSection}
         user={user}
         profile={profile}
         onLogout={handleLogout}
@@ -247,40 +293,29 @@ export default function App() {
       <main style={{ flex: 1 }}>
         {(activeView === 'inicio' || ((activeView === 'admin' || activeView === 'mi-perfil') && !user)) && (
           <>
-            <Hero3D 
-              onExplorarGrupales={() => navigateToView('grupales')}
-              onExplorarDestinos={() => navigateToView('destinos')}
-              onCotizarClick={handleCotizarClick}
-            />
-            <PaquetesGrupales user={user} profile={profile} onOpenAuth={() => setAuthModalOpen(true)} />
-            <DestinosSection user={user} onOpenAuth={() => setAuthModalOpen(true)} />
-            <QuienesSomosSection />
-            <ContactoSection />
+            <div id="inicio">
+              <Hero3D 
+                onExplorarGrupales={() => handleScrollToSection('grupales')}
+                onExplorarDestinos={() => handleScrollToSection('destinos')}
+                onCotizarClick={handleCotizarClick}
+              />
+            </div>
+            <div id="grupales">
+              <PaquetesGrupales user={user} profile={profile} onOpenAuth={() => setAuthModalOpen(true)} />
+            </div>
+            <div id="destinos">
+              <DestinosSection user={user} onOpenAuth={() => setAuthModalOpen(true)} />
+            </div>
+            <div id="antecedentes">
+              <ViajesRealizadosSection />
+            </div>
+            <div id="nosotros">
+              <QuienesSomosSection />
+            </div>
+            <div id="contacto">
+              <ContactoSection />
+            </div>
           </>
-        )}
-
-        {activeView === 'grupales' && (
-          <div style={{ paddingTop: '64px' }}>
-            <PaquetesGrupales user={user} profile={profile} onOpenAuth={() => setAuthModalOpen(true)} />
-          </div>
-        )}
-
-        {activeView === 'destinos' && (
-          <div style={{ paddingTop: '64px' }}>
-            <DestinosSection user={user} onOpenAuth={() => setAuthModalOpen(true)} />
-          </div>
-        )}
-
-        {activeView === 'nosotros' && (
-          <div style={{ paddingTop: '64px' }}>
-            <QuienesSomosSection />
-          </div>
-        )}
-
-        {activeView === 'contacto' && (
-          <div style={{ paddingTop: '64px' }}>
-            <ContactoSection />
-          </div>
         )}
 
         {activeView === 'mi-perfil' && user && (
@@ -288,10 +323,11 @@ export default function App() {
             user={user} 
             profile={profile} 
             initialTab={clientInitialTab}
-            onExplorarPaquetes={() => navigateToView('grupales')}
+            onExplorarPaquetes={() => handleScrollToSection('grupales')}
           />
         )}
       </main>
+
 
       {/* Footer dinámico del CMS */}
       <footer style={{ background: '#040b12', borderTop: '1px solid rgba(255,255,255,0.08)', padding: '30px', textAlign: 'center', fontSize: '13px', color: '#888' }}>
