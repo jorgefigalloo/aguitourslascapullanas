@@ -18,7 +18,16 @@ export async function subirImagenACloudflare(file, { titulo = '', categoria = 'g
     body: formData
   });
 
-  const data = await response.json();
+  let data;
+  try {
+    data = await response.json();
+  } catch (err) {
+    if (!response.ok) {
+      throw new Error(`Error en el servidor backend (HTTP ${response.status}). Asegúrate de que el módulo Apache esté iniciado en el panel de control de XAMPP.`);
+    }
+    throw new Error('Respuesta inesperada del servidor al subir la imagen.');
+  }
+
   if (!response.ok || !data.success) {
     throw new Error(data.message || 'Error al subir la imagen a Cloudflare R2');
   }
@@ -59,7 +68,16 @@ export async function eliminarImagenR2(id, r2Key) {
     body: JSON.stringify({ id, r2_key: r2Key })
   });
 
-  const data = await response.json();
+  let data;
+  try {
+    data = await response.json();
+  } catch (err) {
+    if (!response.ok) {
+      throw new Error(`Error en el servidor backend (HTTP ${response.status}). Asegúrate de que el módulo Apache esté iniciado en el panel de control de XAMPP.`);
+    }
+    throw new Error('Respuesta inesperada del servidor al eliminar la imagen.');
+  }
+
   if (!response.ok || !data.success) {
     throw new Error(data.message || 'No se pudo eliminar la imagen');
   }
