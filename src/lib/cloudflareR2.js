@@ -13,17 +13,31 @@ export async function subirImagenACloudflare(file, { titulo = '', categoria = 'g
   if (categoria) formData.append('categoria', categoria);
   if (userId) formData.append('creado_por', userId);
 
-  const response = await fetch('/php/api/upload_r2.php', {
-    method: 'POST',
-    body: formData
-  });
+  let response;
+  try {
+    response = await fetch('/api/upload_r2', {
+      method: 'POST',
+      body: formData
+    });
+    if (!response.ok) {
+      response = await fetch('/php/api/upload_r2.php', {
+        method: 'POST',
+        body: formData
+      });
+    }
+  } catch {
+    response = await fetch('/php/api/upload_r2.php', {
+      method: 'POST',
+      body: formData
+    });
+  }
 
   let data;
   try {
     data = await response.json();
   } catch (err) {
     if (!response.ok) {
-      throw new Error(`Error en el servidor backend (HTTP ${response.status}). Asegúrate de que el módulo Apache esté iniciado en el panel de control de XAMPP.`);
+      throw new Error(`Error en el servidor backend (HTTP ${response.status}).`);
     }
     throw new Error('Respuesta inesperada del servidor al subir la imagen.');
   }
@@ -62,18 +76,35 @@ export async function obtenerGaleriaImagenes(categoria = null) {
  * Elimina una imagen de Cloudflare R2 y de la tabla de galería
  */
 export async function eliminarImagenR2(id, r2Key) {
-  const response = await fetch('/php/api/eliminar_r2.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, r2_key: r2Key })
-  });
+  const payload = JSON.stringify({ id, r2_key: r2Key });
+  let response;
+  try {
+    response = await fetch('/api/eliminar_r2', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload
+    });
+    if (!response.ok) {
+      response = await fetch('/php/api/eliminar_r2.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload
+      });
+    }
+  } catch {
+    response = await fetch('/php/api/eliminar_r2.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload
+    });
+  }
 
   let data;
   try {
     data = await response.json();
   } catch (err) {
     if (!response.ok) {
-      throw new Error(`Error en el servidor backend (HTTP ${response.status}). Asegúrate de que el módulo Apache esté iniciado en el panel de control de XAMPP.`);
+      throw new Error(`Error en el servidor backend (HTTP ${response.status}).`);
     }
     throw new Error('Respuesta inesperada del servidor al eliminar la imagen.');
   }

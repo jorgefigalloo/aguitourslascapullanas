@@ -138,11 +138,14 @@ c:\xampp\htdocs\aguitourslascapullanas\
 
 ---
 
-## 5. 📸 Cloudflare R2 Object Storage & Galería
+## 5. 📸 Cloudflare R2 Object Storage & Galería (Arquitectura Dual)
 
 - **Bucket:** `aguitourscapullanas`
 - **URL Pública:** `https://pub-6782babd351c499982137c48af2c6241.r2.dev`
-- **Firma AWS V4 Nativa:** `php/config/r2.php` realiza uploads directos a R2 usando firma HMAC-SHA256 en PHP puro sin dependencias externas.
+- **Firma AWS V4 Nativa:**
+  1. **En Entorno de Desarrollo (Vite):** `src/lib/viteR2Plugin.js` intercepta las peticiones `/api/upload_r2` y `/php/api/upload_r2.php` directamente en Node.js, calcula la firma AWS Signature Version 4 con `crypto` nativo, sube el archivo a Cloudflare R2 y registra en Supabase `public.imagenes_galeria` **sin requerir Apache/XAMPP en ejecución**.
+  2. **En Entorno de Producción (Apache/PHP):** `php/api/upload_r2.php` y `php/config/r2.php` implementan la firma V4 nativa en PHP puro sin dependencias para servidores compartidos o VPS.
+- **Cliente Frontend Resiliente:** `src/lib/cloudflareR2.js` conecta de forma híbrida con reintento automático (`/api/upload_r2` -> `/php/api/upload_r2.php`).
 - **Selector Reutilizable:** `SelectorImagenModal.jsx` permite alternar entre:
   1. Fotos en la nube Cloudflare R2
   2. Fotos predeterminadas locales del proyecto (`/images/...`)
