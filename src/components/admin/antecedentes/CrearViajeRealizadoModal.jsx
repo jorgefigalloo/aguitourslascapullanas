@@ -1,17 +1,28 @@
 import React, { useState } from 'react';
 import { 
   X, PlusCircle, Award, Image as ImageIcon, Sparkles, 
-  Trash2, Plus, Calendar, MapPin, Users, Building2, GraduationCap, UserCheck 
+  Trash2, Plus, Calendar, MapPin, Users, Building2, GraduationCap, UserCheck,
+  Eye, Star
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { useToast } from '../../../context/ToastContext';
 import { SelectorImagenModal } from '../../common/SelectorImagenModal';
+import { VisorFotoModal } from '../../common/VisorFotoModal';
 
 export function CrearViajeRealizadoModal({ isOpen, onClose, onViajeCreado, user }) {
   const toast = useToast();
   const [selectorPortadaOpen, setSelectorPortadaOpen] = useState(false);
   const [selectorGaleriaOpen, setSelectorGaleriaOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Visor de Foto Predeterminada / Lightbox
+  const [visorFotoConfig, setVisorFotoConfig] = useState({
+    isOpen: false,
+    fotoActual: '',
+    listaFotos: [],
+    indiceInicial: 0,
+    titulo: ''
+  });
 
   const [formData, setFormData] = useState({
     titulo: '',
@@ -60,6 +71,43 @@ export function CrearViajeRealizadoModal({ isOpen, onClose, onViajeCreado, user 
       ...prev,
       galeria: prev.galeria.filter((_, i) => i !== index)
     }));
+  };
+
+  // Ver imagen de portada en tamaño completo / predeterminado
+  const handleVerFotoPortada = () => {
+    if (!formData.imagen_portada) return;
+    const albumCompleto = [
+      formData.imagen_portada, 
+      ...formData.galeria.filter(u => u !== formData.imagen_portada)
+    ];
+    setVisorFotoConfig({
+      isOpen: true,
+      fotoActual: formData.imagen_portada,
+      listaFotos: albumCompleto,
+      indiceInicial: 0,
+      titulo: `Foto de Portada: ${formData.titulo || 'Nueva Experiencia'}`
+    });
+  };
+
+  // Ver imagen del álbum en tamaño completo / predeterminado
+  const handleVerFotoGaleria = (index) => {
+    setVisorFotoConfig({
+      isOpen: true,
+      fotoActual: formData.galeria[index],
+      listaFotos: formData.galeria,
+      indiceInicial: index,
+      titulo: `Álbum (${index + 1}/${formData.galeria.length}): ${formData.titulo || 'Nueva Experiencia'}`
+    });
+  };
+
+  // Establecer foto del álbum como portada predeterminada
+  const handleHacerPortadaPredeterminada = (url) => {
+    if (!url) return;
+    setFormData(prev => ({
+      ...prev,
+      imagen_portada: url
+    }));
+    toast.success('¡Foto asignada como portada predeterminada! ⭐', 'Portada Actualizada');
   };
 
   const handleSubmit = async (e) => {
@@ -273,20 +321,41 @@ export function CrearViajeRealizadoModal({ isOpen, onClose, onViajeCreado, user 
               </div>
 
               <div className="flex items-center gap-4">
-                <div className="w-28 h-20 rounded-xl overflow-hidden border border-white/20 bg-black/40 shrink-0">
+                <div 
+                  onClick={handleVerFotoPortada}
+                  title="Haz clic para ver la imagen en su proporción y tamaño completo"
+                  className="w-32 h-22 rounded-xl overflow-hidden border border-white/20 bg-black/40 shrink-0 cursor-pointer relative group shadow-md"
+                >
                   <img 
                     src={formData.imagen_portada} 
                     alt="Portada" 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-all duration-300"
                     onError={e => { e.target.src = '/images/ciudades/fondo-destinos1.png'; }}
                   />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1 backdrop-blur-[2px]">
+                    <Eye size={18} className="text-[#ffb703]" />
+                    <span className="text-[10px] font-bold">Ver Completa</span>
+                  </div>
+                  <div className="absolute top-1 left-1 bg-[#ffb703] text-black px-1.5 py-0.5 rounded-md shadow flex items-center gap-1 text-[9px] font-bold">
+                    <Star size={9} className="fill-black" /> Portada
+                  </div>
                 </div>
+
                 <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <button
+                      type="button"
+                      onClick={handleVerFotoPortada}
+                      className="text-xs font-bold text-[#ffb703] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Eye size={13} /> Ver imagen predeterminada en grande
+                    </button>
+                  </div>
                   <p className="text-[11px] text-gray-400 break-all m-0 font-mono">
                     {formData.imagen_portada}
                   </p>
-                  <p className="text-[10px] text-[#ffb703] mt-1 m-0">
-                    Esta imagen se verá en la portada de la tarjeta y encabezado del álbum.
+                  <p className="text-[10px] text-gray-400 mt-1 m-0">
+                    Esta imagen se verá en la portada de la tarjeta y encabezado del álbum. También puedes seleccionar fotos del álbum para fijarlas como portada.
                   </p>
                 </div>
               </div>
@@ -300,7 +369,7 @@ export function CrearViajeRealizadoModal({ isOpen, onClose, onViajeCreado, user 
                     <Sparkles size={16} className="text-[#ffb703]" /> Álbum de Fotos del Viaje ({formData.galeria.length})
                   </span>
                   <p className="text-[10px] text-gray-400 m-0 mt-0.5">
-                    Sube fotos grupales, lugares visitados y actividades para el carrusel y lightbox
+                    Haz clic en cualquier foto para abrirla en el visor o pulsa ⭐ para fijarla como foto predeterminada
                   </p>
                 </div>
                 <button
@@ -317,25 +386,83 @@ export function CrearViajeRealizadoModal({ isOpen, onClose, onViajeCreado, user 
                   Aún no has agregado fotos adicionales. Haz clic en <strong className="text-white">"+ Agregar Foto al Álbum"</strong> para cargar desde Cloudflare R2.
                 </div>
               ) : (
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2.5">
-                  {formData.galeria.map((imgUrl, idx) => (
-                    <div key={idx} className="relative group rounded-xl overflow-hidden border border-white/20 aspect-video bg-black/40">
-                      <img 
-                        src={imgUrl} 
-                        alt={`Foto ${idx + 1}`} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-all"
-                        onError={e => { e.target.src = '/images/ciudades/fondo-destinos1.png'; }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoverFotoGaleria(idx)}
-                        title="Quitar foto del álbum"
-                        className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-600 text-white p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-all cursor-pointer shadow-md"
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {formData.galeria.map((imgUrl, idx) => {
+                    const esPortada = formData.imagen_portada === imgUrl;
+                    return (
+                      <div 
+                        key={idx} 
+                        onClick={() => handleVerFotoGaleria(idx)}
+                        title="Haz clic para ver la imagen en pantalla completa"
+                        className={`relative group rounded-xl overflow-hidden border aspect-video bg-black/40 cursor-pointer transition-all shadow-md ${
+                          esPortada 
+                            ? 'border-[#ffb703] ring-2 ring-[#ffb703]/50' 
+                            : 'border-white/20 hover:border-white/60'
+                        }`}
                       >
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                  ))}
+                        <img 
+                          src={imgUrl} 
+                          alt={`Foto ${idx + 1}`} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-all"
+                          onError={e => { e.target.src = '/images/ciudades/fondo-destinos1.png'; }}
+                        />
+
+                        {/* Badge indicador de Portada */}
+                        {esPortada && (
+                          <div className="absolute top-1.5 left-1.5 bg-[#ffb703] text-black text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow flex items-center gap-1 z-10">
+                            <Star size={9} className="fill-black" /> Portada
+                          </div>
+                        )}
+
+                        {/* Overlay con acciones */}
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-20 backdrop-blur-[1px]">
+                          
+                          {/* Botón Ver en Grande */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleVerFotoGaleria(idx);
+                            }}
+                            title="Ver en pantalla completa"
+                            className="p-1.5 bg-white/20 hover:bg-white text-gray-200 hover:text-black rounded-lg transition-colors cursor-pointer shadow"
+                          >
+                            <Eye size={14} />
+                          </button>
+
+                          {/* Botón Asignar como Portada Predeterminada */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleHacerPortadaPredeterminada(imgUrl);
+                            }}
+                            title={esPortada ? 'Ya es la portada predeterminada' : 'Establecer como portada predeterminada'}
+                            className={`p-1.5 rounded-lg transition-colors cursor-pointer shadow ${
+                              esPortada 
+                                ? 'bg-[#ffb703] text-black cursor-default' 
+                                : 'bg-[#ffb703]/80 hover:bg-[#ffb703] text-black'
+                            }`}
+                          >
+                            <Star size={14} className={esPortada ? 'fill-black' : ''} />
+                          </button>
+
+                          {/* Botón Quitar */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoverFotoGaleria(idx);
+                            }}
+                            title="Quitar foto del álbum"
+                            className="p-1.5 bg-red-600/80 hover:bg-red-600 text-white rounded-lg transition-colors cursor-pointer shadow"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -427,6 +554,18 @@ export function CrearViajeRealizadoModal({ isOpen, onClose, onViajeCreado, user 
         }}
         categoriaSugerida="general"
         userId={user?.id}
+      />
+
+      {/* Visor Modal de Foto Completa / Predeterminada */}
+      <VisorFotoModal
+        isOpen={visorFotoConfig.isOpen}
+        onClose={() => setVisorFotoConfig(prev => ({ ...prev, isOpen: false }))}
+        fotoActual={visorFotoConfig.fotoActual}
+        listaFotos={visorFotoConfig.listaFotos}
+        indiceInicial={visorFotoConfig.indiceInicial}
+        fotoPortadaActual={formData.imagen_portada}
+        onSetPortada={handleHacerPortadaPredeterminada}
+        titulo={visorFotoConfig.titulo}
       />
     </>
   );

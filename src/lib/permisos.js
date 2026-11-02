@@ -117,6 +117,26 @@ export const CATEGORIAS_PERMISOS = [
       { id: 'auditoria_listar', label: 'Filtrar cambios por tabla y usuario' },
       { id: 'auditoria_exportar', label: 'Exportar bitácora de auditoría' }
     ]
+  },
+  {
+    categoria: '☁️ Módulo Galería Cloudflare R2 & Almacenamiento',
+    items: [
+      { id: 'galeria_ver', label: 'Ver fotos y detalles en Cloudflare R2' },
+      { id: 'galeria_listar', label: 'Listar catálogo de fotos en la nube' },
+      { id: 'galeria_subir', label: 'Subir nuevas imágenes y fotos a Cloudflare R2' },
+      { id: 'galeria_editar', label: 'Editar títulos y categorías de imágenes' },
+      { id: 'galeria_eliminar', label: 'Eliminar fotos del bucket Cloudflare R2' }
+    ]
+  },
+  {
+    categoria: '🔔 Módulo Notificaciones & Avisos del Sistema',
+    items: [
+      { id: 'notificaciones_ver', label: 'Ver avisos y notificaciones del sistema' },
+      { id: 'notificaciones_listar', label: 'Listar historial de avisos emitidos' },
+      { id: 'notificaciones_crear', label: 'Emitir avisos y comunicados a pasajeros' },
+      { id: 'notificaciones_bloquear', label: 'Desactivar o archivar notificaciones' },
+      { id: 'notificaciones_eliminar', label: 'Eliminar notificaciones de la base de datos' }
+    ]
   }
 ];
 

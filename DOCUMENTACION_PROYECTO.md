@@ -151,37 +151,63 @@ c:\xampp\htdocs\aguitourslascapullanas\
 
 ---
 
-## 6. 🎓 Nuevo Módulo: Viajes Realizados, Antecedentes & Notificaciones
+## 6. 🎓 Módulo: Viajes Realizados, Antecedentes, Visor de Fotos & Notificaciones
 
-- **Script SQL:** `database/modulo_viajes_realizados_y_antecedentes.sql`
-- **Tablas Creadas:**
-  - `public.viajes_realizados`: Colegios, Empresas, Organizaciones, Grupos Privados y Familias con fotos en Cloudflare R2 y galería fotográfica.
-  - `public.notificaciones`: Sistema de avisos para usuarios y clientes con RLS.
-- **Auditoría Integral (15 Tablas):** Triggers automáticos conectados a `public.tabla_auditoria` para todas las tablas del sistema.
-- **Componentes Públicos:**
-  - `src/components/antecedentes/ViajesRealizadosSection.jsx`: Sección principal en el Home con filtros interactivos por categoría (Colegios/Promociones, Empresas, Grupos Privados, Familias), contadores de viajeros, tarjetas con efecto hover y badges Cloudflare R2.
-  - `src/components/antecedentes/VerDetalleViajeModal.jsx`: Visor Lightbox cinemático con carrusel fotográfico, tira de miniaturas, información de delegación, fecha, destino y reseña.
-  - `src/components/antecedentes/GaleriaCompletaAntecedentesModal.jsx`: Catálogo completo con buscador en tiempo real y selector de delegaciones.
-- **Componentes Administrativos:**
-  - `src/components/admin/antecedentes/AdminAntecedentesModule.jsx`: Dashboard de administración con métricas de viajeros atendidos, búsqueda rápida, toggle directo de "Destacado en Inicio" (⭐) y visibilidad pública.
-  - `src/components/admin/antecedentes/CrearViajeRealizadoModal.jsx`: Registro de nuevas experiencias con integración al selector de Cloudflare R2 y carga múltiple de imágenes de álbum.
-  - `src/components/admin/antecedentes/EditarViajeRealizadoModal.jsx`: Edición completa, gestión de fotos del álbum y eliminación segura.
-- **Navegación Fluida (Single Page Scroll):**
-  - Enlace "Experiencias" en Navbar de escritorio y menú móvil que realiza desplazamiento suave hacia `#antecedentes` sin recargar ni desmontar vistas.
-- **Matriz de Permisos RBAC (68 Permisos Totales):**
-  - Nuevo bloque `🎓 Módulo Viajes Realizados & Antecedentes` en `src/lib/permisos.js`:
-    - `antecedentes_ver`: Ver módulo y detalle de viajes realizados
-    - `antecedentes_listar`: Listar catálogo de antecedentes y casos de éxito
-    - `antecedentes_crear`: Registrar nuevas experiencias y subir fotos a Cloudflare R2
-    - `antecedentes_editar`: Editar descripciones, fechas, pasajeros y álbumes
-    - `antecedentes_destacar`: Marcar o desmarcar experiencias destacadas en el Home (⭐)
-    - `antecedentes_bloquear`: Ocultar / Desactivar experiencias de la web pública
-    - `antecedentes_eliminar`: Eliminar experiencias y antecedentes de la base de datos
-  - Totalmente configurable desde el modal *"Editar Rol & Matriz de Permisos"* en el módulo RBAC.
+- **Scripts SQL:** 
+  - `database/modulo_viajes_realizados_y_antecedentes.sql` (Viajes Realizados, Notificaciones y Triggers)
+  - `database/fase_auditoria_y_seguridad_consolidada.sql` (**[NUEVO]** Auditoría inmutable integral en las 16 tablas del sistema, RLS para `public.clientes` y permisos RBAC actualizados).
+- **Tablas del Sistema (16 Tablas Totales con Auditoría 100% Cobertura):**
+  1. `public.perfiles`
+  2. `public.clientes` (RLS configurado: Staff lee todo, cliente lee su propio registro)
+  3. `public.paquetes_grupales`
+  4. `public.destinos_turisticos`
+  5. `public.inscripciones_grupo`
+  6. `public.acompanantes_inscripcion`
+  7. `public.cuotas_inscripcion`
+  8. `public.pagos`
+  9. `public.historial_pagos_caja`
+  10. `public.solicitudes_cotizacion`
+  11. `public.favoritos_usuario`
+  12. `public.cms_contenido`
+  13. `public.roles_sistema`
+  14. `public.imagenes_galeria` (Cloudflare R2)
+  15. `public.viajes_realizados` (Experiencias de delegaciones)
+  16. `public.notificaciones` (Avisos del sistema)
+- **Nuevo Componente Reutilizable:**
+  - `src/components/common/VisorFotoModal.jsx`: Visor cinemático (`z-[1000000]`) para previsualizar fotos en su **proporción predeterminada original (contain)** o llenar marco (cover), zoom interactivo (50% a 250%), navegación con flechas/teclado, enlace a pestaña nueva, copia de URL directa y botón para **"⭐ Establecer como Portada Predeterminada"**.
+- **Gestión Interactiva de Fotos en Modales de Viajes:**
+  - `EditarViajeRealizadoModal.jsx` y `CrearViajeRealizadoModal.jsx`:
+    - Portada interactiva: clic en la miniatura para verla en pantalla completa en visor predeterminado con badge dorado.
+    - Álbum de fotos: clic en cualquier miniatura para abrirla en pantalla completa con tira de navegación.
+    - Botón `⭐` en cada imagen del álbum para convertirla en portada predeterminada con un solo clic.
+    - Badge visual persistente `⭐ Portada` en la foto que actualmente actúa como portada principal.
+- **Matriz de Permisos RBAC (78 Permisos Totales en `src/lib/permisos.js`):**
+  - Módulo Viajes Realizados & Antecedentes (7 permisos)
+  - Módulo Galería Cloudflare R2 & Almacenamiento (5 permisos: ver, listar, subir, editar, eliminar)
+  - Módulo Notificaciones & Avisos del Sistema (5 permisos: ver, listar, crear, bloquear, eliminar)
+- **Directrices de Desarrollo & Skill del Proyecto:**
+  - Definido en `.agents/skills/directrices-desarrollo-aguitours/SKILL.md` y `AGENTS.md`.
+  - Testing manual reservado exclusivamente al usuario.
+  - Scripts SQL entregados en archivos independientes para ejecución manual en Supabase.
+  - Modularización inmediata de archivos extensos.
+  - Plan de backend en Supabase por fases.
 
 ---
 
-## 7. 🚀 Instrucciones para Ejecutar en Local
+## 7. 🗺️ Plan de Backend en Supabase por Fases
+
+| Fase | Alcance y Módulos | Estado |
+| :--- | :--- | :--- |
+| **Fase 1: Núcleo de Autenticación, Perfiles y RBAC** | `auth.users`, `public.perfiles`, `public.roles_sistema`, triggers de registro y roles. | ✅ Completada |
+| **Fase 2: Catálogo Turístico & CMS Dinámico 3D** | `public.paquetes_grupales`, `public.destinos_turisticos`, `public.cms_contenido`. | ✅ Completada |
+| **Fase 3: Clientes, Reservas & Cotizaciones** | `public.clientes`, `public.inscripciones_grupo`, `public.acompanantes_inscripcion`, `public.solicitudes_cotizacion`, `public.favoritos_usuario`. | ✅ Completada |
+| **Fase 4: Pagos, Cuotas & Caja Libro Diario** | `public.pagos`, `public.cuotas_inscripcion`, `public.historial_pagos_caja`. | ✅ Completada |
+| **Fase 5: Cloudflare R2, Galería & Antecedentes** | `public.imagenes_galeria`, `public.viajes_realizados`, `public.notificaciones`. | ✅ Completada |
+| **Fase 6: Auditoría Inmutable & Seguridad RLS Consolidada** | `public.tabla_auditoria`, triggers en las 16 tablas y RLS estricto (`database/fase_auditoria_y_seguridad_consolidada.sql`). | 🚀 Lista para Ejecución |
+
+---
+
+## 8. 🚀 Instrucciones para Ejecutar en Local
 
 1. Abrir terminal en la carpeta del proyecto:
    ```bash
@@ -189,8 +215,7 @@ c:\xampp\htdocs\aguitourslascapullanas\
    npm run dev
    ```
 2. La Web App abrirá en **`http://localhost:5173/`**.
-3. **Scripts SQL en Supabase:**
-   - Ejecutar `database/modulo_galeria_imagenes_r2.sql` (Galería Cloudflare R2)
-   - Ejecutar `database/modulo_viajes_realizados_y_antecedentes.sql` (Viajes Realizados, Notificaciones y Triggers de Auditoría)
+3. **Scripts SQL en Supabase (Ejecución Manual por el Usuario):**
+   - Ejecutar `database/fase_auditoria_y_seguridad_consolidada.sql` para activar la auditoría en las 16 tablas del sistema, RLS en `public.clientes` y los permisos RBAC actualizados.
 
 
