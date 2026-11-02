@@ -155,24 +155,24 @@ c:\xampp\htdocs\aguitourslascapullanas\
 
 - **Scripts SQL:** 
   - `database/modulo_viajes_realizados_y_antecedentes.sql` (Viajes Realizados, Notificaciones y Triggers)
-  - `database/fase_auditoria_y_seguridad_consolidada.sql` (**[NUEVO]** Auditoría inmutable integral en las 16 tablas del sistema, RLS para `public.clientes` y permisos RBAC actualizados).
-- **Tablas del Sistema (16 Tablas Totales con Auditoría 100% Cobertura):**
-  1. `public.perfiles`
-  2. `public.clientes` (RLS configurado: Staff lee todo, cliente lee su propio registro)
-  3. `public.paquetes_grupales`
-  4. `public.destinos_turisticos`
-  5. `public.inscripciones_grupo`
-  6. `public.acompanantes_inscripcion`
-  7. `public.cuotas_inscripcion`
-  8. `public.pagos`
-  9. `public.historial_pagos_caja`
-  10. `public.solicitudes_cotizacion`
-  11. `public.favoritos_usuario`
-  12. `public.cms_contenido`
-  13. `public.roles_sistema`
-  14. `public.imagenes_galeria` (Cloudflare R2)
-  15. `public.viajes_realizados` (Experiencias de delegaciones)
-  16. `public.notificaciones` (Avisos del sistema)
+  - `database/fase_auditoria_y_seguridad_consolidada.sql` (**[NUEVO]** Auditoría inmutable integral en las 15 tablas funcionales del sistema, RLS estricto y permisos RBAC actualizados).
+- **Tablas del Sistema (15 Tablas Funcionales con Auditoría 100% Cobertura + 1 Tabla de Logs):**
+  1. `public.perfiles` (Gestión centralizada de usuarios staff y clientes/pasajeros)
+  2. `public.paquetes_grupales`
+  3. `public.destinos_turisticos`
+  4. `public.inscripciones_grupo`
+  5. `public.acompanantes_inscripcion`
+  6. `public.cuotas_inscripcion`
+  7. `public.pagos`
+  8. `public.historial_pagos_caja`
+  9. `public.solicitudes_cotizacion`
+  10. `public.favoritos_usuario`
+  11. `public.cms_contenido`
+  12. `public.roles_sistema`
+  13. `public.imagenes_galeria` (Cloudflare R2)
+  14. `public.viajes_realizados` (Experiencias de delegaciones)
+  15. `public.notificaciones` (Avisos del sistema)
+  - `public.tabla_auditoria`: Registro inmutable de operaciones INSERT, UPDATE y DELETE.
 - **Nuevo Componente Reutilizable:**
   - `src/components/common/VisorFotoModal.jsx`: Visor cinemático (`z-[1000000]`) para previsualizar fotos en su **proporción predeterminada original (contain)** o llenar marco (cover), zoom interactivo (50% a 250%), navegación con flechas/teclado, enlace a pestaña nueva, copia de URL directa y botón para **"⭐ Establecer como Portada Predeterminada"**.
 - **Gestión Interactiva de Fotos en Modales de Viajes:**
