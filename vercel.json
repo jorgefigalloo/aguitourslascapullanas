@@ -1,0 +1,25 @@
+{
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/php/api/upload_r2.php",
+      "destination": "/api/upload_r2"
+    },
+    {
+      "source": "/php/api/eliminar_r2.php",
+      "destination": "/api/eliminar_r2"
+    },
+    {
+      "source": "/php/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

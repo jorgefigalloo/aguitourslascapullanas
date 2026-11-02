@@ -219,6 +219,24 @@ c:\xampp\htdocs\aguitourslascapullanas\
    ```
 2. La Web App abrirá en **`http://localhost:5173/`**.
 3. **Scripts SQL en Supabase (Ejecución Manual por el Usuario):**
-   - Ejecutar `database/fase_auditoria_y_seguridad_consolidada.sql` para activar la auditoría en las 16 tablas del sistema, RLS en `public.clientes` y los permisos RBAC actualizados.
+   - Ejecutar `database/fase_auditoria_y_seguridad_consolidada.sql` para activar la auditoría en las 15 tablas del sistema y los permisos RBAC actualizados.
+
+---
+
+## 9. 🌐 Arquitectura Híbrida Cloudflare R2: Local Dev vs Producción en Vercel
+
+Para garantizar que la subida de imágenes y fotos funcione de manera idéntica tanto en local (Vite) como en producción (Vercel):
+
+- **En Entorno Local (`npm run dev`):**
+  - Gestionado por `src/lib/viteR2Plugin.js` directamente en el servidor de desarrollo de Vite. Intercepta `/api/upload_r2` y `/api/eliminar_r2`, firmando con AWS V4 y subiendo a R2 sin necesidad de Apache/PHP.
+- **En Producción Vercel (`https://aguitourslascapullanas.vercel.app`):**
+  - **Serverless Functions:**
+    - `api/upload_r2.js`: Procesa multipart/form-data, firma con AWS Signature V4, sube al bucket R2 y registra en `public.imagenes_galeria`.
+    - `api/eliminar_r2.js`: Firma AWS V4 para DELETE en R2 y borra el registro en Supabase.
+  - **Enrutamiento y SPA (`vercel.json`):**
+    - Enruta `/api/*` a las Serverless Functions de Node.js.
+    - Redirige llamadas heredadas `/php/api/*.php` a `/api/*` de forma transparente.
+    - Enruta rutas SPA a `/index.html`.
+
 
 
